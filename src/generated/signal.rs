@@ -30,8 +30,8 @@ pub struct StartRequest {
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct RestartRequest {
-    pub first_flow_id: FlowId,
-    pub second_flow_id: FlowId,
+    pub flow_id: FlowId,
+    pub origin_clue: OriginClue,
 }
 #[rustfmt::skip]
 pub type RecipientResolutionRequest = FlowId;

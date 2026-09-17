@@ -15,7 +15,7 @@ fn budget() -> Budget {
 fn every_ordinary_request_has_a_concrete_datom() {
     for text in [
         "Start.{ codex-medium { fac697 session-1 turn-2 } }",
-        "Restart.{ fac697 fac697 }",
+        "Restart.{ fac697 { fac697 session-1 turn-2 } }",
         "ResolveRecipient.fac697",
     ] {
         let query = Potential::<Query>::from(text).actualize(&mut budget()).unwrap();
