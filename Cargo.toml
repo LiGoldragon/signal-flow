@@ -1,0 +1,28 @@
+[package]
+name = "signal-flow"
+version = "1.0.0"
+edition = "2024"
+rust-version = "1.89"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/LiGoldragon/signal-flow"
+description = "Ordinary Flow Nexus Signal contract."
+publish = false
+build = "build.rs"
+
+[features]
+default = []
+datom = ["dep:datom-codec", "dep:protos", "signal/datom"]
+
+[dependencies]
+datom-codec = { git = "https://github.com/LiGoldragon/datom-codec", rev = "09e2a9d52bf7f2f11e51d15cb6c3177f72c6c927", optional = true }
+protos = { git = "https://github.com/LiGoldragon/protos", rev = "1febca7836bf8d5f5973a302fdd50aa9c84c159b", optional = true }
+signal = { git = "https://github.com/LiGoldragon/signal", rev = "7bcb0949cdaa4501651ed519625eba48e283fac0", default-features = false }
+rkyv = { version = "0.8", default-features = false, features = ["std", "bytecheck", "little_endian", "pointer_width_32", "unaligned"] }
+
+[build-dependencies]
+ethos-zero = { git = "https://github.com/LiGoldragon/ethos-zero", rev = "4bf73cae8d4f5a2072c76a11cd2f00aa3fe9f8e3" }
+
+[lints.rust]
+unsafe_code = "forbid"
+unused = { level = "warn", priority = -1 }
+dead_code = "warn"

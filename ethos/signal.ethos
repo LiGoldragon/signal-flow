@@ -1,0 +1,5 @@
+Signal
+[]
+[ Start.StartRequest Restart.RestartRequest ResolveRecipient.RecipientResolutionRequest ]
+[ Started.Started Restarted.Restarted RecipientResolved.FlowNode StartRejected.StartRejection RestartRejected.RestartRejection RecipientResolutionRejected.RecipientResolutionRejection ]
+[ FlowId.String SessionId.String TurnId.String FlowType.String Generation.Integer EndpointPath.String OriginClue.{ FlowId SessionId TurnId } StartRequest.{ FlowType OriginClue } RestartRequest.{ FlowId FlowId } RecipientResolutionRequest.FlowId HarnessKind.[ Codex Claude ] RouteReadiness.[ Ready Parked ] EndpointSelection.[ Available.{ EndpointPath RouteReadiness } Unavailable ] FlowLifecycle.[ Pending Active ] FlowNode.{ FlowId SessionId HarnessKind EndpointSelection OriginClue FlowLifecycle } Started.{ FlowId SessionId OriginClue } Restarted.{ FlowId SessionId Generation } StartRejection.[ UnknownFlowType LaunchRefused OriginUnavailable ] RestartRejection.[ ProvenanceMismatch UnknownFlow ResumeRefused ] RecipientResolutionRejection.[ UnknownFlow FlowUnavailable ] ]
