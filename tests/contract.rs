@@ -18,7 +18,9 @@ fn every_ordinary_request_has_a_concrete_datom() {
         "Restart.{ fac697 { fac697 session-1 turn-2 } }",
         "ResolveRecipient.fac697",
     ] {
-        let query = Potential::<Query>::from(text).actualize(&mut budget()).unwrap();
+        let query = Potential::<Query>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
         assert_eq!(query.datomize(vec![]).protosize().textualize(), text);
     }
 }
@@ -35,6 +37,14 @@ fn flow_node_round_trips_over_signal_and_datom() {
                 route_readiness: signal_flow::RouteReadiness::Ready,
             },
         ),
+        herdr_route_selection: signal_flow::HerdrRouteSelection::Available(
+            signal_flow::HerdrRoute {
+                herdr_session_name: "messaging-build".into(),
+                herdr_agent_name: "psyche-mind-astra".into(),
+                herdr_pane_id: "w1:p3".into(),
+                herdr_terminal_id: "term-fixture".into(),
+            },
+        ),
         origin_clue: signal_flow::OriginClue {
             flow_id: "parent".into(),
             session_id: "session-0".into(),
@@ -43,8 +53,13 @@ fn flow_node_round_trips_over_signal_and_datom() {
         flow_lifecycle: signal_flow::FlowLifecycle::Active,
     });
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&reply).unwrap();
-    assert_eq!(rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(), reply);
+    assert_eq!(
+        rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+        reply
+    );
     let text = reply.datomize(vec![]).protosize().textualize();
-    let restored = Potential::<Response>::from(text).actualize(&mut budget()).unwrap();
+    let restored = Potential::<Response>::from(text)
+        .actualize(&mut budget())
+        .unwrap();
     assert_eq!(restored, reply);
 }

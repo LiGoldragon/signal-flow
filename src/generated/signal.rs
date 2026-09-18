@@ -12,6 +12,14 @@ pub type Generation = i64;
 #[rustfmt::skip]
 pub type EndpointPath = String;
 #[rustfmt::skip]
+pub type HerdrSessionName = String;
+#[rustfmt::skip]
+pub type HerdrAgentName = String;
+#[rustfmt::skip]
+pub type HerdrPaneId = String;
+#[rustfmt::skip]
+pub type HerdrTerminalId = String;
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct OriginClue {
@@ -65,6 +73,22 @@ pub enum EndpointSelection {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct HerdrRoute {
+    pub herdr_session_name: HerdrSessionName,
+    pub herdr_agent_name: HerdrAgentName,
+    pub herdr_pane_id: HerdrPaneId,
+    pub herdr_terminal_id: HerdrTerminalId,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum HerdrRouteSelection {
+    Available(HerdrRoute),
+    Unavailable,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum FlowLifecycle {
     Pending,
     Active,
@@ -77,6 +101,7 @@ pub struct FlowNode {
     pub session_id: SessionId,
     pub harness_kind: HarnessKind,
     pub endpoint_selection: EndpointSelection,
+    pub herdr_route_selection: HerdrRouteSelection,
     pub origin_clue: OriginClue,
     pub flow_lifecycle: FlowLifecycle,
 }
