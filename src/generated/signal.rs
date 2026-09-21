@@ -230,7 +230,7 @@ pub struct DeliveryState {
     pub binding_generation: BindingGeneration,
     pub lifecycle_generation: LifecycleGeneration,
     pub admission_gate: AdmissionGate,
-    pub delivery_permit: DeliveryPermit,
+    pub delivery_permit_option: Option<DeliveryPermit>,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -281,7 +281,7 @@ pub struct ReadDeliveryState {
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct RefreshHeld {
-    pub delivery_permit: DeliveryPermit,
+    pub delivery_permit_option: Option<DeliveryPermit>,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -313,6 +313,7 @@ pub enum DeliveryRejection {
     ActivePermit,
     CorruptState,
     GenerationOverflow,
+    CapacityExhausted,
     StoreRefused,
 }
 #[rustfmt::skip]
