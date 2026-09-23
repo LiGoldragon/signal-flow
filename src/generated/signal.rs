@@ -58,6 +58,10 @@ pub type TranscriptByteOffset = i64;
 #[rustfmt::skip]
 pub type TranscriptPrefixSha256 = String;
 #[rustfmt::skip]
+pub type TranscriptRootDevice = String;
+#[rustfmt::skip]
+pub type TranscriptRootInode = String;
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum FlowAspect {
@@ -169,13 +173,29 @@ pub struct RegistrationAcknowledgement {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct NativeTranscriptBoundary {
+pub struct NativeTranscriptCursor {
     pub native_session_id: NativeSessionId,
     pub harness_kind: HarnessKind,
     pub transcript_device: TranscriptDevice,
     pub transcript_inode: TranscriptInode,
     pub transcript_byte_offset: TranscriptByteOffset,
     pub transcript_prefix_sha256: TranscriptPrefixSha256,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct NativeTranscriptAbsence {
+    pub native_session_id: NativeSessionId,
+    pub harness_kind: HarnessKind,
+    pub transcript_root_device: TranscriptRootDevice,
+    pub transcript_root_inode: TranscriptRootInode,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum NativeTranscriptBoundary {
+    Existing(NativeTranscriptCursor),
+    Absent(NativeTranscriptAbsence),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]

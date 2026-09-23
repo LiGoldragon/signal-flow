@@ -70,8 +70,8 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
         launch_request_id: "request-7".into(),
         launch_source_vector: vec![signal_flow::LaunchSource {
             source_path: "Vision/flowNexus.md".into(),
-            source_sha256:
-                "54c08e7190360a308e560935c120c69b81c4aacb4975751a4841912b599f4f5a".into(),
+            source_sha256: "54c08e7190360a308e560935c120c69b81c4aacb4975751a4841912b599f4f5a"
+                .into(),
         }],
         skill_name_vector: vec!["spirit".into(), "main-flow".into()],
         flow_aspect: signal_flow::FlowAspect::Field,
@@ -89,8 +89,7 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
     };
     let receipt_request = signal_flow::TargetReceiptRequest {
         launch_request_id: profile.launch_request_id.clone(),
-        prompt_sha256:
-            "0286307646b3fb93a6e70d7012eaa2d07239bb1eb7c81a668fe1d4b6f3d97b3b".into(),
+        prompt_sha256: "0286307646b3fb93a6e70d7012eaa2d07239bb1eb7c81a668fe1d4b6f3d97b3b".into(),
     };
     let composed = signal_flow::ComposedLaunch {
         launch_profile: profile,
@@ -121,21 +120,22 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
     };
     let intent = signal_flow::PromptDeliveryIntent {
         launch_request_id: "request-7".into(),
-        prompt_sha256:
-            "0286307646b3fb93a6e70d7012eaa2d07239bb1eb7c81a668fe1d4b6f3d97b3b".into(),
+        prompt_sha256: "0286307646b3fb93a6e70d7012eaa2d07239bb1eb7c81a668fe1d4b6f3d97b3b".into(),
         flow_id: "908786".into(),
         native_session_id: "native-session-1".into(),
         harness_kind: signal_flow::HarnessKind::Codex,
         herdr_pane_binding: binding,
-        native_transcript_boundary: signal_flow::NativeTranscriptBoundary {
-            native_session_id: "native-session-1".into(),
-            harness_kind: signal_flow::HarnessKind::Codex,
-            transcript_device: "2049".into(),
-            transcript_inode: "99142".into(),
-            transcript_byte_offset: 4096,
-            transcript_prefix_sha256:
-                "a2149f4ce39c3ec8984ca8e671514900470eaca3f132c30c89c12980f3ac3b07".into(),
-        },
+        native_transcript_boundary: signal_flow::NativeTranscriptBoundary::Existing(
+            signal_flow::NativeTranscriptCursor {
+                native_session_id: "native-session-1".into(),
+                harness_kind: signal_flow::HarnessKind::Codex,
+                transcript_device: "2049".into(),
+                transcript_inode: "99142".into(),
+                transcript_byte_offset: 4096,
+                transcript_prefix_sha256:
+                    "a2149f4ce39c3ec8984ca8e671514900470eaca3f132c30c89c12980f3ac3b07".into(),
+            },
+        ),
     };
     let attempt = signal_flow::LaunchAttempt {
         launch_request_id: intent.launch_request_id.clone(),
@@ -161,5 +161,20 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
     assert_eq!(
         rkyv::from_bytes::<signal_flow::LaunchAttempt, rkyv::rancor::Error>(&archive).unwrap(),
         attempt
+    );
+
+    let absent = signal_flow::NativeTranscriptBoundary::Absent(
+        signal_flow::NativeTranscriptAbsence {
+            native_session_id: "native-session-2".into(),
+            harness_kind: signal_flow::HarnessKind::Claude,
+            transcript_root_device: "2049".into(),
+            transcript_root_inode: "99143".into(),
+        },
+    );
+    let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&absent).unwrap();
+    assert_eq!(
+        rkyv::from_bytes::<signal_flow::NativeTranscriptBoundary, rkyv::rancor::Error>(&archive)
+            .unwrap(),
+        absent
     );
 }
