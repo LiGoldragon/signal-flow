@@ -134,6 +134,14 @@ pub struct HerdrPaneBinding {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct NativeLaunchIntent {
+    pub launch_request_id: LaunchRequestId,
+    pub prompt_sha256: PromptSha256,
+    pub harness_kind: HarnessKind,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct NativeLaunchBinding {
     pub launch_request_id: LaunchRequestId,
     pub flow_id: FlowId,
@@ -181,6 +189,32 @@ pub enum PromptDeliveryResult {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum LaunchAttemptPhase {
+    Reserved,
+    NativeLaunchIntentRecorded,
+    NativeBound,
+    RegistrationAcknowledged,
+    PromptIntentRecorded,
+    PromptObserved,
+    PromptAmbiguous,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct LaunchAttempt {
+    pub launch_request_id: LaunchRequestId,
+    pub prompt_sha256: PromptSha256,
+    pub origin_clue: OriginClue,
+    pub launch_attempt_phase: LaunchAttemptPhase,
+    pub native_launch_intent_option: Option<NativeLaunchIntent>,
+    pub native_launch_binding_option: Option<NativeLaunchBinding>,
+    pub registration_acknowledgement_option: Option<RegistrationAcknowledgement>,
+    pub prompt_delivery_intent_option: Option<PromptDeliveryIntent>,
+    pub prompt_delivery_result_option: Option<PromptDeliveryResult>,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct OriginClue {
     pub flow_id: FlowId,
     pub session_id: SessionId,
@@ -190,7 +224,7 @@ pub struct OriginClue {
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct StartRequest {
-    pub flow_type: FlowType,
+    pub launch_profile: LaunchProfile,
     pub origin_clue: OriginClue,
 }
 #[rustfmt::skip]
@@ -284,8 +318,13 @@ pub struct Restarted {
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum StartRejection {
-    UnknownFlowType,
-    LaunchRefused,
+    CompositionRefused,
+    LaunchRequestConflict,
+    LaunchPersistenceRefused,
+    NativeLaunchRefused,
+    BindingRefused,
+    RegistrationRefused,
+    IntentPersistenceRefused,
     OriginUnavailable,
 }
 #[rustfmt::skip]
@@ -316,6 +355,8 @@ pub enum Query {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Response {
     Started(Started),
+    LaunchPending(LaunchAttempt),
+    StartAmbiguous(PromptDeliveryIntent),
     Restarted(Restarted),
     RecipientResolved(FlowNode),
     StartRejected(StartRejection),

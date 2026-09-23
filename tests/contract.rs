@@ -14,7 +14,7 @@ fn budget() -> Budget {
 #[test]
 fn every_ordinary_request_has_a_concrete_datom() {
     for text in [
-        "Start.{ codex-medium { fac697 session-1 turn-2 } }",
+        "Start.{ { request-7 [ { Vision/flowNexus.md 54c08e7190360a308e560935c120c69b81c4aacb4975751a4841912b599f4f5a } ] [ spirit main-flow ] Field High Codex gpt-6-astra medium Some.836818 [ { 1b8ac0 1 } ] messaging-build «Carry this bounded launch request.» } { fac697 session-1 turn-2 } }",
         "Restart.{ fac697 { fac697 session-1 turn-2 } }",
         "ResolveRecipient.fac697",
     ] {
@@ -106,5 +106,50 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
     assert_eq!(
         rkyv::from_bytes::<signal_flow::ComposedLaunch, rkyv::rancor::Error>(&archive).unwrap(),
         composed
+    );
+}
+
+#[test]
+fn launch_attempt_journal_round_trips_with_one_shot_intent() {
+    let binding = signal_flow::HerdrPaneBinding {
+        launch_request_id: "request-7".into(),
+        herdr_session_name: "messaging-build".into(),
+        herdr_agent_name: "field-high-of-836818".into(),
+        herdr_workspace_id: "workspace-1".into(),
+        herdr_pane_id: "w1:p4".into(),
+        herdr_terminal_id: "term-4".into(),
+    };
+    let intent = signal_flow::PromptDeliveryIntent {
+        launch_request_id: "request-7".into(),
+        prompt_sha256:
+            "0286307646b3fb93a6e70d7012eaa2d07239bb1eb7c81a668fe1d4b6f3d97b3b".into(),
+        flow_id: "908786".into(),
+        native_session_id: "native-session-1".into(),
+        herdr_pane_binding: binding,
+    };
+    let attempt = signal_flow::LaunchAttempt {
+        launch_request_id: intent.launch_request_id.clone(),
+        prompt_sha256: intent.prompt_sha256.clone(),
+        origin_clue: signal_flow::OriginClue {
+            flow_id: "fac697".into(),
+            session_id: "caller-session".into(),
+            turn_id: "caller-turn".into(),
+        },
+        launch_attempt_phase: signal_flow::LaunchAttemptPhase::PromptIntentRecorded,
+        native_launch_intent_option: Some(signal_flow::NativeLaunchIntent {
+            launch_request_id: intent.launch_request_id.clone(),
+            prompt_sha256: intent.prompt_sha256.clone(),
+            harness_kind: signal_flow::HarnessKind::Codex,
+        }),
+        native_launch_binding_option: None,
+        registration_acknowledgement_option: None,
+        prompt_delivery_intent_option: Some(intent),
+        prompt_delivery_result_option: None,
+    };
+
+    let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&attempt).unwrap();
+    assert_eq!(
+        rkyv::from_bytes::<signal_flow::LaunchAttempt, rkyv::rancor::Error>(&archive).unwrap(),
+        attempt
     );
 }
