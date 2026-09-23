@@ -125,7 +125,17 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
             "0286307646b3fb93a6e70d7012eaa2d07239bb1eb7c81a668fe1d4b6f3d97b3b".into(),
         flow_id: "908786".into(),
         native_session_id: "native-session-1".into(),
+        harness_kind: signal_flow::HarnessKind::Codex,
         herdr_pane_binding: binding,
+        native_transcript_boundary: signal_flow::NativeTranscriptBoundary {
+            native_session_id: "native-session-1".into(),
+            harness_kind: signal_flow::HarnessKind::Codex,
+            transcript_device: "2049".into(),
+            transcript_inode: "99142".into(),
+            transcript_byte_offset: 4096,
+            transcript_prefix_sha256:
+                "a2149f4ce39c3ec8984ca8e671514900470eaca3f132c30c89c12980f3ac3b07".into(),
+        },
     };
     let attempt = signal_flow::LaunchAttempt {
         launch_request_id: intent.launch_request_id.clone(),
