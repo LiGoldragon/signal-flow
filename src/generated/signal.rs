@@ -215,6 +215,14 @@ pub struct LaunchAttempt {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum LaunchAttemptReservation {
+    Reserved(LaunchAttempt),
+    Existing(LaunchAttempt),
+    Conflict,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct OriginClue {
     pub flow_id: FlowId,
     pub session_id: SessionId,
