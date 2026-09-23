@@ -16,9 +16,168 @@ pub type HerdrSessionName = String;
 #[rustfmt::skip]
 pub type HerdrAgentName = String;
 #[rustfmt::skip]
+pub type HerdrWorkspaceId = String;
+#[rustfmt::skip]
 pub type HerdrPaneId = String;
 #[rustfmt::skip]
 pub type HerdrTerminalId = String;
+#[rustfmt::skip]
+pub type LaunchRequestId = String;
+#[rustfmt::skip]
+pub type SourcePath = String;
+#[rustfmt::skip]
+pub type SourceSha256 = String;
+#[rustfmt::skip]
+pub type SkillName = String;
+#[rustfmt::skip]
+pub type ModelName = String;
+#[rustfmt::skip]
+pub type Effort = String;
+#[rustfmt::skip]
+pub type RememberingDepth = i64;
+#[rustfmt::skip]
+pub type InstructionPrompt = String;
+#[rustfmt::skip]
+pub type FirstPromptBody = String;
+#[rustfmt::skip]
+pub type FirstPromptText = String;
+#[rustfmt::skip]
+pub type PromptSha256 = String;
+#[rustfmt::skip]
+pub type NativeSessionId = String;
+#[rustfmt::skip]
+pub type NativeTurnId = String;
+#[rustfmt::skip]
+pub type ReceiptSha256 = String;
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum FlowAspect {
+    Psyche,
+    Mind,
+    Field,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum PowerLevel {
+    High,
+    Medium,
+    Low,
+    UltraLow,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct LaunchSource {
+    pub source_path: SourcePath,
+    pub source_sha256: SourceSha256,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct RememberedFlow {
+    pub flow_id: FlowId,
+    pub remembering_depth: RememberingDepth,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct LaunchProfile {
+    pub launch_request_id: LaunchRequestId,
+    pub launch_source_vector: std::vec::Vec<LaunchSource>,
+    pub skill_name_vector: std::vec::Vec<SkillName>,
+    pub flow_aspect: FlowAspect,
+    pub power_level: PowerLevel,
+    pub harness_kind: HarnessKind,
+    pub model_name: ModelName,
+    pub effort: Effort,
+    pub flow_id_option: Option<FlowId>,
+    pub remembered_flow_vector: std::vec::Vec<RememberedFlow>,
+    pub herdr_session_name: HerdrSessionName,
+    pub instruction_prompt: InstructionPrompt,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct TargetReceiptRequest {
+    pub launch_request_id: LaunchRequestId,
+    pub prompt_sha256: PromptSha256,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct FirstPromptPayload {
+    pub first_prompt_body: FirstPromptBody,
+    pub prompt_sha256: PromptSha256,
+    pub first_prompt_text: FirstPromptText,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct ComposedLaunch {
+    pub launch_profile: LaunchProfile,
+    pub first_prompt_payload: FirstPromptPayload,
+    pub target_receipt_request: TargetReceiptRequest,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct HerdrPaneBinding {
+    pub launch_request_id: LaunchRequestId,
+    pub herdr_session_name: HerdrSessionName,
+    pub herdr_agent_name: HerdrAgentName,
+    pub herdr_workspace_id: HerdrWorkspaceId,
+    pub herdr_pane_id: HerdrPaneId,
+    pub herdr_terminal_id: HerdrTerminalId,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct NativeLaunchBinding {
+    pub launch_request_id: LaunchRequestId,
+    pub flow_id: FlowId,
+    pub native_session_id: NativeSessionId,
+    pub harness_kind: HarnessKind,
+    pub herdr_pane_binding: HerdrPaneBinding,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct RegistrationAcknowledgement {
+    pub launch_request_id: LaunchRequestId,
+    pub flow_id: FlowId,
+    pub native_session_id: NativeSessionId,
+    pub herdr_pane_binding: HerdrPaneBinding,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct PromptDeliveryIntent {
+    pub launch_request_id: LaunchRequestId,
+    pub prompt_sha256: PromptSha256,
+    pub flow_id: FlowId,
+    pub native_session_id: NativeSessionId,
+    pub herdr_pane_binding: HerdrPaneBinding,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct NativeTargetReceipt {
+    pub launch_request_id: LaunchRequestId,
+    pub prompt_sha256: PromptSha256,
+    pub flow_id: FlowId,
+    pub native_session_id: NativeSessionId,
+    pub native_turn_id: NativeTurnId,
+    pub receipt_sha256: ReceiptSha256,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum PromptDeliveryResult {
+    Observed(NativeTargetReceipt),
+    Ambiguous(PromptDeliveryIntent),
+}
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]

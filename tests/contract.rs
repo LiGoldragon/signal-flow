@@ -63,3 +63,48 @@ fn flow_node_round_trips_over_signal_and_datom() {
         .unwrap();
     assert_eq!(restored, reply);
 }
+
+#[test]
+fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
+    let profile = signal_flow::LaunchProfile {
+        launch_request_id: "request-7".into(),
+        launch_source_vector: vec![signal_flow::LaunchSource {
+            source_path: "Vision/flowNexus.md".into(),
+            source_sha256:
+                "54c08e7190360a308e560935c120c69b81c4aacb4975751a4841912b599f4f5a".into(),
+        }],
+        skill_name_vector: vec!["spirit".into(), "main-flow".into()],
+        flow_aspect: signal_flow::FlowAspect::Field,
+        power_level: signal_flow::PowerLevel::High,
+        harness_kind: signal_flow::HarnessKind::Codex,
+        model_name: "gpt-6-astra".into(),
+        effort: "medium".into(),
+        flow_id_option: Some("836818".into()),
+        remembered_flow_vector: vec![signal_flow::RememberedFlow {
+            flow_id: "1b8ac0".into(),
+            remembering_depth: 1,
+        }],
+        herdr_session_name: "messaging-build".into(),
+        instruction_prompt: "Carry this bounded launch request.".into(),
+    };
+    let receipt_request = signal_flow::TargetReceiptRequest {
+        launch_request_id: profile.launch_request_id.clone(),
+        prompt_sha256:
+            "0286307646b3fb93a6e70d7012eaa2d07239bb1eb7c81a668fe1d4b6f3d97b3b".into(),
+    };
+    let composed = signal_flow::ComposedLaunch {
+        launch_profile: profile,
+        first_prompt_payload: signal_flow::FirstPromptPayload {
+            first_prompt_body: "prompt body".into(),
+            prompt_sha256: receipt_request.prompt_sha256.clone(),
+            first_prompt_text: "prompt body\nreceipt request".into(),
+        },
+        target_receipt_request: receipt_request,
+    };
+
+    let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&composed).unwrap();
+    assert_eq!(
+        rkyv::from_bytes::<signal_flow::ComposedLaunch, rkyv::rancor::Error>(&archive).unwrap(),
+        composed
+    );
+}
