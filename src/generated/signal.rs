@@ -62,6 +62,10 @@ pub type TranscriptRootDevice = String;
 #[rustfmt::skip]
 pub type TranscriptRootInode = String;
 #[rustfmt::skip]
+pub type NativeSkillPath = String;
+#[rustfmt::skip]
+pub type NativeSkillSha256 = String;
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum FlowAspect {
@@ -150,6 +154,9 @@ pub struct NativeLaunchIntent {
     pub launch_request_id: LaunchRequestId,
     pub prompt_sha256: PromptSha256,
     pub harness_kind: HarnessKind,
+    pub model_name: ModelName,
+    pub effort: Effort,
+    pub skill_name_vector: std::vec::Vec<SkillName>,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -200,12 +207,23 @@ pub enum NativeTranscriptBoundary {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct NativeSkillSelection {
+    pub skill_name: SkillName,
+    pub native_skill_path: NativeSkillPath,
+    pub native_skill_sha256: NativeSkillSha256,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct PromptDeliveryIntent {
     pub launch_request_id: LaunchRequestId,
     pub prompt_sha256: PromptSha256,
     pub flow_id: FlowId,
     pub native_session_id: NativeSessionId,
     pub harness_kind: HarnessKind,
+    pub model_name: ModelName,
+    pub effort: Effort,
+    pub native_skill_selection_vector: std::vec::Vec<NativeSkillSelection>,
     pub herdr_pane_binding: HerdrPaneBinding,
     pub native_transcript_boundary: NativeTranscriptBoundary,
 }
@@ -219,6 +237,9 @@ pub struct NativeTargetReceipt {
     pub native_session_id: NativeSessionId,
     pub native_turn_id: NativeTurnId,
     pub receipt_sha256: ReceiptSha256,
+    pub model_name: ModelName,
+    pub effort: Effort,
+    pub native_skill_selection_vector: std::vec::Vec<NativeSkillSelection>,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -244,6 +265,7 @@ pub enum LaunchAttemptPhase {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct LaunchAttempt {
     pub launch_request_id: LaunchRequestId,
+    pub launch_profile: LaunchProfile,
     pub prompt_sha256: PromptSha256,
     pub origin_clue: OriginClue,
     pub launch_attempt_phase: LaunchAttemptPhase,

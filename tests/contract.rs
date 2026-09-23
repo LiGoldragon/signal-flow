@@ -124,6 +124,14 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
         flow_id: "908786".into(),
         native_session_id: "native-session-1".into(),
         harness_kind: signal_flow::HarnessKind::Codex,
+        model_name: "gpt-6-astra".into(),
+        effort: "medium".into(),
+        native_skill_selection_vector: vec![signal_flow::NativeSkillSelection {
+            skill_name: "spirit".into(),
+            native_skill_path: "/configured/skills/spirit/SKILL.md".into(),
+            native_skill_sha256: "b2149f4ce39c3ec8984ca8e671514900470eaca3f132c30c89c12980f3ac3b08"
+                .into(),
+        }],
         herdr_pane_binding: binding,
         native_transcript_boundary: signal_flow::NativeTranscriptBoundary::Existing(
             signal_flow::NativeTranscriptCursor {
@@ -139,6 +147,20 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
     };
     let attempt = signal_flow::LaunchAttempt {
         launch_request_id: intent.launch_request_id.clone(),
+        launch_profile: signal_flow::LaunchProfile {
+            launch_request_id: intent.launch_request_id.clone(),
+            launch_source_vector: Vec::new(),
+            skill_name_vector: vec!["spirit".into()],
+            flow_aspect: signal_flow::FlowAspect::Field,
+            power_level: signal_flow::PowerLevel::High,
+            harness_kind: signal_flow::HarnessKind::Codex,
+            model_name: intent.model_name.clone(),
+            effort: intent.effort.clone(),
+            flow_id_option: None,
+            remembered_flow_vector: Vec::new(),
+            herdr_session_name: "messaging-build".into(),
+            instruction_prompt: "Carry this bounded launch request.".into(),
+        },
         prompt_sha256: intent.prompt_sha256.clone(),
         origin_clue: signal_flow::OriginClue {
             flow_id: "fac697".into(),
@@ -150,6 +172,9 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
             launch_request_id: intent.launch_request_id.clone(),
             prompt_sha256: intent.prompt_sha256.clone(),
             harness_kind: signal_flow::HarnessKind::Codex,
+            model_name: intent.model_name.clone(),
+            effort: intent.effort.clone(),
+            skill_name_vector: vec!["spirit".into()],
         }),
         native_launch_binding_option: None,
         registration_acknowledgement_option: None,
@@ -163,14 +188,13 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
         attempt
     );
 
-    let absent = signal_flow::NativeTranscriptBoundary::Absent(
-        signal_flow::NativeTranscriptAbsence {
+    let absent =
+        signal_flow::NativeTranscriptBoundary::Absent(signal_flow::NativeTranscriptAbsence {
             native_session_id: "native-session-2".into(),
             harness_kind: signal_flow::HarnessKind::Claude,
             transcript_root_device: "2049".into(),
             transcript_root_inode: "99143".into(),
-        },
-    );
+        });
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&absent).unwrap();
     assert_eq!(
         rkyv::from_bytes::<signal_flow::NativeTranscriptBoundary, rkyv::rancor::Error>(&archive)
