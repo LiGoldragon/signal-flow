@@ -46,6 +46,10 @@ pub type PromptSha256 = String;
 #[rustfmt::skip]
 pub type BareInput = String;
 #[rustfmt::skip]
+pub type PresentationMarker = String;
+#[rustfmt::skip]
+pub type PresentationReadUnixMilliseconds = i64;
+#[rustfmt::skip]
 pub type NativeSessionId = String;
 #[rustfmt::skip]
 pub type NativeTurnId = String;
@@ -317,6 +321,22 @@ pub struct SendRequest {
     pub bare_input: BareInput,
 }
 #[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct PresentationReceipt {
+    pub flow_id: FlowId,
+    pub herdr_pane_id: HerdrPaneId,
+    pub presentation_marker: PresentationMarker,
+    pub presentation_read_unix_milliseconds: PresentationReadUnixMilliseconds,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum SendOutcome {
+    Accepted(FlowId),
+    Presented(PresentationReceipt),
+}
+#[rustfmt::skip]
 pub type StopRequest = FlowId;
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -477,7 +497,7 @@ pub enum Response {
     StartAmbiguous(PromptDeliveryIntent),
     Restarted(Restarted),
     RecipientResolved(FlowNode),
-    Sent(FlowId),
+    Sent(SendOutcome),
     Stopped(FlowId),
     Listed(FlowList),
     StartRejected(StartRejection),

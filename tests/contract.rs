@@ -202,3 +202,31 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
         absent
     );
 }
+
+#[test]
+fn send_outcomes_distinguish_acceptance_from_pane_presentation() {
+    let accepted = Response::Sent(signal_flow::SendOutcome::Accepted("908786".into()));
+    let presented = Response::Sent(signal_flow::SendOutcome::Presented(
+        signal_flow::PresentationReceipt {
+            flow_id: "908786".into(),
+            herdr_pane_id: "w1:p3".into(),
+            presentation_marker: "FLOW_PRESENTED_908786_1727200000123_7".into(),
+            presentation_read_unix_milliseconds: 1_727_200_000_123,
+        },
+    ));
+
+    for response in [accepted, presented] {
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            response
+        );
+        let text = response.datomize(vec![]).protosize().textualize();
+        assert_eq!(
+            Potential::<Response>::from(text)
+                .actualize(&mut budget())
+                .unwrap(),
+            response
+        );
+    }
+}
