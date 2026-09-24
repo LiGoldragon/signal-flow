@@ -424,3 +424,14 @@ fn cutover_receipt_requires_ready_route_inactive_predecessor_and_archive() {
         cutover
     );
 }
+
+#[test]
+fn unavailable_refresh_implementation_has_an_honest_typed_refusal() {
+    let reply =
+        Response::RefreshRejected(signal_flow::RefreshRejection::RefreshImplementationUnavailable);
+    let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&reply).unwrap();
+    assert_eq!(
+        rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+        reply
+    );
+}
