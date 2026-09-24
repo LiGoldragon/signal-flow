@@ -2,6 +2,10 @@
 #[rustfmt::skip]
 pub type FlowId = String;
 #[rustfmt::skip]
+pub type PredecessorFlowId = String;
+#[rustfmt::skip]
+pub type ReplacementFlowId = String;
+#[rustfmt::skip]
 pub type SessionId = String;
 #[rustfmt::skip]
 pub type TurnId = String;
@@ -65,6 +69,34 @@ pub type TranscriptRootInode = String;
 pub type NativeSkillPath = String;
 #[rustfmt::skip]
 pub type NativeSkillSha256 = String;
+#[rustfmt::skip]
+pub type ProcessId = i64;
+#[rustfmt::skip]
+pub type ProcessUserId = i64;
+#[rustfmt::skip]
+pub type ProcessStartToken = String;
+#[rustfmt::skip]
+pub type TranscriptItemId = String;
+#[rustfmt::skip]
+pub type TranscriptTitle = String;
+#[rustfmt::skip]
+pub type TranscriptTimestampSeconds = i64;
+#[rustfmt::skip]
+pub type TranscriptRecordSha256 = String;
+#[rustfmt::skip]
+pub type HandoverByteOffset = i64;
+#[rustfmt::skip]
+pub type HandoverByteLength = i64;
+#[rustfmt::skip]
+pub type HandoverSelectionSha256 = String;
+#[rustfmt::skip]
+pub type ArchivePath = String;
+#[rustfmt::skip]
+pub type ArchiveSha256 = String;
+#[rustfmt::skip]
+pub type ArchiveIndexId = String;
+#[rustfmt::skip]
+pub type MaximumHandoverAgeSeconds = i64;
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
@@ -301,9 +333,196 @@ pub struct StartRequest {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct RestartRequest {
+pub struct ProcessIdentity {
+    pub process_id: ProcessId,
+    pub process_user_id: ProcessUserId,
+    pub process_start_token: ProcessStartToken,
+}
+#[rustfmt::skip]
+pub type CallerFlowHint = FlowId;
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum CallerRelationship {
+    Harness,
+    Descendant,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct CallerProof {
     pub flow_id: FlowId,
+    pub process_identity: ProcessIdentity,
+    pub caller_relationship: CallerRelationship,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct RefreshPolicy {
+    pub maximum_handover_age_seconds: MaximumHandoverAgeSeconds,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum TranscriptRole {
+    Assistant,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct HandoverByteSelection {
+    pub handover_byte_offset: HandoverByteOffset,
+    pub handover_byte_length: HandoverByteLength,
+    pub handover_selection_sha256: HandoverSelectionSha256,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum HandoverSelection {
+    WholeMessage,
+    SelectedBytes(HandoverByteSelection),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct TranscriptHandoverReference {
+    pub harness_kind: HarnessKind,
+    pub native_session_id: NativeSessionId,
+    pub native_turn_id: NativeTurnId,
+    pub transcript_item_id: TranscriptItemId,
+    pub transcript_role: TranscriptRole,
+    pub transcript_title: TranscriptTitle,
+    pub transcript_timestamp_seconds: TranscriptTimestampSeconds,
+    pub transcript_record_sha256: TranscriptRecordSha256,
+    pub handover_selection: HandoverSelection,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct ReplacementIdempotencyKey {
+    pub flow_id: FlowId,
+    pub transcript_record_sha256: TranscriptRecordSha256,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct RefreshRequest {
+    pub flow_id: FlowId,
+    pub caller_flow_hint: CallerFlowHint,
+    pub transcript_handover_reference: TranscriptHandoverReference,
+    pub launch_profile: LaunchProfile,
     pub origin_clue: OriginClue,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum InteractiveReadiness {
+    Ready,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct ReplacementReadyProof {
+    pub herdr_pane_binding: HerdrPaneBinding,
+    pub process_identity: ProcessIdentity,
+    pub interactive_readiness: InteractiveReadiness,
+    pub native_target_receipt: NativeTargetReceipt,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum RegistrationAbsence {
+    Unregistered,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum ProcessLiveness {
+    Dead,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct OldRouteRemovalProof {
+    pub flow_id: FlowId,
+    pub herdr_route: HerdrRoute,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct OldInactiveProof {
+    pub flow_id: FlowId,
+    pub process_identity: ProcessIdentity,
+    pub registration_absence: RegistrationAbsence,
+    pub process_liveness: ProcessLiveness,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct ArchiveReceipt {
+    pub archive_path: ArchivePath,
+    pub archive_sha256: ArchiveSha256,
+    pub archive_index_id: ArchiveIndexId,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct CutoverReceipt {
+    pub predecessor_flow_id: PredecessorFlowId,
+    pub replacement_flow_id: ReplacementFlowId,
+    pub replacement_ready_proof: ReplacementReadyProof,
+    pub old_route_removal_proof: OldRouteRemovalProof,
+    pub old_inactive_proof: OldInactiveProof,
+    pub archive_receipt: ArchiveReceipt,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum RefreshHoldReason {
+    HandoverPolicyUnavailable,
+    StaleHandover,
+    CallerProofUnavailable,
+    RouteLockUnavailable,
+    ReplacementNotReady,
+    OldRouteRemovalPending,
+    OldStillRegistered,
+    OldProcessStillAlive,
+    ArchivePending,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum RefreshAttemptPhase {
+    RouteLocked,
+    ReplacementLaunching,
+    ReplacementRegisteredUnconfirmed,
+    ReplacementReady,
+    CutoverInProgress,
+    Archived,
+    Complete,
+    Held(RefreshHoldReason),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct RefreshAttempt {
+    pub replacement_idempotency_key: ReplacementIdempotencyKey,
+    pub refresh_request: RefreshRequest,
+    pub refresh_policy: RefreshPolicy,
+    pub refresh_attempt_phase: RefreshAttemptPhase,
+    pub flow_id_option: Option<FlowId>,
+    pub caller_proof_option: Option<CallerProof>,
+    pub replacement_ready_proof_option: Option<ReplacementReadyProof>,
+    pub cutover_receipt_option: Option<CutoverReceipt>,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct RefreshCompletion {
+    pub replacement_idempotency_key: ReplacementIdempotencyKey,
+    pub predecessor_flow_id: PredecessorFlowId,
+    pub replacement_flow_id: ReplacementFlowId,
+    pub cutover_receipt: CutoverReceipt,
 }
 #[rustfmt::skip]
 pub type RecipientResolutionRequest = FlowId;
@@ -354,8 +573,18 @@ pub enum HerdrRouteSelection {
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum FlowLifecycle {
-    Pending,
-    Active,
+    RegisteredUnconfirmed,
+    Ready,
+    Retiring,
+    Archived,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum DeliveryHoldReason {
+    NativeReceiptUnconfirmed,
+    ReplacementNotReady,
+    RouteTransferInProgress,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -372,18 +601,34 @@ pub struct FlowNode {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct Started {
+pub struct RecipientHold {
     pub flow_id: FlowId,
-    pub session_id: SessionId,
-    pub origin_clue: OriginClue,
+    pub flow_lifecycle: FlowLifecycle,
+    pub delivery_hold_reason: DeliveryHoldReason,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct Restarted {
+pub struct RecipientReroute {
+    pub flow_id: FlowId,
+    pub replacement_flow_id: ReplacementFlowId,
+    pub flow_lifecycle: FlowLifecycle,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum RecipientDisposition {
+    Deliverable(FlowNode),
+    Held(RecipientHold),
+    Reroute(RecipientReroute),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Started {
     pub flow_id: FlowId,
     pub session_id: SessionId,
-    pub generation: Generation,
+    pub origin_clue: OriginClue,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -401,10 +646,23 @@ pub enum StartRejection {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum RestartRejection {
-    ProvenanceMismatch,
+pub enum RefreshRejection {
     UnknownFlow,
-    ResumeRefused,
+    ProvenanceMismatch,
+    HandoverPolicyUnavailable,
+    StaleHandover,
+    HandoverRoleMismatch,
+    HandoverTitleMismatch,
+    HandoverBeforeCallerReceipt,
+    HandoverReferenceInvalid,
+    CallerProofUnavailable,
+    CallerProofMismatch,
+    IdempotencyConflict,
+    RefreshAlreadyInProgress,
+    RefreshPersistenceRefused,
+    RouteTransferRefused,
+    RetirementRefused,
+    ArchiveRefused,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -418,7 +676,7 @@ pub enum RecipientResolutionRejection {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Query {
     Start(StartRequest),
-    Restart(RestartRequest),
+    Refresh(RefreshRequest),
     ResolveRecipient(RecipientResolutionRequest),
 }
 #[rustfmt::skip]
@@ -428,9 +686,10 @@ pub enum Response {
     Started(Started),
     LaunchPending(LaunchAttempt),
     StartAmbiguous(PromptDeliveryIntent),
-    Restarted(Restarted),
-    RecipientResolved(FlowNode),
+    RefreshProgress(RefreshAttempt),
+    Refreshed(RefreshCompletion),
+    RecipientDispositioned(RecipientDisposition),
     StartRejected(StartRejection),
-    RestartRejected(RestartRejection),
+    RefreshRejected(RefreshRejection),
     RecipientResolutionRejected(RecipientResolutionRejection),
 }
