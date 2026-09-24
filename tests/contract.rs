@@ -435,3 +435,206 @@ fn unavailable_refresh_implementation_has_an_honest_typed_refusal() {
         reply
     );
 }
+
+fn delivery_flow_node(
+    flow_id: &str,
+    lifecycle: signal_flow::FlowLifecycle,
+) -> signal_flow::FlowNode {
+    signal_flow::FlowNode {
+        flow_id: flow_id.into(),
+        session_id: format!("session-{flow_id}"),
+        harness_kind: signal_flow::HarnessKind::Codex,
+        endpoint_selection: signal_flow::EndpointSelection::Available(
+            signal_flow::Available_Data {
+                endpoint_path: format!("/run/user/1001/{flow_id}.sock"),
+                route_readiness: signal_flow::RouteReadiness::Ready,
+            },
+        ),
+        herdr_route_selection: signal_flow::HerdrRouteSelection::Available(
+            signal_flow::HerdrRoute {
+                herdr_session_name: "mind-flows".into(),
+                herdr_agent_name: format!("mind-{flow_id}"),
+                herdr_pane_id: "w1:p3".into(),
+                herdr_terminal_id: format!("terminal-{flow_id}"),
+            },
+        ),
+        origin_clue: signal_flow::OriginClue {
+            flow_id: "parent".into(),
+            session_id: "parent-session".into(),
+            turn_id: "parent-turn".into(),
+        },
+        flow_lifecycle: lifecycle,
+    }
+}
+
+#[test]
+fn delivery_resolution_request_carries_opaque_identity_and_explicit_hop_limit() {
+    let text = "ResolveDelivery.{ requested-medium opaque-delivery-key-7 6 }";
+    let query = Potential::<Query>::from(text)
+        .actualize(&mut budget())
+        .unwrap();
+    assert_eq!(query.datomize(vec![]).protosize().textualize(), text);
+    assert!(matches!(
+        query,
+        Query::ResolveDelivery(signal_flow::DeliveryResolutionRequest {
+            requested_flow_id,
+            delivery_idempotency_key,
+            hop_limit: 6,
+        }) if requested_flow_id == "requested-medium"
+            && delivery_idempotency_key == "opaque-delivery-key-7"
+    ));
+}
+
+#[test]
+fn delivery_resolution_selects_ready_same_aspect_after_higher_power() {
+    let initial_hold = signal_flow::RecipientHold {
+        flow_id: "requested-medium".into(),
+        flow_lifecycle: signal_flow::FlowLifecycle::RegisteredUnconfirmed,
+        delivery_hold_reason: signal_flow::DeliveryHoldReason::NativeReceiptUnconfirmed,
+    };
+    let reply = Response::DeliveryResolved(signal_flow::DeliveryResolution {
+        delivery_idempotency_key: "opaque-delivery-key-7".into(),
+        requested_flow_id: "requested-medium".into(),
+        delivery_trace_entry_vector: vec![
+            signal_flow::DeliveryTraceEntry {
+                hop_index: 0,
+                flow_id: "requested-medium".into(),
+                flow_aspect: signal_flow::FlowAspect::Mind,
+                power_level: signal_flow::PowerLevel::Medium,
+                power_search_phase: signal_flow::PowerSearchPhase::Requested,
+                delivery_trace_observation: signal_flow::DeliveryTraceObservation::Held(
+                    initial_hold,
+                ),
+            },
+            signal_flow::DeliveryTraceEntry {
+                hop_index: 1,
+                flow_id: "mind-high".into(),
+                flow_aspect: signal_flow::FlowAspect::Mind,
+                power_level: signal_flow::PowerLevel::High,
+                power_search_phase: signal_flow::PowerSearchPhase::Higher,
+                delivery_trace_observation: signal_flow::DeliveryTraceObservation::Ready,
+            },
+        ],
+        delivery_resolution_disposition: signal_flow::DeliveryResolutionDisposition::Selected(
+            signal_flow::ReadyRecipient {
+                flow_node: delivery_flow_node("mind-high", signal_flow::FlowLifecycle::Ready),
+                flow_aspect: signal_flow::FlowAspect::Mind,
+                power_level: signal_flow::PowerLevel::High,
+            },
+        ),
+    });
+
+    let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&reply).unwrap();
+    assert_eq!(
+        rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+        reply
+    );
+    let text = reply.datomize(vec![]).protosize().textualize();
+    assert_eq!(
+        Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap(),
+        reply
+    );
+}
+
+#[test]
+fn crucial_start_pending_is_retryable_and_uses_flow_launch_identity() {
+    let start = signal_flow::CrucialStart {
+        launch_request_id: "launch-for-delivery-7".into(),
+        flow_aspect: signal_flow::FlowAspect::Mind,
+        power_level: signal_flow::PowerLevel::Medium,
+    };
+    let reply = Response::DeliveryResolved(signal_flow::DeliveryResolution {
+        delivery_idempotency_key: "opaque-delivery-key-7".into(),
+        requested_flow_id: "requested-medium".into(),
+        delivery_trace_entry_vector: vec![signal_flow::DeliveryTraceEntry {
+            hop_index: 0,
+            flow_id: "requested-medium".into(),
+            flow_aspect: signal_flow::FlowAspect::Mind,
+            power_level: signal_flow::PowerLevel::Medium,
+            power_search_phase: signal_flow::PowerSearchPhase::Requested,
+            delivery_trace_observation: signal_flow::DeliveryTraceObservation::StartPending(
+                start.clone(),
+            ),
+        }],
+        delivery_resolution_disposition: signal_flow::DeliveryResolutionDisposition::Held(
+            signal_flow::DeliveryResolutionHold::StartPending(start),
+        ),
+    });
+    let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&reply).unwrap();
+    assert_eq!(
+        rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+        reply
+    );
+}
+
+#[test]
+fn terminal_delivery_refusals_are_a_closed_vocabulary() {
+    fn classify(refusal: &signal_flow::DeliveryResolutionRefusal) -> &'static str {
+        match refusal {
+            signal_flow::DeliveryResolutionRefusal::CrossAspectCandidate(_) => "cross-aspect",
+            signal_flow::DeliveryResolutionRefusal::NoEligibleSameAspect(_) => "no-eligible",
+            signal_flow::DeliveryResolutionRefusal::HopExhausted(_) => "hop-exhausted",
+            signal_flow::DeliveryResolutionRefusal::StartRefused(_) => "start-refused",
+            signal_flow::DeliveryResolutionRefusal::CycleDetected(_) => "cycle-detected",
+        }
+    }
+
+    let refusals = [
+        signal_flow::DeliveryResolutionRefusal::CrossAspectCandidate(
+            signal_flow::CrossAspectCandidate {
+                flow_id: "field-high".into(),
+                requested_flow_aspect: signal_flow::FlowAspect::Mind,
+                candidate_flow_aspect: signal_flow::FlowAspect::Field,
+            },
+        ),
+        signal_flow::DeliveryResolutionRefusal::NoEligibleSameAspect(
+            signal_flow::NoEligibleSameAspect {
+                requested_flow_id: "requested-medium".into(),
+                flow_aspect: signal_flow::FlowAspect::Mind,
+            },
+        ),
+        signal_flow::DeliveryResolutionRefusal::HopExhausted(signal_flow::HopExhausted {
+            hop_limit: 6,
+        }),
+        signal_flow::DeliveryResolutionRefusal::StartRefused(signal_flow::StartRefusal {
+            launch_request_id: "launch-for-delivery-7".into(),
+            start_rejection: signal_flow::StartRejection::NativeLaunchRefused,
+        }),
+        signal_flow::DeliveryResolutionRefusal::CycleDetected("requested-medium".into()),
+    ];
+    assert_eq!(
+        refusals.iter().map(classify).collect::<Vec<_>>(),
+        [
+            "cross-aspect",
+            "no-eligible",
+            "hop-exhausted",
+            "start-refused",
+            "cycle-detected",
+        ]
+    );
+
+    for refusal in refusals {
+        let reply = Response::DeliveryResolved(signal_flow::DeliveryResolution {
+            delivery_idempotency_key: "opaque-delivery-key-7".into(),
+            requested_flow_id: "requested-medium".into(),
+            delivery_trace_entry_vector: Vec::new(),
+            delivery_resolution_disposition: signal_flow::DeliveryResolutionDisposition::Refused(
+                refusal,
+            ),
+        });
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&reply).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            reply
+        );
+        let text = reply.datomize(vec![]).protosize().textualize();
+        assert_eq!(
+            Potential::<Response>::from(text)
+                .actualize(&mut budget())
+                .unwrap(),
+            reply
+        );
+    }
+}

@@ -98,6 +98,18 @@ pub type ArchiveIndexId = String;
 #[rustfmt::skip]
 pub type MaximumHandoverAgeSeconds = i64;
 #[rustfmt::skip]
+pub type DeliveryIdempotencyKey = String;
+#[rustfmt::skip]
+pub type HopLimit = i64;
+#[rustfmt::skip]
+pub type HopIndex = i64;
+#[rustfmt::skip]
+pub type RequestedFlowId = FlowId;
+#[rustfmt::skip]
+pub type RequestedFlowAspect = FlowAspect;
+#[rustfmt::skip]
+pub type CandidateFlowAspect = FlowAspect;
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum FlowAspect {
@@ -529,6 +541,14 @@ pub type RecipientResolutionRequest = FlowId;
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct DeliveryResolutionRequest {
+    pub requested_flow_id: RequestedFlowId,
+    pub delivery_idempotency_key: DeliveryIdempotencyKey,
+    pub hop_limit: HopLimit,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum HarnessKind {
     Codex,
     Claude,
@@ -625,6 +645,121 @@ pub enum RecipientDisposition {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct ReadyRecipient {
+    pub flow_node: FlowNode,
+    pub flow_aspect: FlowAspect,
+    pub power_level: PowerLevel,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct CrucialStart {
+    pub launch_request_id: LaunchRequestId,
+    pub flow_aspect: FlowAspect,
+    pub power_level: PowerLevel,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum PowerSearchPhase {
+    Requested,
+    Higher,
+    Lower,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct StartRefused_Data {
+    pub launch_request_id: LaunchRequestId,
+    pub start_rejection: StartRejection,
+}
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum DeliveryTraceObservation {
+    Ready,
+    Held(RecipientHold),
+    Rerouted(RecipientReroute),
+    CrossAspectExcluded,
+    StartPending(CrucialStart),
+    StartRefused(StartRefused_Data),
+    CycleDetected,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct DeliveryTraceEntry {
+    pub hop_index: HopIndex,
+    pub flow_id: FlowId,
+    pub flow_aspect: FlowAspect,
+    pub power_level: PowerLevel,
+    pub power_search_phase: PowerSearchPhase,
+    pub delivery_trace_observation: DeliveryTraceObservation,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum DeliveryResolutionHold {
+    Lifecycle(RecipientHold),
+    StartPending(CrucialStart),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct CrossAspectCandidate {
+    pub flow_id: FlowId,
+    pub requested_flow_aspect: RequestedFlowAspect,
+    pub candidate_flow_aspect: CandidateFlowAspect,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct NoEligibleSameAspect {
+    pub requested_flow_id: RequestedFlowId,
+    pub flow_aspect: FlowAspect,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct HopExhausted {
+    pub hop_limit: HopLimit,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct StartRefusal {
+    pub launch_request_id: LaunchRequestId,
+    pub start_rejection: StartRejection,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum DeliveryResolutionRefusal {
+    CrossAspectCandidate(CrossAspectCandidate),
+    NoEligibleSameAspect(NoEligibleSameAspect),
+    HopExhausted(HopExhausted),
+    StartRefused(StartRefusal),
+    CycleDetected(FlowId),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum DeliveryResolutionDisposition {
+    Selected(ReadyRecipient),
+    Held(DeliveryResolutionHold),
+    Refused(DeliveryResolutionRefusal),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct DeliveryResolution {
+    pub delivery_idempotency_key: DeliveryIdempotencyKey,
+    pub requested_flow_id: RequestedFlowId,
+    pub delivery_trace_entry_vector: std::vec::Vec<DeliveryTraceEntry>,
+    pub delivery_resolution_disposition: DeliveryResolutionDisposition,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct Started {
     pub flow_id: FlowId,
     pub session_id: SessionId,
@@ -679,6 +814,7 @@ pub enum Query {
     Start(StartRequest),
     Refresh(RefreshRequest),
     ResolveRecipient(RecipientResolutionRequest),
+    ResolveDelivery(DeliveryResolutionRequest),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -690,6 +826,7 @@ pub enum Response {
     RefreshProgress(RefreshAttempt),
     Refreshed(RefreshCompletion),
     RecipientDispositioned(RecipientDisposition),
+    DeliveryResolved(DeliveryResolution),
     StartRejected(StartRejection),
     RefreshRejected(RefreshRejection),
     RecipientResolutionRejected(RecipientResolutionRejection),
