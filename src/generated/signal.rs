@@ -36,6 +36,8 @@ pub type Effort = String;
 #[rustfmt::skip]
 pub type RememberingDepth = i64;
 #[rustfmt::skip]
+pub type SystemPromptBundleFile = String;
+#[rustfmt::skip]
 pub type InstructionPrompt = String;
 #[rustfmt::skip]
 pub type FirstPromptBody = String;
@@ -117,6 +119,7 @@ pub struct LaunchProfile {
     pub flow_id_option: Option<FlowId>,
     pub remembered_flow_vector: std::vec::Vec<RememberedFlow>,
     pub herdr_session_name: HerdrSessionName,
+    pub system_prompt_bundle_file: SystemPromptBundleFile,
     pub instruction_prompt: InstructionPrompt,
 }
 #[rustfmt::skip]

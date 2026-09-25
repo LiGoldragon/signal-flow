@@ -85,6 +85,7 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
             remembering_depth: 1,
         }],
         herdr_session_name: "messaging-build".into(),
+        system_prompt_bundle_file: "/workspace/bundles/flow.md".into(),
         instruction_prompt: "Carry this bounded launch request.".into(),
     };
     let receipt_request = signal_flow::TargetReceiptRequest {
@@ -157,9 +158,10 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
             model_name: intent.model_name.clone(),
             effort: intent.effort.clone(),
             flow_id_option: None,
-            remembered_flow_vector: Vec::new(),
-            herdr_session_name: "messaging-build".into(),
-            instruction_prompt: "Carry this bounded launch request.".into(),
+        remembered_flow_vector: Vec::new(),
+        herdr_session_name: "messaging-build".into(),
+        system_prompt_bundle_file: "/workspace/bundles/flow.md".into(),
+        instruction_prompt: "Carry this bounded launch request.".into(),
         },
         prompt_sha256: intent.prompt_sha256.clone(),
         origin_clue: signal_flow::OriginClue {
