@@ -104,8 +104,8 @@ dependencies = [
 
 [[package]]
 name = "ethos-zero"
-version = "10.0.0"
-source = "git+https://github.com/LiGoldragon/ethos-zero?rev=4bf73cae8d4f5a2072c76a11cd2f00aa3fe9f8e3#4bf73cae8d4f5a2072c76a11cd2f00aa3fe9f8e3"
+version = "13.0.0"
+source = "git+https://github.com/LiGoldragon/ethos-zero?rev=407f938d083a89236ef8c2c6e8a90561ec6b637a#407f938d083a89236ef8c2c6e8a90561ec6b637a"
 dependencies = [
  "datom-codec 0.31.0",
  "prettyplease",
@@ -325,10 +325,10 @@ dependencies = [
 
 [[package]]
 name = "signal-flow"
-version = "4.0.0"
+version = "4.0.1"
 dependencies = [
  "datom-codec 0.31.0",
- "ethos-zero 10.0.0",
+ "ethos-zero 13.0.0",
  "protos 0.31.0",
  "rkyv",
  "signal",

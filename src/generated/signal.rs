@@ -116,7 +116,7 @@ pub struct LaunchProfile {
     pub harness_kind: HarnessKind,
     pub model_name: ModelName,
     pub effort: Effort,
-    pub flow_id_option: Option<FlowId>,
+    pub flow_id_option: std::option::Option<FlowId>,
     pub remembered_flow_vector: std::vec::Vec<RememberedFlow>,
     pub herdr_session_name: HerdrSessionName,
     pub system_prompt_bundle_file: SystemPromptBundleFile,
@@ -278,11 +278,13 @@ pub struct LaunchAttempt {
     pub prompt_sha256: PromptSha256,
     pub origin_clue: OriginClue,
     pub launch_attempt_phase: LaunchAttemptPhase,
-    pub native_launch_intent_option: Option<NativeLaunchIntent>,
-    pub native_launch_binding_option: Option<NativeLaunchBinding>,
-    pub registration_acknowledgement_option: Option<RegistrationAcknowledgement>,
-    pub prompt_delivery_intent_option: Option<PromptDeliveryIntent>,
-    pub prompt_delivery_result_option: Option<PromptDeliveryResult>,
+    pub native_launch_intent_option: std::option::Option<NativeLaunchIntent>,
+    pub native_launch_binding_option: std::option::Option<NativeLaunchBinding>,
+    pub registration_acknowledgement_option: std::option::Option<
+        RegistrationAcknowledgement,
+    >,
+    pub prompt_delivery_intent_option: std::option::Option<PromptDeliveryIntent>,
+    pub prompt_delivery_result_option: std::option::Option<PromptDeliveryResult>,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -366,6 +368,7 @@ pub struct Available_Data {
     pub endpoint_path: EndpointPath,
     pub route_readiness: RouteReadiness,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum EndpointSelection {

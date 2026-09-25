@@ -1,6 +1,6 @@
 [package]
 name = "signal-flow"
-version = "4.0.0"
+version = "4.0.1"
 edition = "2024"
 rust-version = "1.89"
 license = "MIT OR Apache-2.0"
@@ -20,7 +20,7 @@ signal = { git = "https://github.com/LiGoldragon/signal", rev = "7bcb0949cdaa450
 rkyv = { version = "0.8", default-features = false, features = ["std", "bytecheck", "little_endian", "pointer_width_32", "unaligned"] }
 
 [build-dependencies]
-ethos-zero = { git = "https://github.com/LiGoldragon/ethos-zero", rev = "4bf73cae8d4f5a2072c76a11cd2f00aa3fe9f8e3" }
+ethos-zero = { git = "https://github.com/LiGoldragon/ethos-zero", rev = "407f938d083a89236ef8c2c6e8a90561ec6b637a" }
 
 [lints.rust]
 unsafe_code = "forbid"
