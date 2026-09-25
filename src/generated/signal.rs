@@ -483,6 +483,36 @@ pub enum ListRejection {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Replaced {
+    pub flow_id: FlowId,
+    pub started: Started,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum ReplaceRejection {
+    PredecessorAbsent,
+    UnknownPredecessor,
+    PredecessorStopped,
+    LaunchRefused(StartRejection),
+    ReapRefused(StopRejection),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum ObserveSelection {
+    Launch(LaunchRequestId),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum LaunchStatusRejection {
+    UnknownLaunchRequest,
+    PersistenceRefused,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Query {
     Start(StartRequest),
     Restart(RestartRequest),
@@ -490,6 +520,9 @@ pub enum Query {
     Send(SendRequest),
     Stop(StopRequest),
     List(ListRequest),
+    Replace(StartRequest),
+    LaunchStatus(LaunchRequestId),
+    Observe(ObserveSelection),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -509,4 +542,7 @@ pub enum Response {
     SendRejected(SendRejection),
     StopRejected(StopRejection),
     ListRejected(ListRejection),
+    Replaced(Replaced),
+    ReplaceRejected(ReplaceRejection),
+    LaunchStatusRejected(LaunchStatusRejection),
 }

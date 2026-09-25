@@ -234,3 +234,81 @@ fn send_outcomes_distinguish_acceptance_from_pane_presentation() {
         );
     }
 }
+
+#[test]
+fn replace_and_launch_status_queries_have_concrete_datoms() {
+    for text in [
+        "Replace.{ { request-8 [] [ spirit main-flow ] Field High Claude opus-5-5 high Some.fac697 [] messaging-build /workspace/bundles/flow.md «Carry on from fac697.» } { fac697 session-1 turn-2 } }",
+        "LaunchStatus.request-8",
+        "Observe.Launch.request-8",
+    ] {
+        let query = Potential::<Query>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&query).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Query, rkyv::rancor::Error>(&archive).unwrap(),
+            query
+        );
+        assert_eq!(query.datomize(vec![]).protosize().textualize(), text);
+    }
+}
+
+#[test]
+fn replace_carries_the_predecessor_in_its_launch_profile() {
+    let text = "Replace.{ { request-8 [] [ spirit ] Field High Claude opus-5-5 high Some.fac697 [] messaging-build /workspace/bundles/flow.md «Carry on from fac697.» } { fac697 session-1 turn-2 } }";
+    let Query::Replace(request) = Potential::<Query>::from(text)
+        .actualize(&mut budget())
+        .unwrap()
+    else {
+        panic!("Replace");
+    };
+    assert_eq!(
+        request.launch_profile.flow_id_option,
+        Some("fac697".to_string())
+    );
+}
+
+#[test]
+fn replace_and_launch_status_responses_have_concrete_datoms() {
+    for text in [
+        "Replaced.{ fac697 { 908786 session-2 { fac697 session-1 turn-2 } } }",
+        "ReplaceRejected.PredecessorAbsent",
+        "ReplaceRejected.UnknownPredecessor",
+        "ReplaceRejected.PredecessorStopped",
+        "ReplaceRejected.LaunchRefused.NativeLaunchRefused",
+        "ReplaceRejected.ReapRefused.CloseRefused",
+        "LaunchStatusRejected.UnknownLaunchRequest",
+        "LaunchStatusRejected.PersistenceRefused",
+    ] {
+        let response = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            response
+        );
+        assert_eq!(response.datomize(vec![]).protosize().textualize(), text);
+    }
+}
+
+#[test]
+fn replaced_names_the_stopped_predecessor_and_the_started_successor() {
+    let reply = Response::Replaced(signal_flow::Replaced {
+        flow_id: "fac697".into(),
+        started: signal_flow::Started {
+            flow_id: "908786".into(),
+            session_id: "session-2".into(),
+            origin_clue: signal_flow::OriginClue {
+                flow_id: "fac697".into(),
+                session_id: "session-1".into(),
+                turn_id: "turn-2".into(),
+            },
+        },
+    });
+    assert_eq!(
+        reply.datomize(vec![]).protosize().textualize(),
+        "Replaced.{ fac697 { 908786 session-2 { fac697 session-1 turn-2 } } }"
+    );
+}
