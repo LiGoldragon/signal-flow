@@ -1,3 +1,5 @@
+#![cfg(feature = "datom")]
+
 use datom_codec::{Actualizing, Budget, Datomizable, Potential};
 use protos::{Protosizable, ReaderBudget, Textualizable};
 use signal_flow::{Query, Response};
