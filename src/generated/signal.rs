@@ -396,6 +396,7 @@ pub enum FlowLifecycle {
     Pending,
     Active,
     Stopped,
+    Retired,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]

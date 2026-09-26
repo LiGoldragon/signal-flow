@@ -389,3 +389,29 @@ fn resolve_caller_leaves_earlier_variants_archived_as_before() {
         archived_5_0(6, 612)
     );
 }
+
+/// A Retired flow is the seat Flow did not stop and no longer finds. It
+/// keeps its row and its history, and it is never listed with an Available
+/// route: the concrete text is the specification of both halves.
+#[test]
+fn a_retired_flow_lists_with_no_route() {
+    let text = "Listed.[ { d8df70 session-9 Claude Unavailable Unavailable { e51411 session-8 turn-3 } Retired } ]";
+    let restored = Potential::<Response>::from(text)
+        .actualize(&mut budget())
+        .unwrap();
+    let Response::Listed(rows) = &restored else {
+        panic!("List answers with a flow list")
+    };
+    assert_eq!(rows.len(), 1);
+    assert_eq!(rows[0].flow_lifecycle, signal_flow::FlowLifecycle::Retired);
+    assert_eq!(
+        rows[0].herdr_route_selection,
+        signal_flow::HerdrRouteSelection::Unavailable
+    );
+    let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&restored).unwrap();
+    assert_eq!(
+        rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+        restored
+    );
+    assert_eq!(restored.datomize(vec![]).protosize().textualize(), text);
+}
