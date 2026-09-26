@@ -48,9 +48,7 @@ pub type PromptSha256 = String;
 #[rustfmt::skip]
 pub type BareInput = String;
 #[rustfmt::skip]
-pub type PresentationMarker = String;
-#[rustfmt::skip]
-pub type PresentationReadUnixMilliseconds = i64;
+pub type PresentationObservedUnixMilliseconds = i64;
 #[rustfmt::skip]
 pub type NativeSessionId = String;
 #[rustfmt::skip]
@@ -331,8 +329,7 @@ pub struct SendRequest {
 pub struct PresentationReceipt {
     pub flow_id: FlowId,
     pub herdr_pane_id: HerdrPaneId,
-    pub presentation_marker: PresentationMarker,
-    pub presentation_read_unix_milliseconds: PresentationReadUnixMilliseconds,
+    pub presentation_observed_unix_milliseconds: PresentationObservedUnixMilliseconds,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -340,6 +337,7 @@ pub struct PresentationReceipt {
 pub enum SendOutcome {
     Accepted(FlowId),
     Presented(PresentationReceipt),
+    Uncertain(FlowId),
 }
 #[rustfmt::skip]
 pub type StopRequest = FlowId;
@@ -464,7 +462,7 @@ pub enum SendRejection {
     UnknownFlow,
     FlowStopped,
     RouteUnavailable,
-    DeliveryRefused,
+    NotDelivered,
     PersistenceRefused,
 }
 #[rustfmt::skip]

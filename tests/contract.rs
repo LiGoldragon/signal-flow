@@ -160,10 +160,10 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
             model_name: intent.model_name.clone(),
             effort: intent.effort.clone(),
             flow_id_option: None,
-        remembered_flow_vector: Vec::new(),
-        herdr_session_name: "messaging-build".into(),
-        system_prompt_bundle_file: "/workspace/bundles/flow.md".into(),
-        instruction_prompt: "Carry this bounded launch request.".into(),
+            remembered_flow_vector: Vec::new(),
+            herdr_session_name: "messaging-build".into(),
+            system_prompt_bundle_file: "/workspace/bundles/flow.md".into(),
+            instruction_prompt: "Carry this bounded launch request.".into(),
         },
         prompt_sha256: intent.prompt_sha256.clone(),
         origin_clue: signal_flow::OriginClue {
@@ -208,24 +208,31 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
 }
 
 #[test]
-fn send_outcomes_distinguish_acceptance_from_pane_presentation() {
+fn send_grades_distinguish_untyped_accepted_presented_and_uncertain() {
+    let not_delivered = Response::SendRejected(signal_flow::SendRejection::NotDelivered);
     let accepted = Response::Sent(signal_flow::SendOutcome::Accepted("908786".into()));
     let presented = Response::Sent(signal_flow::SendOutcome::Presented(
         signal_flow::PresentationReceipt {
             flow_id: "908786".into(),
             herdr_pane_id: "w1:p3".into(),
-            presentation_marker: "FLOW_PRESENTED_908786_1727200000123_7".into(),
-            presentation_read_unix_milliseconds: 1_727_200_000_123,
+            presentation_observed_unix_milliseconds: 1_727_200_000_123,
         },
     ));
+    let uncertain = Response::Sent(signal_flow::SendOutcome::Uncertain("908786".into()));
 
-    for response in [accepted, presented] {
+    for (response, expected) in [
+        (not_delivered, "SendRejected.NotDelivered"),
+        (accepted, "Sent.Accepted.908786"),
+        (presented, "Sent.Presented.{ 908786 w1:p3 1727200000123 }"),
+        (uncertain, "Sent.Uncertain.908786"),
+    ] {
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
         assert_eq!(
             rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
             response
         );
         let text = response.datomize(vec![]).protosize().textualize();
+        assert_eq!(text, expected);
         assert_eq!(
             Potential::<Response>::from(text)
                 .actualize(&mut budget())
