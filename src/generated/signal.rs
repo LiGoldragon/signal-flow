@@ -46,10 +46,6 @@ pub type FirstPromptText = String;
 #[rustfmt::skip]
 pub type PromptSha256 = String;
 #[rustfmt::skip]
-pub type BareInput = String;
-#[rustfmt::skip]
-pub type PresentationObservedUnixMilliseconds = i64;
-#[rustfmt::skip]
 pub type NativeSessionId = String;
 #[rustfmt::skip]
 pub type NativeTurnId = String;
@@ -317,29 +313,6 @@ pub struct RestartRequest {
 #[rustfmt::skip]
 pub type RecipientResolutionRequest = FlowId;
 #[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct SendRequest {
-    pub flow_id: FlowId,
-    pub bare_input: BareInput,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct PresentationReceipt {
-    pub flow_id: FlowId,
-    pub herdr_pane_id: HerdrPaneId,
-    pub presentation_observed_unix_milliseconds: PresentationObservedUnixMilliseconds,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum SendOutcome {
-    Accepted(FlowId),
-    Presented(PresentationReceipt),
-    Uncertain(FlowId),
-}
-#[rustfmt::skip]
 pub type StopRequest = FlowId;
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -460,16 +433,6 @@ pub enum RecipientResolutionRejection {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum SendRejection {
-    UnknownFlow,
-    FlowStopped,
-    RouteUnavailable,
-    NotDelivered,
-    PersistenceRefused,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum StopRejection {
     UnknownFlow,
     AlreadyStopped,
@@ -505,6 +468,25 @@ pub enum ReplaceRejection {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum ObserveSelection {
     Launch(LaunchRequestId),
+    Agent(FlowId),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum AgentState {
+    Idle,
+    Working,
+    Blocked,
+    Done,
+    Unknown,
+    Gone,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct AgentObservation {
+    pub flow_id: FlowId,
+    pub agent_state: AgentState,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -536,7 +518,6 @@ pub enum Query {
     Start(StartRequest),
     Restart(RestartRequest),
     ResolveRecipient(RecipientResolutionRequest),
-    Send(SendRequest),
     Stop(StopRequest),
     List(ListRequest),
     Replace(StartRequest),
@@ -553,13 +534,11 @@ pub enum Response {
     StartAmbiguous(PromptDeliveryIntent),
     Restarted(Restarted),
     RecipientResolved(FlowNode),
-    Sent(SendOutcome),
     Stopped(FlowId),
     Listed(FlowList),
     StartRejected(StartRejection),
     RestartRejected(RestartRejection),
     RecipientResolutionRejected(RecipientResolutionRejection),
-    SendRejected(SendRejection),
     StopRejected(StopRejection),
     ListRejected(ListRejection),
     Replaced(Replaced),
@@ -567,4 +546,5 @@ pub enum Response {
     LaunchStatusRejected(LaunchStatusRejection),
     CallerResolved(Caller),
     CallerResolutionRejected(CallerResolutionRejection),
+    AgentObserved(AgentObservation),
 }

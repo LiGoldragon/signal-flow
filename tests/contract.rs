@@ -208,24 +208,28 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
 }
 
 #[test]
-fn send_grades_distinguish_untyped_accepted_presented_and_uncertain() {
-    let not_delivered = Response::SendRejected(signal_flow::SendRejection::NotDelivered);
-    let accepted = Response::Sent(signal_flow::SendOutcome::Accepted("908786".into()));
-    let presented = Response::Sent(signal_flow::SendOutcome::Presented(
-        signal_flow::PresentationReceipt {
-            flow_id: "908786".into(),
-            herdr_pane_id: "w1:p3".into(),
-            presentation_observed_unix_milliseconds: 1_727_200_000_123,
-        },
-    ));
-    let uncertain = Response::Sent(signal_flow::SendOutcome::Uncertain("908786".into()));
-
-    for (response, expected) in [
-        (not_delivered, "SendRejected.NotDelivered"),
-        (accepted, "Sent.Accepted.908786"),
-        (presented, "Sent.Presented.{ 908786 w1:p3 1727200000123 }"),
-        (uncertain, "Sent.Uncertain.908786"),
+fn agent_observation_carries_the_flow_and_its_herdr_state() {
+    let query = Query::Observe(signal_flow::ObserveSelection::Agent("7d41e0".into()));
+    let query_text = query.datomize(vec![]).protosize().textualize();
+    assert_eq!(query_text, "Observe.Agent.7d41e0");
+    assert_eq!(
+        Potential::<Query>::from(query_text)
+            .actualize(&mut budget())
+            .unwrap(),
+        query
+    );
+    for (state, expected) in [
+        (signal_flow::AgentState::Idle, "AgentObserved.{ 7d41e0 Idle }"),
+        (signal_flow::AgentState::Working, "AgentObserved.{ 7d41e0 Working }"),
+        (signal_flow::AgentState::Blocked, "AgentObserved.{ 7d41e0 Blocked }"),
+        (signal_flow::AgentState::Done, "AgentObserved.{ 7d41e0 Done }"),
+        (signal_flow::AgentState::Unknown, "AgentObserved.{ 7d41e0 Unknown }"),
+        (signal_flow::AgentState::Gone, "AgentObserved.{ 7d41e0 Gone }"),
     ] {
+        let response = Response::AgentObserved(signal_flow::AgentObservation {
+            flow_id: "7d41e0".into(),
+            agent_state: state,
+        });
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
         assert_eq!(
             rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
@@ -240,6 +244,16 @@ fn send_grades_distinguish_untyped_accepted_presented_and_uncertain() {
             response
         );
     }
+}
+
+#[test]
+fn the_ordinary_socket_carries_no_pane_write() {
+    // Send was the ordinary socket's pane write; it is not in the vocabulary.
+    assert!(
+        Potential::<Query>::from("Send.{ 7d41e0 «hello» }")
+            .actualize(&mut budget())
+            .is_err()
+    );
 }
 
 #[test]
@@ -361,32 +375,6 @@ fn caller_names_the_flow_its_aspect_power_and_model() {
     assert_eq!(
         reply.datomize(vec![]).protosize().textualize(),
         "CallerResolved.{ 38de5b Psyche High claude-opus-5-5 }"
-    );
-}
-
-/// ResolveCaller and its replies are appended: every variant the 5.0 wire
-/// carried keeps its archived form, so a 5.0 peer still reads them. The
-/// expected archives were read from signal-flow 5.0.0 (cf3648f).
-#[test]
-fn resolve_caller_leaves_earlier_variants_archived_as_before() {
-    let archived_5_0 = |tag: u8, length: usize| {
-        let mut bytes = vec![tag];
-        bytes.extend_from_slice(b"fac697");
-        bytes.extend_from_slice(&[255, 255]);
-        bytes.resize(length, 0);
-        bytes
-    };
-    assert_eq!(
-        rkyv::to_bytes::<rkyv::rancor::Error>(&Query::ResolveRecipient("fac697".into()))
-            .unwrap()
-            .to_vec(),
-        archived_5_0(2, 109)
-    );
-    assert_eq!(
-        rkyv::to_bytes::<rkyv::rancor::Error>(&Response::Stopped("fac697".into()))
-            .unwrap()
-            .to_vec(),
-        archived_5_0(6, 612)
     );
 }
 
