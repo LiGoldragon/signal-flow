@@ -514,6 +514,22 @@ pub enum LaunchStatusRejection {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Caller {
+    pub flow_id: FlowId,
+    pub flow_aspect: FlowAspect,
+    pub power_level: PowerLevel,
+    pub model_name: ModelName,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum CallerResolutionRejection {
+    CallerUnknown,
+    CallerMismatch(Caller),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Query {
     Start(StartRequest),
     Restart(RestartRequest),
@@ -524,6 +540,7 @@ pub enum Query {
     Replace(StartRequest),
     LaunchStatus(LaunchRequestId),
     Observe(ObserveSelection),
+    ResolveCaller(std::option::Option<FlowId>),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -546,4 +563,6 @@ pub enum Response {
     Replaced(Replaced),
     ReplaceRejected(ReplaceRejection),
     LaunchStatusRejected(LaunchStatusRejection),
+    CallerResolved(Caller),
+    CallerResolutionRejected(CallerResolutionRejection),
 }

@@ -319,3 +319,73 @@ fn replaced_names_the_stopped_predecessor_and_the_started_successor() {
         "Replaced.{ fac697 { 908786 session-2 { fac697 session-1 turn-2 } } }"
     );
 }
+
+#[test]
+fn resolve_caller_queries_and_replies_have_concrete_datoms() {
+    for text in ["ResolveCaller.None", "ResolveCaller.Some.fac697"] {
+        let query = Potential::<Query>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&query).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Query, rkyv::rancor::Error>(&archive).unwrap(),
+            query
+        );
+        assert_eq!(query.datomize(vec![]).protosize().textualize(), text);
+    }
+    for text in [
+        "CallerResolved.{ fac697 Psyche High claude-opus-5-5 }",
+        "CallerResolutionRejected.CallerUnknown",
+        "CallerResolutionRejected.CallerMismatch.{ fac697 Mind Medium gpt-6-sol }",
+    ] {
+        let response = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            response
+        );
+        assert_eq!(response.datomize(vec![]).protosize().textualize(), text);
+    }
+}
+
+#[test]
+fn caller_names_the_flow_its_aspect_power_and_model() {
+    let reply = Response::CallerResolved(signal_flow::Caller {
+        flow_id: "38de5b".into(),
+        flow_aspect: signal_flow::FlowAspect::Psyche,
+        power_level: signal_flow::PowerLevel::High,
+        model_name: "claude-opus-5-5".into(),
+    });
+    assert_eq!(
+        reply.datomize(vec![]).protosize().textualize(),
+        "CallerResolved.{ 38de5b Psyche High claude-opus-5-5 }"
+    );
+}
+
+/// ResolveCaller and its replies are appended: every variant the 5.0 wire
+/// carried keeps its archived form, so a 5.0 peer still reads them. The
+/// expected archives were read from signal-flow 5.0.0 (cf3648f).
+#[test]
+fn resolve_caller_leaves_earlier_variants_archived_as_before() {
+    let archived_5_0 = |tag: u8, length: usize| {
+        let mut bytes = vec![tag];
+        bytes.extend_from_slice(b"fac697");
+        bytes.extend_from_slice(&[255, 255]);
+        bytes.resize(length, 0);
+        bytes
+    };
+    assert_eq!(
+        rkyv::to_bytes::<rkyv::rancor::Error>(&Query::ResolveRecipient("fac697".into()))
+            .unwrap()
+            .to_vec(),
+        archived_5_0(2, 109)
+    );
+    assert_eq!(
+        rkyv::to_bytes::<rkyv::rancor::Error>(&Response::Stopped("fac697".into()))
+            .unwrap()
+            .to_vec(),
+        archived_5_0(6, 612)
+    );
+}
