@@ -390,12 +390,44 @@ fn resolve_caller_leaves_earlier_variants_archived_as_before() {
     );
 }
 
-/// A Retired flow is the seat Flow did not stop and no longer finds. It
-/// keeps its row and its history, and it is never listed with an Available
-/// route: the concrete text is the specification of both halves.
+/// The three ways a flow stops being live are distinct on the wire, because
+/// each names who ended it: Stopped is Flow's act, Exited is the seat's, and
+/// Retired is an owner's. None is reported with an Available route, and each
+/// keeps the flow's row and origin. The concrete text is the specification.
 #[test]
-fn a_retired_flow_lists_with_no_route() {
-    let text = "Listed.[ { d8df70 session-9 Claude Unavailable Unavailable { e51411 session-8 turn-3 } Retired } ]";
+fn each_ended_lifecycle_lists_with_no_route() {
+    for ended in ["Stopped", "Exited", "Retired"] {
+        let text = format!(
+            "Listed.[ {{ d8df70 session-9 Claude Unavailable Unavailable {{ e51411 session-8 turn-3 }} {ended} }} ]"
+        );
+        let restored = Potential::<Response>::from(text.clone())
+            .actualize(&mut budget())
+            .unwrap();
+        let Response::Listed(rows) = &restored else {
+            panic!("List answers with a flow list")
+        };
+        assert_eq!(rows.len(), 1);
+        assert_eq!(
+            rows[0].herdr_route_selection,
+            signal_flow::HerdrRouteSelection::Unavailable,
+            "{ended}"
+        );
+        assert_eq!(rows[0].origin_clue.flow_id, "e51411", "{ended}");
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&restored).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            restored,
+            "{ended}"
+        );
+        assert_eq!(restored.datomize(vec![]).protosize().textualize(), text);
+    }
+}
+
+/// A pane that is gone means Exited, never Retired: the two are different
+/// values and never stand in for one another.
+#[test]
+fn a_gone_pane_is_exited_and_not_retired() {
+    let text = "Listed.[ { d8df70 session-9 Claude Unavailable Unavailable { e51411 session-8 turn-3 } Exited } ]";
     let restored = Potential::<Response>::from(text)
         .actualize(&mut budget())
         .unwrap();
@@ -403,7 +435,8 @@ fn a_retired_flow_lists_with_no_route() {
         panic!("List answers with a flow list")
     };
     assert_eq!(rows.len(), 1);
-    assert_eq!(rows[0].flow_lifecycle, signal_flow::FlowLifecycle::Retired);
+    assert_eq!(rows[0].flow_lifecycle, signal_flow::FlowLifecycle::Exited);
+    assert_ne!(rows[0].flow_lifecycle, signal_flow::FlowLifecycle::Retired);
     assert_eq!(
         rows[0].herdr_route_selection,
         signal_flow::HerdrRouteSelection::Unavailable
