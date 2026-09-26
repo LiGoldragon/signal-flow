@@ -26,11 +26,13 @@
 ; whose agent was already working, so no reaction could be observed;
 ; Presented when the recipient was seen to react to it on the exact
 ; pane; Uncertain when it was typed but its reaction was not observed.
-; An Uncertain send is never retried. A Pending flow becomes Active
-; only on Presented.
+; An Uncertain send is never retried. A Pending flow becomes Active when
+; it is witnessed live: on a Presented Send, or when List finds its bound
+; pane present in Herdr. Nothing else promotes it.
 ;
 ; A flow's lifecycle is what List reports of it. Pending and Active are
-; live: a bound native seat answers. Stopped is what Stop and a
+; live: a bound native seat answers. Pending is a seat not yet witnessed
+; live; Active is one that has been. Stopped is what Stop and a
 ; replacement's reap record: Flow took the seat out of receiving and
 ; closed its pane. Retired is the seat Flow did not stop and no longer
 ; finds: its pane is gone from Herdr, so nothing can be sent to it. A
