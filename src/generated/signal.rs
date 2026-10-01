@@ -530,6 +530,34 @@ pub enum CallerResolutionRejection {
     CallerMismatch(Caller),
 }
 #[rustfmt::skip]
+pub type Title = String;
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Presentation {
+    pub title: Title,
+}
+#[rustfmt::skip]
+pub type TranscriptPath = String;
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct TurnEndRequest {
+    pub session_id: SessionId,
+    pub turn_id: TurnId,
+    pub transcript_path_option: std::option::Option<TranscriptPath>,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum TurnEndRejection {
+    UnknownSession,
+    SessionMismatch,
+    InvalidTurnId,
+    InvalidTranscriptPath,
+    QueueRefused,
+}
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Query {
@@ -543,6 +571,7 @@ pub enum Query {
     LaunchStatus(LaunchRequestId),
     Observe(ObserveSelection),
     ResolveCaller(std::option::Option<FlowId>),
+    QueueTurnEnd(TurnEndRequest),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -567,4 +596,6 @@ pub enum Response {
     LaunchStatusRejected(LaunchStatusRejection),
     CallerResolved(Caller),
     CallerResolutionRejected(CallerResolutionRejection),
+    TurnEndQueued(TurnEndRequest),
+    TurnEndRejected(TurnEndRejection),
 }
