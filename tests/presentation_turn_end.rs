@@ -3,7 +3,7 @@
 use datom_codec::{
     Actualizing, Budget, Composable, DatomForming, Datomizable, Potential, Variantizing,
 };
-use protos::{Protosizable, ReaderBudget, Textualizable};
+use protos::{Compactable, Protosizable, ReaderBudget};
 use signal_flow::{Presentation, Query, Response, TurnEndRejection, TurnEndRequest};
 
 fn budget() -> Budget {
@@ -24,7 +24,7 @@ fn presentation_is_one_title_and_escapes_delimiters() {
         .datomize(vec![1])
         .named_variant(vec![], "Presentation")
         .protosize()
-        .textualize();
+        .compact();
     assert_eq!(text, r"Presentation.{ «A title with \» and trailing \\» }");
     let datom = text.protosize().unwrap().datom_form(vec![]).unwrap();
     let mut limits = budget();
@@ -58,7 +58,7 @@ fn queue_turn_end_has_native_session_turn_and_optional_transcript_reference() {
             transcript_path_option: path,
         };
         let query = Query::QueueTurnEnd(request);
-        let text = query.datomize(vec![]).protosize().textualize();
+        let text = query.datomize(vec![]).protosize().compact();
         assert_eq!(text, expected);
         assert_eq!(
             Potential::<Query>::from(text)
@@ -114,7 +114,7 @@ fn enqueue_acknowledgement_and_refusals_have_exact_signal_and_datom_forms() {
             "TurnEndRejected.QueueRefused",
         ),
     ] {
-        let text = value.datomize(vec![]).protosize().textualize();
+        let text = value.datomize(vec![]).protosize().compact();
         assert_eq!(text, expected);
         assert_eq!(
             Potential::<Response>::from(text)

@@ -1,7 +1,7 @@
 #![cfg(feature = "datom")]
 
 use datom_codec::{Actualizing, Budget, Datomizable, Potential};
-use protos::{Protosizable, ReaderBudget, Textualizable};
+use protos::{Compactable, Protosizable, ReaderBudget};
 use signal_flow::{Query, Response};
 
 fn budget() -> Budget {
@@ -23,7 +23,7 @@ fn every_ordinary_request_has_a_concrete_datom() {
         let query = Potential::<Query>::from(text)
             .actualize(&mut budget())
             .unwrap();
-        assert_eq!(query.datomize(vec![]).protosize().textualize(), text);
+        assert_eq!(query.datomize(vec![]).protosize().compact(), text);
     }
 }
 
@@ -59,7 +59,7 @@ fn flow_node_round_trips_over_signal_and_datom() {
         rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
         reply
     );
-    let text = reply.datomize(vec![]).protosize().textualize();
+    let text = reply.datomize(vec![]).protosize().compact();
     let restored = Potential::<Response>::from(text)
         .actualize(&mut budget())
         .unwrap();
@@ -210,7 +210,7 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
 #[test]
 fn agent_observation_carries_the_flow_and_its_herdr_state() {
     let query = Query::Observe(signal_flow::ObserveSelection::Agent("7d41e0".into()));
-    let query_text = query.datomize(vec![]).protosize().textualize();
+    let query_text = query.datomize(vec![]).protosize().compact();
     assert_eq!(query_text, "Observe.Agent.7d41e0");
     assert_eq!(
         Potential::<Query>::from(query_text)
@@ -253,7 +253,7 @@ fn agent_observation_carries_the_flow_and_its_herdr_state() {
             rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
             response
         );
-        let text = response.datomize(vec![]).protosize().textualize();
+        let text = response.datomize(vec![]).protosize().compact();
         assert_eq!(text, expected);
         assert_eq!(
             Potential::<Response>::from(text)
@@ -289,7 +289,7 @@ fn replace_and_launch_status_queries_have_concrete_datoms() {
             rkyv::from_bytes::<Query, rkyv::rancor::Error>(&archive).unwrap(),
             query
         );
-        assert_eq!(query.datomize(vec![]).protosize().textualize(), text);
+        assert_eq!(query.datomize(vec![]).protosize().compact(), text);
     }
 }
 
@@ -328,7 +328,7 @@ fn replace_and_launch_status_responses_have_concrete_datoms() {
             rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
             response
         );
-        assert_eq!(response.datomize(vec![]).protosize().textualize(), text);
+        assert_eq!(response.datomize(vec![]).protosize().compact(), text);
     }
 }
 
@@ -347,7 +347,7 @@ fn replaced_names_the_stopped_predecessor_and_the_started_successor() {
         },
     });
     assert_eq!(
-        reply.datomize(vec![]).protosize().textualize(),
+        reply.datomize(vec![]).protosize().compact(),
         "Replaced.{ fac697 { 908786 session-2 { fac697 session-1 turn-2 } } }"
     );
 }
@@ -363,7 +363,7 @@ fn resolve_caller_queries_and_replies_have_concrete_datoms() {
             rkyv::from_bytes::<Query, rkyv::rancor::Error>(&archive).unwrap(),
             query
         );
-        assert_eq!(query.datomize(vec![]).protosize().textualize(), text);
+        assert_eq!(query.datomize(vec![]).protosize().compact(), text);
     }
     for text in [
         "CallerResolved.{ fac697 Psyche High claude-opus-5-5 }",
@@ -378,7 +378,7 @@ fn resolve_caller_queries_and_replies_have_concrete_datoms() {
             rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
             response
         );
-        assert_eq!(response.datomize(vec![]).protosize().textualize(), text);
+        assert_eq!(response.datomize(vec![]).protosize().compact(), text);
     }
 }
 
@@ -391,7 +391,7 @@ fn caller_names_the_flow_its_aspect_power_and_model() {
         model_name: "claude-opus-5-5".into(),
     });
     assert_eq!(
-        reply.datomize(vec![]).protosize().textualize(),
+        reply.datomize(vec![]).protosize().compact(),
         "CallerResolved.{ 38de5b Psyche High claude-opus-5-5 }"
     );
 }
@@ -425,7 +425,7 @@ fn each_ended_lifecycle_lists_with_no_route() {
             restored,
             "{ended}"
         );
-        assert_eq!(restored.datomize(vec![]).protosize().textualize(), text);
+        assert_eq!(restored.datomize(vec![]).protosize().compact(), text);
     }
 }
 
@@ -452,5 +452,5 @@ fn a_gone_pane_is_exited_and_not_retired() {
         rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
         restored
     );
-    assert_eq!(restored.datomize(vec![]).protosize().textualize(), text);
+    assert_eq!(restored.datomize(vec![]).protosize().compact(), text);
 }
