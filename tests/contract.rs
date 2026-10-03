@@ -219,12 +219,30 @@ fn agent_observation_carries_the_flow_and_its_herdr_state() {
         query
     );
     for (state, expected) in [
-        (signal_flow::AgentState::Idle, "AgentObserved.{ 7d41e0 Idle }"),
-        (signal_flow::AgentState::Working, "AgentObserved.{ 7d41e0 Working }"),
-        (signal_flow::AgentState::Blocked, "AgentObserved.{ 7d41e0 Blocked }"),
-        (signal_flow::AgentState::Done, "AgentObserved.{ 7d41e0 Done }"),
-        (signal_flow::AgentState::Unknown, "AgentObserved.{ 7d41e0 Unknown }"),
-        (signal_flow::AgentState::Gone, "AgentObserved.{ 7d41e0 Gone }"),
+        (
+            signal_flow::AgentState::Idle,
+            "AgentObserved.{ 7d41e0 Idle }",
+        ),
+        (
+            signal_flow::AgentState::Working,
+            "AgentObserved.{ 7d41e0 Working }",
+        ),
+        (
+            signal_flow::AgentState::Blocked,
+            "AgentObserved.{ 7d41e0 Blocked }",
+        ),
+        (
+            signal_flow::AgentState::Done,
+            "AgentObserved.{ 7d41e0 Done }",
+        ),
+        (
+            signal_flow::AgentState::Unknown,
+            "AgentObserved.{ 7d41e0 Unknown }",
+        ),
+        (
+            signal_flow::AgentState::Gone,
+            "AgentObserved.{ 7d41e0 Gone }",
+        ),
     ] {
         let response = Response::AgentObserved(signal_flow::AgentObservation {
             flow_id: "7d41e0".into(),

@@ -1,67 +1,39 @@
 {
-  description = "The signal-flow Signal contract.";
-
+  description = "signal-flow ordinary wire contract and generated ethos checks";
   inputs = {
-    nixpkgs.url = "github:LiGoldragon/nixpkgs?ref=main";
-    fenix.url = "github:nix-community/fenix";
-    fenix.inputs.nixpkgs.follows = "nixpkgs";
-    crane.url = "github:ipetkov/crane";
-  };
-
-  outputs =
-    {
-      self,
-      nixpkgs,
-      fenix,
-      crane,
-    }:
-    let
-      systems = [ "x86_64-linux" "aarch64-linux" ];
-      forSystems = function: nixpkgs.lib.genAttrs systems (system: function system);
-      mkContext =
-        system:
-        let
-          pkgs = import nixpkgs { inherit system; };
-          toolchain = fenix.packages.${system}.complete.withComponents [
-            "cargo"
-            "rustc"
-            "rustfmt"
-            "clippy"
-            "rust-src"
-          ];
-          craneLib = (crane.mkLib pkgs).overrideToolchain toolchain;
-          # The build script reads the ethos source beside the Rust.
-          src = pkgs.lib.cleanSourceWith {
-            src = ./.;
-            filter = path: type: (craneLib.filterCargoSources path type) || (pkgs.lib.hasSuffix ".ethos" path);
-          };
-          commonArgs = {
-            inherit src;
-            strictDeps = true;
-          };
-          cargoArtifacts = craneLib.buildDepsOnly (commonArgs // { cargoExtraArgs = "--all-features"; });
-        in
-        {
-          inherit craneLib commonArgs cargoArtifacts;
-        };
-    in
-    {
-      checks = forSystems (
-        system:
-        let
-          context = mkContext system;
-        in
-        {
-          # Every contract test runs with the datom feature: the round trips
-          # are the falsifiable specification of each record kind.
-          default = context.craneLib.cargoTest (
-            context.commonArgs
-            // {
-              inherit (context) cargoArtifacts;
-              cargoTestExtraArgs = "--all-features";
-            }
-          );
-        }
-      );
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+    rust-build = {
+      url = "github:LiGoldragon/rust-build";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
+  };
+  outputs = { nixpkgs, flake-utils, rust-build, ... }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = import nixpkgs { inherit system; };
+        rust = rust-build.lib.${system}.fromToolchainFile pkgs {
+          file = ./rust-toolchain.toml;
+          sha256 = "sha256-gh/xTkxKHL4eiRXzWv8KP7vfjSk61Iq48x47BEDFgfk=";
+        };
+        contractFilter = path: type:
+          type == "regular" && (
+            pkgs.lib.hasSuffix ".ethos" path ||
+            pkgs.lib.hasSuffix "/build.rs" path ||
+            builtins.match ".*/src/generated(/.*)?$" path != null
+          );
+        src = rust.cleanSource { root = ./.; extraFilters = [ contractFilter ]; };
+        commonArgs = { inherit src; strictDeps = true; };
+        cargoArtifacts = rust.craneLib.buildDepsOnly commonArgs;
+      in {
+        packages.default = rust.craneLib.buildPackage (commonArgs // { inherit cargoArtifacts; });
+        checks = {
+          test = rust.craneLib.cargoTest (commonArgs // { inherit cargoArtifacts; });
+          test-datom = rust.craneLib.cargoTest (commonArgs // {
+            inherit cargoArtifacts;
+            cargoTestExtraArgs = "--all-features";
+          });
+          fmt = rust.craneLib.cargoFmt { inherit src; };
+        };
+      });
 }
