@@ -191,7 +191,18 @@ Signal
   FlowList.Vector<FlowNode>
   Launched.{ FlowId SessionId OriginClue }
   Restarted.{ FlowId SessionId Generation }
-  StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused BindingRefused RegistrationRefused IntentPersistenceRefused OriginUnavailable ]
+  ; BindingRefusal names one checked native-binding failure without raw adapter text.
+  ; PaneMismatch covers the agent name, workspace, or pane check.
+  ; TerminalMismatch covers the terminal check.
+  ; HarnessMismatch covers the reported harness and official session source check.
+  ; NotReady covers interactive readiness.
+  ; ReservedIdentityMismatch covers selected, observed, or claimed identity conflicts.
+  ; ClaimUnavailable covers Flow identity claim and claim readback failures.
+  ; ObservationRefused covers a missing or malformed agent/session observation.
+  ; TransportRefused covers the Herdr request or response transport boundary.
+  BindingRefusal.[ PaneMismatch TerminalMismatch HarnessMismatch NotReady ReservedIdentityMismatch ClaimUnavailable ObservationRefused TransportRefused ]
+  ; StartRejection preserves a typed BindingRefused result at the public wire.
+  StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused BindingRefused.BindingRefusal RegistrationRefused IntentPersistenceRefused OriginUnavailable ]
   RestartRejection.[ ProvenanceMismatch UnknownFlow ResumeRefused ]
   RecipientResolutionRejection.[ UnknownFlow FlowUnavailable ]
   StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused PersistenceRefused ]

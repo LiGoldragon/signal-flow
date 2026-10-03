@@ -405,12 +405,25 @@ pub struct Restarted {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum BindingRefusal {
+    PaneMismatch,
+    TerminalMismatch,
+    HarnessMismatch,
+    NotReady,
+    ReservedIdentityMismatch,
+    ClaimUnavailable,
+    ObservationRefused,
+    TransportRefused,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum StartRejection {
     CompositionRefused,
     LaunchRequestConflict,
     LaunchPersistenceRefused,
     NativeLaunchRefused,
-    BindingRefused,
+    BindingRefused(BindingRefusal),
     RegistrationRefused,
     IntentPersistenceRefused,
     OriginUnavailable,
