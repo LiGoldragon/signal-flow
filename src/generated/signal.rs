@@ -389,7 +389,7 @@ pub type FlowList = std::vec::Vec<FlowNode>;
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct Started {
+pub struct Launched {
     pub flow_id: FlowId,
     pub session_id: SessionId,
     pub origin_clue: OriginClue,
@@ -451,7 +451,7 @@ pub enum ListRejection {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct Replaced {
     pub flow_id: FlowId,
-    pub started: Started,
+    pub launched: Launched,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -542,6 +542,21 @@ pub enum TurnEndRejection {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum Event {
+    Started,
+    ToolUsed(String),
+    Stopped,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Report_Data {
+    pub flow_id: FlowId,
+    pub event: Event,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Query {
     Start(StartRequest),
     Restart(RestartRequest),
@@ -553,12 +568,19 @@ pub enum Query {
     Observe(ObserveSelection),
     ResolveCaller(std::option::Option<FlowId>),
     QueueTurnEnd(TurnEndRequest),
+    Report(Report_Data),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum Refused_Data {
+    UnknownFlow(FlowId),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Response {
-    Started(Started),
+    Started(Launched),
     LaunchPending(LaunchAttempt),
     StartAmbiguous(PromptDeliveryIntent),
     Restarted(Restarted),
@@ -578,4 +600,6 @@ pub enum Response {
     AgentObserved(AgentObservation),
     TurnEndQueued(TurnEndRequest),
     TurnEndRejected(TurnEndRejection),
+    Reported,
+    Refused(Refused_Data),
 }

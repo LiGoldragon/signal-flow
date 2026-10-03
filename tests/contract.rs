@@ -336,7 +336,7 @@ fn replace_and_launch_status_responses_have_concrete_datoms() {
 fn replaced_names_the_stopped_predecessor_and_the_started_successor() {
     let reply = Response::Replaced(signal_flow::Replaced {
         flow_id: "fac697".into(),
-        started: signal_flow::Started {
+        launched: signal_flow::Launched {
             flow_id: "908786".into(),
             session_id: "session-2".into(),
             origin_clue: signal_flow::OriginClue {
