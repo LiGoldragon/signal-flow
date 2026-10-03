@@ -2,6 +2,29 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 10.0.0: signal 8.0.0
+
+What breaks:
+
+- signal-flow depends on signal 8.0.0 (f35460de), where it depended on
+  7.0.0. The re-exported `Signal`, `Signalizable`, `ByteViewable` and
+  `Restorable`, and the `signal::Contracted` that `Query` implements, are
+  signal 8.0.0's. A crate holding signal 7.0.0 alongside this release holds
+  two signals whose traits do not meet.
+- The `datom` feature enables `signal/datom` again: signal 8.0.0's `datom`
+  binds datom-codec and protos 0.32.2, the same codec this contract binds, so
+  the graph holds one codec (`cargo tree -d`).
+- The build reads `ethos/signal.ethos` with ethos-zero 16.0.0 at c2653dd8,
+  the rev signal 8.0.0 builds with. The generated module is byte-identical
+  (the build script asserts it), so `ETHOS`, the contract digest, the datom
+  text and the rkyv archive of every 9.0.0 value are unchanged.
+
+To deploy, in each consumer (meta-signal-flow, signal-message,
+meta-signal-message, flow, message): repin signal-flow to this release and
+signal to 8.0.0 in the same change. The wire is unchanged, so a 9.0.0 peer
+still greets this one; a running Nexus need not restart for this release
+alone.
+
 ## 9.0.0: Report, Reported, Refused.UnknownFlow
 
 What breaks:
