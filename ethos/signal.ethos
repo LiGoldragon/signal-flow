@@ -148,6 +148,8 @@ Signal
   NativeSkillPath.String
   NativeSkillSha256.String
   FlowAspect.[ Psyche Mind Field ]
+  Layer.[ Primary Secondary Tertiary Quaternary ]
+  Voice.{ FlowAspect Layer }
   PowerLevel.[ High Medium Low UltraLow ]
   LaunchSource.{ SourcePath SourceSha256 }
   RememberedFlow.{ FlowId RememberingDepth }
