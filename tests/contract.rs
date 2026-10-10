@@ -405,7 +405,7 @@ fn metaflows_query_and_listed_metaflow_roundtrip() {
         .unwrap();
     assert_eq!(query, Query::Metaflows);
 
-    let text = "Listed.[ { { Psyche flow Primary } Ended [ past-1 ] [ Order.«continue» ] } ]";
+    let text = "Listed.[ { { Psyche flow Primary } Ended [ past-1 ] [ Order.continue ] } ]";
     let restored = Potential::<Response>::from(text)
         .actualize(&mut budget())
         .unwrap();
@@ -417,7 +417,10 @@ fn metaflows_query_and_listed_metaflow_roundtrip() {
     assert_eq!(rows[0].address.topic, "flow");
     assert_eq!(rows[0].state, flow_ethos::State::Ended);
     assert_eq!(rows[0].past, vec!["past-1".to_owned()]);
-    assert_eq!(rows[0].queue, vec![flow_ethos::Request::Order("continue".into())]);
+    assert_eq!(
+        rows[0].queue,
+        vec![flow_ethos::Request::Order("continue".into())]
+    );
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&restored).unwrap();
     assert_eq!(
         rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
