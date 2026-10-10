@@ -92,7 +92,7 @@
 ; Report carries one harness event of a flow Flow holds, sent by the
 ; harness's hook through the Flow CLI with the FlowId the flow was
 ; launched with. Flow stores the event in that flow's Memory and answers
-; Reported. A FlowId Flow does not hold is refused, Refused.UnknownFlow,
+; Reported. A FlowId Flow does not hold is refused, Refused.Unknown.FlowId,
 ; never adopted: a flow Flow did not launch is a flow Flow does not know.
 ;
 ; Launched is what Start answers, carried by the Started reply; it was
@@ -270,7 +270,7 @@ Signal
             Awake.FlowId
             Asleep
             Lapsed
-            Unknown.[ Address Lock FlowId Key ]
+            Unknown.[ Address.Address Lock.Lock FlowId.FlowId Key.Key ]
             NoLayer
             NotConfigured
             Ended.Address
