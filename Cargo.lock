@@ -134,6 +134,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "aedcfb3409746eddb02b9e19ebda1c3394f759a152e48ee875a0844d1b955484"
 
 [[package]]
+name = "flow-ethos"
+version = "0.26.0"
+source = "git+https://github.com/LiGoldragon/flow?rev=074437a66de48a5ef3e7af6a14407652c0ab861d#074437a66de48a5ef3e7af6a14407652c0ab861d"
+dependencies = [
+ "datom-codec",
+ "ethos-zero",
+ "protos",
+ "rkyv",
+]
+
+[[package]]
 name = "futures-core"
 version = "0.3.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -353,10 +364,11 @@ dependencies = [
 
 [[package]]
 name = "signal-flow"
-version = "10.0.0"
+version = "15.0.0"
 dependencies = [
  "datom-codec",
  "ethos-zero",
+ "flow-ethos",
  "protos",
  "rkyv",
  "signal",
