@@ -152,7 +152,7 @@ Signal
   Ended
   Current.[ Awake.FlowId Asleep Ended Unknown ]
   Refused.Refusal ]
-[ 
+[
   SessionId.String
   TurnId.String
   FlowType.String
