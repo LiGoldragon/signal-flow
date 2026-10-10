@@ -1,7 +1,5 @@
 #![allow(dead_code, non_camel_case_types, non_snake_case)]
 #[rustfmt::skip]
-pub type FlowId = String;
-#[rustfmt::skip]
 pub type SessionId = String;
 #[rustfmt::skip]
 pub type TurnId = String;
@@ -29,8 +27,6 @@ pub type SourcePath = String;
 pub type SourceSha256 = String;
 #[rustfmt::skip]
 pub type SkillName = String;
-#[rustfmt::skip]
-pub type ModelName = String;
 #[rustfmt::skip]
 pub type Effort = String;
 #[rustfmt::skip]
@@ -70,14 +66,6 @@ pub type NativeSkillSha256 = String;
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum FlowAspect {
-    Psyche,
-    Mind,
-    Field,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum PowerLevel {
     High,
     Medium,
@@ -95,7 +83,7 @@ pub struct LaunchSource {
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct RememberedFlow {
-    pub flow_id: FlowId,
+    pub flow_id: flow_ethos::FlowId,
     pub remembering_depth: RememberingDepth,
 }
 #[rustfmt::skip]
@@ -105,12 +93,12 @@ pub struct LaunchProfile {
     pub launch_request_id: LaunchRequestId,
     pub launch_source_vector: std::vec::Vec<LaunchSource>,
     pub skill_name_vector: std::vec::Vec<SkillName>,
-    pub flow_aspect: FlowAspect,
+    pub flow_aspect: flow_ethos::FlowAspect,
     pub power_level: PowerLevel,
-    pub harness_kind: HarnessKind,
-    pub model_name: ModelName,
+    pub harness_kind: flow_ethos::HarnessKind,
+    pub model_name: flow_ethos::ModelName,
     pub effort: Effort,
-    pub flow_id_option: std::option::Option<FlowId>,
+    pub flow_id_option: std::option::Option<flow_ethos::FlowId>,
     pub remembered_flow_vector: std::vec::Vec<RememberedFlow>,
     pub herdr_session_name: HerdrSessionName,
     pub system_prompt_bundle_file: SystemPromptBundleFile,
@@ -156,8 +144,8 @@ pub struct HerdrPaneBinding {
 pub struct NativeLaunchIntent {
     pub launch_request_id: LaunchRequestId,
     pub prompt_sha256: PromptSha256,
-    pub harness_kind: HarnessKind,
-    pub model_name: ModelName,
+    pub harness_kind: flow_ethos::HarnessKind,
+    pub model_name: flow_ethos::ModelName,
     pub effort: Effort,
     pub skill_name_vector: std::vec::Vec<SkillName>,
 }
@@ -166,9 +154,9 @@ pub struct NativeLaunchIntent {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct NativeLaunchBinding {
     pub launch_request_id: LaunchRequestId,
-    pub flow_id: FlowId,
+    pub flow_id: flow_ethos::FlowId,
     pub native_session_id: NativeSessionId,
-    pub harness_kind: HarnessKind,
+    pub harness_kind: flow_ethos::HarnessKind,
     pub herdr_pane_binding: HerdrPaneBinding,
 }
 #[rustfmt::skip]
@@ -176,7 +164,7 @@ pub struct NativeLaunchBinding {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct RegistrationAcknowledgement {
     pub launch_request_id: LaunchRequestId,
-    pub flow_id: FlowId,
+    pub flow_id: flow_ethos::FlowId,
     pub native_session_id: NativeSessionId,
     pub herdr_pane_binding: HerdrPaneBinding,
 }
@@ -185,7 +173,7 @@ pub struct RegistrationAcknowledgement {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct NativeTranscriptCursor {
     pub native_session_id: NativeSessionId,
-    pub harness_kind: HarnessKind,
+    pub harness_kind: flow_ethos::HarnessKind,
     pub transcript_device: TranscriptDevice,
     pub transcript_inode: TranscriptInode,
     pub transcript_byte_offset: TranscriptByteOffset,
@@ -196,7 +184,7 @@ pub struct NativeTranscriptCursor {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct NativeTranscriptAbsence {
     pub native_session_id: NativeSessionId,
-    pub harness_kind: HarnessKind,
+    pub harness_kind: flow_ethos::HarnessKind,
     pub transcript_root_device: TranscriptRootDevice,
     pub transcript_root_inode: TranscriptRootInode,
 }
@@ -221,10 +209,10 @@ pub struct NativeSkillSelection {
 pub struct PromptDeliveryIntent {
     pub launch_request_id: LaunchRequestId,
     pub prompt_sha256: PromptSha256,
-    pub flow_id: FlowId,
+    pub flow_id: flow_ethos::FlowId,
     pub native_session_id: NativeSessionId,
-    pub harness_kind: HarnessKind,
-    pub model_name: ModelName,
+    pub harness_kind: flow_ethos::HarnessKind,
+    pub model_name: flow_ethos::ModelName,
     pub effort: Effort,
     pub native_skill_selection_vector: std::vec::Vec<NativeSkillSelection>,
     pub herdr_pane_binding: HerdrPaneBinding,
@@ -236,11 +224,11 @@ pub struct PromptDeliveryIntent {
 pub struct NativeTargetReceipt {
     pub launch_request_id: LaunchRequestId,
     pub prompt_sha256: PromptSha256,
-    pub flow_id: FlowId,
+    pub flow_id: flow_ethos::FlowId,
     pub native_session_id: NativeSessionId,
     pub native_turn_id: NativeTurnId,
     pub receipt_sha256: ReceiptSha256,
-    pub model_name: ModelName,
+    pub model_name: flow_ethos::ModelName,
     pub effort: Effort,
     pub native_skill_selection_vector: std::vec::Vec<NativeSkillSelection>,
 }
@@ -283,6 +271,23 @@ pub struct LaunchAttempt {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum LaunchStatusOutcome {
+    Started(Launched),
+    Replaced(Replaced),
+    StartRejected(StartRejection),
+    ReplaceRejected(ReplaceRejection),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct LaunchInspection {
+    pub launch_attempt: LaunchAttempt,
+    pub launch_status_outcome_option: std::option::Option<LaunchStatusOutcome>,
+    pub flow_node_option: std::option::Option<FlowNode>,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum LaunchAttemptReservation {
     Reserved(LaunchAttempt),
     Existing(LaunchAttempt),
@@ -292,7 +297,7 @@ pub enum LaunchAttemptReservation {
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct OriginClue {
-    pub flow_id: FlowId,
+    pub flow_id: flow_ethos::FlowId,
     pub session_id: SessionId,
     pub turn_id: TurnId,
 }
@@ -307,24 +312,17 @@ pub struct StartRequest {
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct RestartRequest {
-    pub flow_id: FlowId,
+    pub flow_id: flow_ethos::FlowId,
     pub origin_clue: OriginClue,
 }
 #[rustfmt::skip]
-pub type RecipientResolutionRequest = FlowId;
+pub type RecipientResolutionRequest = flow_ethos::FlowId;
 #[rustfmt::skip]
-pub type StopRequest = FlowId;
+pub type StopRequest = flow_ethos::FlowId;
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct ListRequest {}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum HarnessKind {
-    Codex,
-    Claude,
-}
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
@@ -376,9 +374,9 @@ pub enum FlowLifecycle {
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct FlowNode {
-    pub flow_id: FlowId,
+    pub flow_id: flow_ethos::FlowId,
     pub session_id: SessionId,
-    pub harness_kind: HarnessKind,
+    pub harness_kind: flow_ethos::HarnessKind,
     pub endpoint_selection: EndpointSelection,
     pub herdr_route_selection: HerdrRouteSelection,
     pub origin_clue: OriginClue,
@@ -390,7 +388,7 @@ pub type FlowList = std::vec::Vec<FlowNode>;
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct Launched {
-    pub flow_id: FlowId,
+    pub flow_id: flow_ethos::FlowId,
     pub session_id: SessionId,
     pub origin_clue: OriginClue,
 }
@@ -398,7 +396,7 @@ pub struct Launched {
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct Restarted {
-    pub flow_id: FlowId,
+    pub flow_id: flow_ethos::FlowId,
     pub session_id: SessionId,
     pub generation: Generation,
 }
@@ -414,6 +412,7 @@ pub enum BindingRefusal {
     ClaimUnavailable,
     ObservationRefused,
     TransportRefused,
+    Unclassified,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -463,7 +462,7 @@ pub enum ListRejection {
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct Replaced {
-    pub flow_id: FlowId,
+    pub flow_id: flow_ethos::FlowId,
     pub launched: Launched,
 }
 #[rustfmt::skip]
@@ -481,7 +480,7 @@ pub enum ReplaceRejection {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum ObserveSelection {
     Launch(LaunchRequestId),
-    Agent(FlowId),
+    Agent(flow_ethos::FlowId),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -498,7 +497,7 @@ pub enum AgentState {
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct AgentObservation {
-    pub flow_id: FlowId,
+    pub flow_id: flow_ethos::FlowId,
     pub agent_state: AgentState,
 }
 #[rustfmt::skip]
@@ -507,15 +506,17 @@ pub struct AgentObservation {
 pub enum LaunchStatusRejection {
     UnknownLaunchRequest,
     PersistenceRefused,
+    ReadViewChanged,
+    InconsistentRecords,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct Caller {
-    pub flow_id: FlowId,
-    pub flow_aspect: FlowAspect,
+    pub flow_id: flow_ethos::FlowId,
+    pub flow_aspect: flow_ethos::FlowAspect,
     pub power_level: PowerLevel,
-    pub model_name: ModelName,
+    pub model_name: flow_ethos::ModelName,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -555,6 +556,34 @@ pub enum TurnEndRejection {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum Unknown_Data {
+    Address,
+    Lock,
+    FlowId,
+    Key,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum Refusal {
+    Locked,
+    Held(flow_ethos::Lock),
+    Awake(flow_ethos::FlowId),
+    Asleep,
+    Lapsed,
+    Unknown(Unknown_Data),
+    NoLayer,
+    NotConfigured,
+    Ended(flow_ethos::Address),
+    OffRoute,
+    NoneAbove,
+    NotMessage,
+    Taken(flow_ethos::Address),
+    Unidentified(flow_ethos::Process),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Event {
     Started,
     ToolUsed(String),
@@ -564,8 +593,29 @@ pub enum Event {
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct Report_Data {
-    pub flow_id: FlowId,
+    pub flow_id: flow_ethos::FlowId,
     pub event: Event,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Lock_Data {
+    pub sender: flow_ethos::Sender,
+    pub recipient: flow_ethos::Recipient,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Bind_Data {
+    pub address: flow_ethos::Address,
+    pub process: flow_ethos::Process,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Deliver_Data {
+    pub lock: flow_ethos::Lock,
+    pub request: flow_ethos::Request,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -574,20 +624,31 @@ pub enum Query {
     Start(StartRequest),
     Restart(RestartRequest),
     ResolveRecipient(RecipientResolutionRequest),
-    Stop(StopRequest),
+    Stop(flow_ethos::FlowId),
     List(ListRequest),
     Replace(StartRequest),
     LaunchStatus(LaunchRequestId),
     Observe(ObserveSelection),
-    ResolveCaller(std::option::Option<FlowId>),
+    ResolveCaller(std::option::Option<flow_ethos::FlowId>),
     QueueTurnEnd(TurnEndRequest),
     Report(Report_Data),
+    Lock(Lock_Data),
+    Bind(Bind_Data),
+    Identify(flow_ethos::Process),
+    Deliver(Deliver_Data),
+    Release(flow_ethos::Lock),
+    End(flow_ethos::Address),
+    Current(flow_ethos::Address),
+    Metaflows,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum Refused_Data {
-    UnknownFlow(FlowId),
+pub enum Current_Data {
+    Awake(flow_ethos::FlowId),
+    Asleep,
+    Ended,
+    Unknown,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -598,7 +659,7 @@ pub enum Response {
     StartAmbiguous(PromptDeliveryIntent),
     Restarted(Restarted),
     RecipientResolved(FlowNode),
-    Stopped(FlowId),
+    Stopped(flow_ethos::FlowId),
     Listed(FlowList),
     StartRejected(StartRejection),
     RestartRejected(RestartRejection),
@@ -607,6 +668,7 @@ pub enum Response {
     ListRejected(ListRejection),
     Replaced(Replaced),
     ReplaceRejected(ReplaceRejection),
+    LaunchInspected(LaunchInspection),
     LaunchStatusRejected(LaunchStatusRejection),
     CallerResolved(Caller),
     CallerResolutionRejected(CallerResolutionRejection),
@@ -614,5 +676,14 @@ pub enum Response {
     TurnEndQueued(TurnEndRequest),
     TurnEndRejected(TurnEndRejection),
     Reported,
-    Refused(Refused_Data),
+    Locked(flow_ethos::Lock),
+    Bound(flow_ethos::FlowId),
+    Identified(flow_ethos::Address),
+    Delivered,
+    Queued,
+    Woken(flow_ethos::FlowId),
+    Released,
+    Ended,
+    Current(Current_Data),
+    Refused(Refusal),
 }
