@@ -2,6 +2,64 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 15.0.0: one shared Aspect type
+
+`LaunchProfile` and `Caller` now use the Library's `Aspect` directly;
+`FlowAspect` is removed. Regenerate and pin this release with the matching
+`flow-ethos` source, then rebuild every SignalFlow consumer together. The
+contract digest changes, so an older peer is refused at the greeting.
+
+## 14.0.0: Metaflows and store refusals
+
+The ordinary contract returns address-indexed Metaflow records from
+`Query::Metaflows`; the old native-flow `List` response is removed. Any
+ordinary query whose store operation fails now answers `Refused.Store` with
+the store's error text, rather than an empty list or an unrelated rejection.
+Consumers must regenerate and repin signal-flow 14.0.0 with the matching Flow
+Nexus before using this contract.
+
+## 13.0.0: Metaflows replaces List
+
+The ordinary wire contract changes. Rebuild and restart every signal-flow
+consumer and its CLI together; the contract digest changes and an older peer
+is refused at the greeting.
+
+- `Query::List(ListRequest)` is removed. `Query::Metaflows` is the typed query
+  for Flow's durable metaflow records.
+- `Response::Listed` now carries `Vec<flow_ethos::Metaflow>`, not
+  `Vec<FlowNode>`. Native Flow seat rows remain internal to Flow's launch and
+  lifecycle implementation; they are not the Metaflows response.
+- `FlowList` and `ListRequest` are removed from the generated contract.
+
+Repin signal-flow 13.0.0 and regenerate from this release's `ethos/signal.ethos`
+in every consumer. Adapt each former `List` caller to `Metaflows` only when it
+needs metaflow records; code that needs native Flow seat rows must use its
+owned internal store path. Rebuild and restart the Nexus and clients together.
+
+## 11.0.0: typed binding refusals and LaunchInspection
+
+The wire changes. Rebuild and restart each signal-flow consumer and
+its CLI against this release together; an older peer is refused at
+the contract greeting.
+
+- `StartRejection::BindingRefused` now carries a `BindingRefusal`
+  reason. The former unit variant no longer composes or archives as
+  the same value.
+- `LaunchStatus` now answers a known request with `LaunchInspected`
+  and a `LaunchInspection`: the durable attempt, its optional
+  settled outcome, and the actually recorded `FlowNode`, if any.
+  Unknown requests remain rejected. An outcome without an attempt
+  is `InconsistentRecords`; a read spanning database markers is
+  `ReadViewChanged`. This check does not claim one transaction.
+- `Observe.Launch` sends the inspection on open and for each phase
+  change, then ends with the inspection carrying the outcome.
+- This release uses signal 8.0.0 at e0e3c055, which adds archived
+  value identities without changing Signal's wire contract.
+
+Consumers must pin signal-flow 11.0.0 and signal 8.0.0 e0e3c055
+together, handle the new response and rejection variants, then
+rebuild and restart their Nexus and CLI as one contract upgrade.
+
 ## 10.0.0: signal 8.0.0
 
 What breaks:

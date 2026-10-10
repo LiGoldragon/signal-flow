@@ -1,6 +1,12 @@
 pub mod generated;
 pub use generated::signal::*;
 
+pub use flow_ethos::{
+    Address, Aspect, FlowId, HarnessKind, Key, Layer, Lock, MetaSocketPath, Metaflow,
+    ModelName, OrdinarySocketPath, Process, Recipient, Request, Said, Sender, Source, Start,
+    Subaspect, Topic,
+};
+
 pub use signal::{ByteViewable, Restorable, Signal, Signalizable};
 
 pub const ETHOS: &str = include_str!("../ethos/signal.ethos");
