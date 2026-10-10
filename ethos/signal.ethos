@@ -20,15 +20,21 @@
 ; ReplaceRejection names why no replacement took place; after
 ; ReapRefused the successor is not routable.
 ;
-; LaunchStatus answers once for a LaunchRequestId: LaunchPending with
-; the LaunchAttempt and its phase while the launch runs, else its
-; outcome, Started, Replaced, StartRejected or ReplaceRejected.
+; LaunchStatus answers a known LaunchRequestId with one LaunchInspected
+; snapshot: its LaunchAttempt, its optional settled outcome, and the
+; FlowNode actually recorded for the launched flow, if one exists. A
+; pending attempt has no outcome. A replacement's FlowNode is its
+; successor, never the predecessor named in LaunchProfile. An unknown
+; request has neither attempt nor outcome; an outcome without an attempt
+; is InconsistentRecords. If the rows change while read, the answer is
+; ReadViewChanged. The snapshot is marker-consistent, not a transaction.
 ;
 ; Observe.Launch opens an exchange that goes on answering: on open it
-; sends what LaunchStatus would, then one LaunchPending frame for every
-; later phase change, and it ends after the frame carrying the
-; outcome. Nothing is re-read on a timer; a launch that does not move
-; sends nothing. Every other query is answered with exactly one frame.
+; sends what LaunchStatus would, then one LaunchInspected frame for
+; every later phase change, and it ends after the inspection carrying
+; the outcome. Nothing is re-read on a timer; a launch that does not
+; move sends nothing. Every other query is answered with exactly one
+; frame.
 ;
 ; Nothing on this socket writes into a pane. Flow is the only pane writer,
 ; and it writes only through the privileged Deliver and Command of the
@@ -69,6 +75,20 @@
 ; The optional FlowId is the caller's claim, checked against the
 ; binding: CallerMismatch carries the Caller the binding names.
 ;
+; Bind binds the calling process to an Address. A Bind for { Field message
+; Primary } is accepted only when the kernel-reported executable is the
+; configured MessageNexusBinary; an unconfigured Nexus answers
+; NotConfigured and another executable answers NotMessage. The Process in
+; the request is not proof of the caller's executable.
+;
+; Lock, Deliver and Release are accepted only from the exact bound Message
+; process (PID and start time). Message's Identify result supplies the
+; distinct Sender Address in Lock; Flow trusts that bound Message peer's
+; assertion and does not independently resolve the Sender's origin. A
+; Sender must name an existing Awake metaflow. Unknown addresses are not
+; created; an Asleep Sender is refused as Asleep and an Ended Sender as
+; Ended.Address.
+;
 ; Report carries one harness event of a flow Flow holds, sent by the
 ; harness's hook through the Flow CLI with the FlowId the flow was
 ; launched with. Flow stores the event in that flow's Memory and answers
@@ -79,18 +99,27 @@
 ; named Started until 9.0.0, when Event's Started took that name.
 
 Signal
-[]
+[
+  flow_ethos:[ Address FlowId Request Lock Sender Process Metaflow Key Recipient FlowAspect Layer Topic Subaspect Source OrdinarySocketPath MetaSocketPath Start ModelName HarnessKind ] ]
 [ Start.StartRequest
   Restart.RestartRequest
   ResolveRecipient.RecipientResolutionRequest
-  Stop.StopRequest
+  Stop.FlowId
   List.ListRequest
   Replace.StartRequest
   LaunchStatus.LaunchRequestId
   Observe.ObserveSelection
   ResolveCaller.Option<FlowId>
   QueueTurnEnd.TurnEndRequest
-  Report.{ FlowId Event } ]
+  Report.{ FlowId Event }
+  Lock.{ Sender Recipient }
+  Bind.{ Address Process }
+  Identify.Process
+  Deliver.{ Lock Request }
+  Release.Lock
+  End.Address
+  Current.Address
+  Metaflows ]
 [ Started.Launched
   LaunchPending.LaunchAttempt
   StartAmbiguous.PromptDeliveryIntent
@@ -105,6 +134,7 @@ Signal
   ListRejected.ListRejection
   Replaced.Replaced
   ReplaceRejected.ReplaceRejection
+  LaunchInspected.LaunchInspection
   LaunchStatusRejected.LaunchStatusRejection
   CallerResolved.Caller
   CallerResolutionRejected.CallerResolutionRejection
@@ -112,8 +142,17 @@ Signal
   TurnEndQueued.TurnEndRequest
   TurnEndRejected.TurnEndRejection
   Reported
-  Refused.[ UnknownFlow.FlowId ] ]
-[ FlowId.String
+  Locked.Lock
+  Bound.FlowId
+  Identified.Address
+  Delivered
+  Queued
+  Woken.FlowId
+  Released
+  Ended
+  Current.[ Awake.FlowId Asleep Ended Unknown ]
+  Refused.Refusal ]
+[ 
   SessionId.String
   TurnId.String
   FlowType.String
@@ -128,7 +167,6 @@ Signal
   SourcePath.String
   SourceSha256.String
   SkillName.String
-  ModelName.String
   Effort.String
   RememberingDepth.Integer
   SystemPromptBundleFile.String
@@ -147,7 +185,6 @@ Signal
   TranscriptRootInode.String
   NativeSkillPath.String
   NativeSkillSha256.String
-  FlowAspect.[ Psyche Mind Field ]
   PowerLevel.[ High Medium Low UltraLow ]
   LaunchSource.{ SourcePath SourceSha256 }
   RememberedFlow.{ FlowId RememberingDepth }
@@ -170,6 +207,8 @@ Signal
                          Ambiguous.PromptDeliveryIntent ]
   LaunchAttemptPhase.[ Reserved NativeLaunchIntentRecorded NativeBound RegistrationAcknowledged PromptIntentRecorded PromptObserved PromptAmbiguous ]
   LaunchAttempt.{ LaunchRequestId LaunchProfile PromptSha256 OriginClue LaunchAttemptPhase Option<NativeLaunchIntent> Option<NativeLaunchBinding> Option<RegistrationAcknowledgement> Option<PromptDeliveryIntent> Option<PromptDeliveryResult> }
+  LaunchStatusOutcome.[ Started.Launched Replaced.Replaced StartRejected.StartRejection ReplaceRejected.ReplaceRejection ]
+  LaunchInspection.{ LaunchAttempt Option<LaunchStatusOutcome> Option<FlowNode> }
   LaunchAttemptReservation.[ Reserved.LaunchAttempt
                              Existing.LaunchAttempt
                              Conflict ]
@@ -179,7 +218,6 @@ Signal
   RecipientResolutionRequest.FlowId
   StopRequest.FlowId
   ListRequest.{}
-  HarnessKind.[ Codex Claude ]
   RouteReadiness.[ Ready Parked ]
   EndpointSelection.[ Available.{ EndpointPath RouteReadiness }
                       Unavailable ]
@@ -200,7 +238,8 @@ Signal
   ; ClaimUnavailable covers Flow identity claim and claim readback failures.
   ; ObservationRefused covers a missing or malformed agent/session observation.
   ; TransportRefused covers the Herdr request or response transport boundary.
-  BindingRefusal.[ PaneMismatch TerminalMismatch HarnessMismatch NotReady ReservedIdentityMismatch ClaimUnavailable ObservationRefused TransportRefused ]
+  ; Unclassified marks a stored v10 unit refusal whose stage was not kept.
+  BindingRefusal.[ PaneMismatch TerminalMismatch HarnessMismatch NotReady ReservedIdentityMismatch ClaimUnavailable ObservationRefused TransportRefused Unclassified ]
   ; StartRejection preserves a typed BindingRefused result at the public wire.
   StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused BindingRefused.BindingRefusal RegistrationRefused IntentPersistenceRefused OriginUnavailable ]
   RestartRejection.[ ProvenanceMismatch UnknownFlow ResumeRefused ]
@@ -217,7 +256,7 @@ Signal
                      Agent.FlowId ]
   AgentState.[ Idle Working Blocked Done Unknown Gone ]
   AgentObservation.{ FlowId AgentState }
-  LaunchStatusRejection.[ UnknownLaunchRequest PersistenceRefused ]
+  LaunchStatusRejection.[ UnknownLaunchRequest PersistenceRefused ReadViewChanged InconsistentRecords ]
   Caller.{ FlowId FlowAspect PowerLevel ModelName }
   CallerResolutionRejection.[ CallerUnknown
                               CallerMismatch.Caller ]
@@ -226,6 +265,20 @@ Signal
   TranscriptPath.String
   TurnEndRequest.{ SessionId TurnId Option<TranscriptPath> }
   TurnEndRejection.[ UnknownSession SessionMismatch InvalidTurnId InvalidTranscriptPath QueueRefused ]
+  Refusal.[ Locked
+            Held.Lock
+            Awake.FlowId
+            Asleep
+            Lapsed
+            Unknown.[ Address Lock FlowId Key ]
+            NoLayer
+            NotConfigured
+            Ended.Address
+            OffRoute
+            NoneAbove
+            NotMessage
+            Taken.Address
+            Unidentified.Process ]
   Event.[ Started
           ToolUsed.String
           Stopped ] ]
