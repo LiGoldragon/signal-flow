@@ -2,6 +2,30 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 11.0.0: typed binding refusals and LaunchInspection
+
+The wire changes. Rebuild and restart each signal-flow consumer and
+its CLI against this release together; an older peer is refused at
+the contract greeting.
+
+- `StartRejection::BindingRefused` now carries a `BindingRefusal`
+  reason. The former unit variant no longer composes or archives as
+  the same value.
+- `LaunchStatus` now answers a known request with `LaunchInspected`
+  and a `LaunchInspection`: the durable attempt, its optional
+  settled outcome, and the actually recorded `FlowNode`, if any.
+  Unknown requests remain rejected. An outcome without an attempt
+  is `InconsistentRecords`; a read spanning database markers is
+  `ReadViewChanged`. This check does not claim one transaction.
+- `Observe.Launch` sends the inspection on open and for each phase
+  change, then ends with the inspection carrying the outcome.
+- This release uses signal 8.0.0 at e0e3c055, which adds archived
+  value identities without changing Signal's wire contract.
+
+Consumers must pin signal-flow 11.0.0 and signal 8.0.0 e0e3c055
+together, handle the new response and rejection variants, then
+rebuild and restart their Nexus and CLI as one contract upgrade.
+
 ## 10.0.0: signal 8.0.0
 
 What breaks:

@@ -283,6 +283,23 @@ pub struct LaunchAttempt {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum LaunchStatusOutcome {
+    Started(Launched),
+    Replaced(Replaced),
+    StartRejected(StartRejection),
+    ReplaceRejected(ReplaceRejection),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct LaunchInspection {
+    pub launch_attempt: LaunchAttempt,
+    pub launch_status_outcome_option: std::option::Option<LaunchStatusOutcome>,
+    pub flow_node_option: std::option::Option<FlowNode>,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum LaunchAttemptReservation {
     Reserved(LaunchAttempt),
     Existing(LaunchAttempt),
@@ -414,6 +431,7 @@ pub enum BindingRefusal {
     ClaimUnavailable,
     ObservationRefused,
     TransportRefused,
+    Unclassified,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -507,6 +525,8 @@ pub struct AgentObservation {
 pub enum LaunchStatusRejection {
     UnknownLaunchRequest,
     PersistenceRefused,
+    ReadViewChanged,
+    InconsistentRecords,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -607,6 +627,7 @@ pub enum Response {
     ListRejected(ListRejection),
     Replaced(Replaced),
     ReplaceRejected(ReplaceRejection),
+    LaunchInspected(LaunchInspection),
     LaunchStatusRejected(LaunchStatusRejection),
     CallerResolved(Caller),
     CallerResolutionRejected(CallerResolutionRejection),
