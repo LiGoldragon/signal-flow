@@ -11,8 +11,14 @@
 ;
 ; Flow ordinary Signal.
 ;
-; Replace carries a StartRequest whose LaunchProfile names the replaced
-; flow as its predecessor. The successor is launched; once it has
+; Start and Replace carry a LaunchProfile; a Replace's profile names the
+; replaced flow as its predecessor. Neither carries its origin: the Nexus
+; derives it from the calling process as Identify does (its pane's bound
+; flow and that flow's native session), and a caller that is no bound flow,
+; such as a deploy script, is an Unbound origin, recorded, never refused.
+; A launch's power is its Address layer's and its harness is the one whose
+; configured endpoint serves its model (Codex), else Claude; neither is
+; named in the profile. The successor is launched; once it has
 ; Started, the predecessor is Stopped and taken out of receiving, and
 ; only then is the successor routable. Reaping belongs to the refresh
 ; event: no state holds both flows routable. Replaced carries the
@@ -130,11 +136,11 @@
 Signal
 [
   flow_ethos:[ Aspect Address FlowId Request Lock Sender Process Metaflow Key Recipient Layer Topic Subaspect OrdinarySocketPath MetaSocketPath Start ModelName HarnessKind ] ]
-[ Start.StartRequest
-  Restart.RestartRequest
+[ Start.LaunchProfile
+  Restart.FlowId
   ResolveRecipient.RecipientResolutionRequest
   Stop.FlowId
-  Replace.StartRequest
+  Replace.LaunchProfile
   LaunchStatus.LaunchRequestId
   Observe.ObserveSelection
   ResolveCaller.Option<FlowId>
@@ -228,13 +234,14 @@ Signal
   LeaveOuts.Vector<LeaveOut>
   ; A Start's leave-outs, when it names them, replace the default its
   ; metaflow's configuration names; None takes that default.
-  LaunchProfile.{ LaunchRequestId SystemModules UserModules Address PowerLevel HarnessKind ModelName Effort Option<FlowId> Vector<RememberedFlow> HerdrSessionName Option<LeaveOuts> InstructionPrompt }
+  LaunchProfile.{ LaunchRequestId SystemModules UserModules Address ModelName Effort Option<FlowId> Vector<RememberedFlow> HerdrSessionName Option<LeaveOuts> InstructionPrompt }
   TargetReceiptRequest.{ LaunchRequestId PromptSha256 }
   PromptPart.{ PromptPartText PromptSha256 }
   FirstPromptPayload.{ FirstPromptBody PromptSha256 Vector<PromptPart> }
   SystemPrompt.{ SystemPromptText SystemPromptSha256 }
-  ; The effective leave-outs: the Start's, else its metaflow's default.
-  ComposedLaunch.{ LaunchProfile SystemPrompt FirstPromptPayload TargetReceiptRequest LeaveOuts }
+  ; The harness the Nexus derived for the launch's model, and the effective
+  ; leave-outs: the Start's, else its metaflow's default.
+  ComposedLaunch.{ LaunchProfile HarnessKind SystemPrompt FirstPromptPayload TargetReceiptRequest LeaveOuts }
   HerdrPaneBinding.{ LaunchRequestId HerdrSessionName HerdrAgentName HerdrWorkspaceId HerdrPaneId HerdrTerminalId }
   NativeLaunchIntent.{ LaunchRequestId PromptSha256 SystemPromptSha256 HarnessKind ModelName Effort Vector<PromptSha256> }
   NativeLaunchBinding.{ LaunchRequestId FlowId NativeSessionId HarnessKind HerdrPaneBinding }
@@ -248,15 +255,16 @@ Signal
   PromptDeliveryResult.[ Observed.NativeTargetReceipt
                          Ambiguous.PromptDeliveryIntent ]
   LaunchAttemptPhase.[ Reserved NativeLaunchIntentRecorded NativeBound RegistrationAcknowledged PromptIntentRecorded PromptObserved PromptAmbiguous ]
-  LaunchAttempt.{ LaunchRequestId LaunchProfile PromptSha256 OriginClue LaunchAttemptPhase Option<NativeLaunchIntent> Option<NativeLaunchBinding> Option<RegistrationAcknowledgement> Option<PromptDeliveryIntent> Option<PromptDeliveryResult> }
+  LaunchAttempt.{ LaunchRequestId LaunchProfile PromptSha256 Origin LaunchAttemptPhase Option<NativeLaunchIntent> Option<NativeLaunchBinding> Option<RegistrationAcknowledgement> Option<PromptDeliveryIntent> Option<PromptDeliveryResult> }
   LaunchStatusOutcome.[ Started.Launched Replaced.Replaced StartRejected.StartRejection ReplaceRejected.ReplaceRejection ]
   LaunchInspection.{ LaunchAttempt Option<LaunchStatusOutcome> Option<FlowNode> }
   LaunchAttemptReservation.[ Reserved.LaunchAttempt
                              Existing.LaunchAttempt
                              Conflict ]
-  OriginClue.{ FlowId SessionId TurnId }
-  StartRequest.{ LaunchProfile OriginClue }
-  RestartRequest.{ FlowId OriginClue }
+  ; Where a launch or a flow came from: the bound flow that asked, with its
+  ; native session, or Unbound for a caller that is no bound flow.
+  FlowOrigin.{ FlowId SessionId }
+  Origin.[ Flow.FlowOrigin Unbound ]
   RecipientResolutionRequest.FlowId
   StopRequest.FlowId
   RouteReadiness.[ Ready Parked ]
@@ -266,8 +274,8 @@ Signal
   HerdrRouteSelection.[ Available.HerdrRoute
                         Unavailable ]
   FlowLifecycle.[ Pending Active Stopped Retired Exited ]
-  FlowNode.{ FlowId SessionId HarnessKind EndpointSelection HerdrRouteSelection OriginClue FlowLifecycle }
-  Launched.{ FlowId SessionId HerdrRouteSelection OriginClue }
+  FlowNode.{ FlowId SessionId HarnessKind EndpointSelection HerdrRouteSelection Origin FlowLifecycle }
+  Launched.{ FlowId SessionId HerdrRouteSelection Origin }
   Restarted.{ FlowId SessionId Generation }
   ; BindingRefusal names one checked native-binding failure without raw adapter text.
   ; PaneMismatch covers the agent name, workspace, or pane check.

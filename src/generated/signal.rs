@@ -122,8 +122,6 @@ pub struct LaunchProfile {
     pub system_modules: SystemModules,
     pub user_modules: UserModules,
     pub address: flow_ethos::Address,
-    pub power_level: PowerLevel,
-    pub harness_kind: flow_ethos::HarnessKind,
     pub model_name: flow_ethos::ModelName,
     pub effort: Effort,
     pub flow_id_option: std::option::Option<flow_ethos::FlowId>,
@@ -166,6 +164,7 @@ pub struct SystemPrompt {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct ComposedLaunch {
     pub launch_profile: LaunchProfile,
+    pub harness_kind: flow_ethos::HarnessKind,
     pub system_prompt: SystemPrompt,
     pub first_prompt_payload: FirstPromptPayload,
     pub target_receipt_request: TargetReceiptRequest,
@@ -298,7 +297,7 @@ pub struct LaunchAttempt {
     pub launch_request_id: LaunchRequestId,
     pub launch_profile: LaunchProfile,
     pub prompt_sha256: PromptSha256,
-    pub origin_clue: OriginClue,
+    pub origin: Origin,
     pub launch_attempt_phase: LaunchAttemptPhase,
     pub native_launch_intent_option: std::option::Option<NativeLaunchIntent>,
     pub native_launch_binding_option: std::option::Option<NativeLaunchBinding>,
@@ -336,24 +335,16 @@ pub enum LaunchAttemptReservation {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct OriginClue {
+pub struct FlowOrigin {
     pub flow_id: flow_ethos::FlowId,
     pub session_id: SessionId,
-    pub turn_id: TurnId,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct StartRequest {
-    pub launch_profile: LaunchProfile,
-    pub origin_clue: OriginClue,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct RestartRequest {
-    pub flow_id: flow_ethos::FlowId,
-    pub origin_clue: OriginClue,
+pub enum Origin {
+    Flow(FlowOrigin),
+    Unbound,
 }
 #[rustfmt::skip]
 pub type RecipientResolutionRequest = flow_ethos::FlowId;
@@ -415,7 +406,7 @@ pub struct FlowNode {
     pub harness_kind: flow_ethos::HarnessKind,
     pub endpoint_selection: EndpointSelection,
     pub herdr_route_selection: HerdrRouteSelection,
-    pub origin_clue: OriginClue,
+    pub origin: Origin,
     pub flow_lifecycle: FlowLifecycle,
 }
 #[rustfmt::skip]
@@ -425,7 +416,7 @@ pub struct Launched {
     pub flow_id: flow_ethos::FlowId,
     pub session_id: SessionId,
     pub herdr_route_selection: HerdrRouteSelection,
-    pub origin_clue: OriginClue,
+    pub origin: Origin,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -675,11 +666,11 @@ pub struct Deliver_Data {
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Query {
-    Start(StartRequest),
-    Restart(RestartRequest),
+    Start(LaunchProfile),
+    Restart(flow_ethos::FlowId),
     ResolveRecipient(RecipientResolutionRequest),
     Stop(flow_ethos::FlowId),
-    Replace(StartRequest),
+    Replace(LaunchProfile),
     LaunchStatus(LaunchRequestId),
     Observe(ObserveSelection),
     ResolveCaller(std::option::Option<flow_ethos::FlowId>),

@@ -16,9 +16,9 @@ fn budget() -> Budget {
 #[test]
 fn every_ordinary_request_has_a_concrete_datom() {
     for text in [
-        "Start.{ { request-7 [ spirit-core ] [ operation-main-flow knowledge-flow ] { Field flow Primary } High Codex gpt-6-astra medium Some.836818 [ { 1b8ac0 1 } ] messaging-build Some.[ SkillTool WorkflowTool ] «Carry this bounded launch request.» } { fac697 session-1 turn-2 } }",
-        "Start.{ { field-flow-quaternary-1 [ spirit-core ] [ operation-main-flow ] { Field flow Quaternary } UltraLow Claude haiku medium None [] fieldFlow None «Send the Order through Message.» } { da2038 field-session field-turn } }",
-        "Restart.{ fac697 { fac697 session-1 turn-2 } }",
+        "Start.{ request-7 [ spirit-core ] [ operation-main-flow knowledge-flow ] { Field flow Primary } gpt-6-astra medium Some.836818 [ { 1b8ac0 1 } ] messaging-build Some.[ SkillTool WorkflowTool ] «Carry this bounded launch request.» }",
+        "Start.{ field-flow-quaternary-1 [ spirit-core ] [ operation-main-flow ] { Field flow Quaternary } haiku medium None [] fieldFlow None «Send the Order through Message.» }",
+        "Restart.fac697",
         "ResolveRecipient.fac697",
     ] {
         let query = Potential::<Query>::from(text)
@@ -48,11 +48,10 @@ fn flow_node_round_trips_over_signal_and_datom() {
                 herdr_terminal_id: "term-fixture".into(),
             },
         ),
-        origin_clue: signal_flow::OriginClue {
+        origin: signal_flow::Origin::Flow(signal_flow::FlowOrigin {
             flow_id: "parent".into(),
             session_id: "session-0".into(),
-            turn_id: "turn-1".into(),
-        },
+        }),
         flow_lifecycle: signal_flow::FlowLifecycle::Active,
     });
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&reply).unwrap();
@@ -78,8 +77,6 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
             topic: "flow".into(),
             layer: signal_flow::Layer::Primary,
         },
-        power_level: signal_flow::PowerLevel::High,
-        harness_kind: signal_flow::HarnessKind::Codex,
         model_name: "gpt-6-astra".into(),
         effort: "medium".into(),
         flow_id_option: Some("836818".into()),
@@ -100,6 +97,7 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
     };
     let composed = signal_flow::ComposedLaunch {
         launch_profile: profile,
+        harness_kind: signal_flow::HarnessKind::Codex,
         system_prompt: signal_flow::SystemPrompt {
             system_prompt_text: "system text".into(),
             system_prompt_sha256:
@@ -176,8 +174,6 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
                 topic: "flow".into(),
                 layer: signal_flow::Layer::Primary,
             },
-            power_level: signal_flow::PowerLevel::High,
-            harness_kind: signal_flow::HarnessKind::Codex,
             model_name: intent.model_name.clone(),
             effort: intent.effort.clone(),
             flow_id_option: None,
@@ -187,11 +183,10 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
             instruction_prompt: "Carry this bounded launch request.".into(),
         },
         prompt_sha256: intent.prompt_sha256.clone(),
-        origin_clue: signal_flow::OriginClue {
+        origin: signal_flow::Origin::Flow(signal_flow::FlowOrigin {
             flow_id: "fac697".into(),
             session_id: "caller-session".into(),
-            turn_id: "caller-turn".into(),
-        },
+        }),
         launch_attempt_phase: signal_flow::LaunchAttemptPhase::PromptIntentRecorded,
         native_launch_intent_option: Some(signal_flow::NativeLaunchIntent {
             launch_request_id: intent.launch_request_id.clone(),
@@ -300,7 +295,7 @@ fn the_ordinary_socket_carries_no_pane_write() {
 #[test]
 fn replace_and_launch_status_queries_have_concrete_datoms() {
     for text in [
-        "Replace.{ { request-8 [ spirit-core ] [ operation-main-flow ] { Field flow Secondary } High Claude opus-5-5 high Some.fac697 [] messaging-build None «Carry on from fac697.» } { fac697 session-1 turn-2 } }",
+        "Replace.{ request-8 [ spirit-core ] [ operation-main-flow ] { Field flow Secondary } opus-5-5 high Some.fac697 [] messaging-build None «Carry on from fac697.» }",
         "LaunchStatus.request-8",
         "Observe.Launch.request-8",
     ] {
@@ -318,23 +313,21 @@ fn replace_and_launch_status_queries_have_concrete_datoms() {
 
 #[test]
 fn replace_carries_the_predecessor_in_its_launch_profile() {
-    let text = "Replace.{ { request-8 [ spirit-core ] [] { Field flow Secondary } High Claude opus-5-5 high Some.fac697 [] messaging-build None «Carry on from fac697.» } { fac697 session-1 turn-2 } }";
-    let Query::Replace(request) = Potential::<Query>::from(text)
+    let text = "Replace.{ request-8 [ spirit-core ] [] { Field flow Secondary } opus-5-5 high Some.fac697 [] messaging-build None «Carry on from fac697.» }";
+    let Query::Replace(profile) = Potential::<Query>::from(text)
         .actualize(&mut budget())
         .unwrap()
     else {
         panic!("Replace");
     };
-    assert_eq!(
-        request.launch_profile.flow_id_option,
-        Some("fac697".to_string())
-    );
+    assert_eq!(profile.flow_id_option, Some("fac697".to_string()));
 }
 
 #[test]
 fn replace_and_launch_status_responses_have_concrete_datoms() {
     for text in [
-        "Replaced.{ fac697 { 908786 session-2 Available.{ default claude-a1 w1:p4 term-4 } { fac697 session-1 turn-2 } } }",
+        "Replaced.{ fac697 { 908786 session-2 Available.{ default claude-a1 w1:p4 term-4 } Flow.{ fac697 session-1 } } }",
+        "Replaced.{ fac697 { 908786 session-2 Unavailable Unbound } }",
         "ReplaceRejected.PredecessorAbsent",
         "ReplaceRejected.UnknownPredecessor",
         "ReplaceRejected.PredecessorStopped",
@@ -370,16 +363,15 @@ fn replaced_names_the_stopped_predecessor_and_the_started_successor() {
                     herdr_terminal_id: "term-4".into(),
                 },
             ),
-            origin_clue: signal_flow::OriginClue {
+            origin: signal_flow::Origin::Flow(signal_flow::FlowOrigin {
                 flow_id: "fac697".into(),
                 session_id: "session-1".into(),
-                turn_id: "turn-2".into(),
-            },
+            }),
         },
     });
     assert_eq!(
         reply.datomize(vec![]).protosize().compact(),
-        "Replaced.{ fac697 { 908786 session-2 Available.{ default claude-a1 w1:p4 term-4 } { fac697 session-1 turn-2 } } }"
+        "Replaced.{ fac697 { 908786 session-2 Available.{ default claude-a1 w1:p4 term-4 } Flow.{ fac697 session-1 } } }"
     );
 }
 
@@ -496,23 +488,23 @@ fn listed_asleep_metaflow_roundtrips_without_a_current_flow() {
 
 #[test]
 fn start_names_the_address_of_the_seat_it_launches() {
-    let text = "Start.{ { field-flow-quaternary-1 [ spirit-core ] [ operation-main-flow ] { Field flow Quaternary } UltraLow Claude haiku medium None [] fieldFlow None «Send the Order through Message.» } { da2038 field-session field-turn } }";
-    let Query::Start(request) = Potential::<Query>::from(text)
+    let text = "Start.{ field-flow-quaternary-1 [ spirit-core ] [ operation-main-flow ] { Field flow Quaternary } haiku medium None [] fieldFlow None «Send the Order through Message.» }";
+    let Query::Start(profile) = Potential::<Query>::from(text)
         .actualize(&mut budget())
         .unwrap()
     else {
         panic!("a Start query")
     };
     assert_eq!(
-        request.launch_profile.address,
+        profile.address,
         signal_flow::Address {
             aspect: Aspect::Field,
             topic: "flow".into(),
             layer: signal_flow::Layer::Quaternary,
         }
     );
-    assert_eq!(request.launch_profile.model_name, "haiku");
-    assert_eq!(request.launch_profile.effort, "medium");
+    assert_eq!(profile.model_name, "haiku");
+    assert_eq!(profile.effort, "medium");
     for text in [
         "StartRejected.AddressAwake",
         "StartRejected.AddressEnded",

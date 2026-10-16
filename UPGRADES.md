@@ -13,9 +13,8 @@ places of `Vector<LaunchSource>` and `Vector<SkillName>`, and
 
 - A Start datom names the two module vectors where it named sources and
   skills, and no bundle file:
-  `Start.{ { id [ spirit-core ] [ operation-main-flow ] { Field flow
-  Quaternary } UltraLow Claude haiku medium None [] session None «brief» }
-  { origin session turn } }`.
+  `Start.{ id [ spirit-core ] [ operation-main-flow ] { Field flow
+  Quaternary } haiku medium None [] session None «brief» }`.
 - `ComposedLaunch` carries the composed `SystemPrompt` (text and SHA-256);
   `FirstPromptPayload` carries the `PromptPart` vector the first USER
   message is sent as.
@@ -36,6 +35,16 @@ places of `Vector<LaunchSource>` and `Vector<SkillName>`, and
 
 The build generates with ethos-zero 17.0.0 at 07714b0; the generated module
 is byte-identical to 16.0.0's output for the same source.
+
+- `Start` and `Replace` carry the `LaunchProfile` itself and `Restart` the
+  `FlowId`; `StartRequest`, `RestartRequest` and `OriginClue` are removed.
+  The Nexus derives a launch's origin from the calling process:
+  `Origin.[ Flow.{ FlowId SessionId } Unbound ]`, which `FlowNode`,
+  `Launched` and `LaunchAttempt` carry where they carried `OriginClue`.
+  There is no TurnId.
+- `LaunchProfile` no longer names `PowerLevel` (its Address layer gives it)
+  or `HarnessKind` (Codex when a configured Codex endpoint serves its model,
+  else Claude); `ComposedLaunch` carries the derived `HarnessKind`.
 
 Repin signal-flow 17.0.0 in every consumer together with the Flow Nexus;
 stored launch attempts of 16.0.0 no longer read as 17.0.0.
