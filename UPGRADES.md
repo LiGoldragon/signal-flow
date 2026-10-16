@@ -23,9 +23,10 @@ places of `Vector<LaunchSource>` and `Vector<SkillName>`, and
   carry the part SHA-256 vector where they carried skill selections;
   `PromptDeliveryIntent` adds `PartsSubmitted` and `StopsReported`, and
   `NativeLaunchIntent` adds `SystemPromptSha256`.
-- `Launched` adds the flow's `HerdrRoute` between `SessionId` and
+- `Launched` adds the flow's `HerdrRouteSelection` between `SessionId` and
   `OriginClue`.
-- `StartRejection` adds `ContextRefused.ContextRefusal`.
+- `StartRejection` appends `ContextRefused.ContextRefusal`; the archived
+  discriminants of its other variants are unchanged.
 
 Repin signal-flow 17.0.0 in every consumer together with the Flow Nexus;
 stored launch attempts of 16.0.0 no longer read as 17.0.0.

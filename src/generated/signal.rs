@@ -388,7 +388,7 @@ pub struct FlowNode {
 pub struct Launched {
     pub flow_id: flow_ethos::FlowId,
     pub session_id: SessionId,
-    pub herdr_route: HerdrRoute,
+    pub herdr_route_selection: HerdrRouteSelection,
     pub origin_clue: OriginClue,
 }
 #[rustfmt::skip]
@@ -430,7 +430,6 @@ pub enum ContextRefusal {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum StartRejection {
     CompositionRefused,
-    ContextRefused(ContextRefusal),
     LaunchRequestConflict,
     LaunchPersistenceRefused,
     NativeLaunchRefused,
@@ -440,6 +439,7 @@ pub enum StartRejection {
     OriginUnavailable,
     AddressAwake,
     AddressEnded,
+    ContextRefused(ContextRefusal),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]

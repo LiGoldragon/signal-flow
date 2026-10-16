@@ -324,7 +324,7 @@ fn replace_carries_the_predecessor_in_its_launch_profile() {
 #[test]
 fn replace_and_launch_status_responses_have_concrete_datoms() {
     for text in [
-        "Replaced.{ fac697 { 908786 session-2 { default claude-a1 w1:p4 term-4 } { fac697 session-1 turn-2 } } }",
+        "Replaced.{ fac697 { 908786 session-2 Available.{ default claude-a1 w1:p4 term-4 } { fac697 session-1 turn-2 } } }",
         "ReplaceRejected.PredecessorAbsent",
         "ReplaceRejected.UnknownPredecessor",
         "ReplaceRejected.PredecessorStopped",
@@ -352,12 +352,14 @@ fn replaced_names_the_stopped_predecessor_and_the_started_successor() {
         launched: signal_flow::Launched {
             flow_id: "908786".into(),
             session_id: "session-2".into(),
-            herdr_route: signal_flow::HerdrRoute {
-                herdr_session_name: "default".into(),
-                herdr_agent_name: "claude-a1".into(),
-                herdr_pane_id: "w1:p4".into(),
-                herdr_terminal_id: "term-4".into(),
-            },
+            herdr_route_selection: signal_flow::HerdrRouteSelection::Available(
+                signal_flow::HerdrRoute {
+                    herdr_session_name: "default".into(),
+                    herdr_agent_name: "claude-a1".into(),
+                    herdr_pane_id: "w1:p4".into(),
+                    herdr_terminal_id: "term-4".into(),
+                },
+            ),
             origin_clue: signal_flow::OriginClue {
                 flow_id: "fac697".into(),
                 session_id: "session-1".into(),
@@ -367,7 +369,7 @@ fn replaced_names_the_stopped_predecessor_and_the_started_successor() {
     });
     assert_eq!(
         reply.datomize(vec![]).protosize().compact(),
-        "Replaced.{ fac697 { 908786 session-2 { default claude-a1 w1:p4 term-4 } { fac697 session-1 turn-2 } } }"
+        "Replaced.{ fac697 { 908786 session-2 Available.{ default claude-a1 w1:p4 term-4 } { fac697 session-1 turn-2 } } }"
     );
 }
 

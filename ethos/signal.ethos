@@ -106,8 +106,9 @@
 ;
 ; Launched is what Start answers, carried by the Started reply; it was
 ; named Started until 9.0.0, when Event's Started took that name. It names
-; the flow, its native session and the Herdr pane it runs in, so the
-; caller can register the seat with its messenger.
+; the flow, its native session and the Herdr route it runs in (Available
+; while its pane is held, Unavailable once it is gone), so the caller can
+; register the seat with its messenger.
 ;
 ; A LaunchProfile names its seat's context only by module identity:
 ; SystemModules for the system prompt and UserModules for the first USER
@@ -252,7 +253,7 @@ Signal
                         Unavailable ]
   FlowLifecycle.[ Pending Active Stopped Retired Exited ]
   FlowNode.{ FlowId SessionId HarnessKind EndpointSelection HerdrRouteSelection OriginClue FlowLifecycle }
-  Launched.{ FlowId SessionId HerdrRoute OriginClue }
+  Launched.{ FlowId SessionId HerdrRouteSelection OriginClue }
   Restarted.{ FlowId SessionId Generation }
   ; BindingRefusal names one checked native-binding failure without raw adapter text.
   ; PaneMismatch covers the agent name, workspace, or pane check.
@@ -275,7 +276,7 @@ Signal
   ; StartRejection preserves a typed BindingRefused result at the public wire.
   ; AddressAwake: the profile's Address is Awake as a live flow, or another
   ; unsettled launch names it. AddressEnded: the Address was ended.
-  StartRejection.[ CompositionRefused ContextRefused.ContextRefusal LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused BindingRefused.BindingRefusal RegistrationRefused IntentPersistenceRefused OriginUnavailable AddressAwake AddressEnded ]
+  StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused BindingRefused.BindingRefusal RegistrationRefused IntentPersistenceRefused OriginUnavailable AddressAwake AddressEnded ContextRefused.ContextRefusal ]
   RestartRejection.[ ProvenanceMismatch UnknownFlow ResumeRefused ]
   RecipientResolutionRejection.[ UnknownFlow FlowUnavailable ]
   StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused PersistenceRefused ]
