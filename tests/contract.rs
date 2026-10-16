@@ -88,7 +88,10 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
             remembering_depth: 1,
         }],
         herdr_session_name: "messaging-build".into(),
-        leave_outs_option: Some(vec![signal_flow::LeaveOut::SkillTool, signal_flow::LeaveOut::WorkflowTool]),
+        leave_outs_option: Some(vec![
+            signal_flow::LeaveOut::SkillTool,
+            signal_flow::LeaveOut::WorkflowTool,
+        ]),
         instruction_prompt: "Carry this bounded launch request.".into(),
     };
     let receipt_request = signal_flow::TargetReceiptRequest {
@@ -111,7 +114,10 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
             }],
         },
         target_receipt_request: receipt_request,
-        leave_outs: vec![signal_flow::LeaveOut::SkillTool, signal_flow::LeaveOut::WorkflowTool],
+        leave_outs: vec![
+            signal_flow::LeaveOut::SkillTool,
+            signal_flow::LeaveOut::WorkflowTool,
+        ],
     };
 
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&composed).unwrap();
