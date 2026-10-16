@@ -115,6 +115,20 @@ checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
 
 [[package]]
 name = "ethos-zero"
+version = "16.0.0"
+source = "git+https://github.com/LiGoldragon/ethos-zero?rev=c2653dd82adbdb1f1f2f654405c6620e0d06fd58#c2653dd82adbdb1f1f2f654405c6620e0d06fd58"
+dependencies = [
+ "datom-codec",
+ "prettyplease",
+ "proc-macro2",
+ "protos",
+ "quote",
+ "rkyv",
+ "syn 3.0.6",
+]
+
+[[package]]
+name = "ethos-zero"
 version = "17.0.0"
 source = "git+https://github.com/LiGoldragon/ethos-zero?rev=07714b0171802787bea1eefe4caa2d826d9c4030#07714b0171802787bea1eefe4caa2d826d9c4030"
 dependencies = [
@@ -139,7 +153,7 @@ version = "0.26.0"
 source = "git+https://github.com/LiGoldragon/flow?rev=074437a66de48a5ef3e7af6a14407652c0ab861d#074437a66de48a5ef3e7af6a14407652c0ab861d"
 dependencies = [
  "datom-codec",
- "ethos-zero",
+ "ethos-zero 16.0.0",
  "protos",
  "rkyv",
 ]
@@ -356,7 +370,7 @@ source = "git+https://github.com/LiGoldragon/signal?rev=e0e3c05573405e7930372056
 dependencies = [
  "blake3",
  "datom-codec",
- "ethos-zero",
+ "ethos-zero 16.0.0",
  "protos",
  "rkyv",
  "thiserror",
@@ -367,7 +381,7 @@ name = "signal-flow"
 version = "17.0.0"
 dependencies = [
  "datom-codec",
- "ethos-zero",
+ "ethos-zero 17.0.0",
  "flow-ethos",
  "protos",
  "rkyv",
