@@ -2,6 +2,34 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 17.0.0: a launch names its context by module identity
+
+`LaunchProfile` names the seat's context only by module identity:
+`SystemModules` and `UserModules` (each `Vector<ModuleIdentity>`) take the
+places of `Vector<LaunchSource>` and `Vector<SkillName>`, and
+`SystemPromptBundleFile` is removed. `LaunchSource`, `SourcePath`,
+`SourceSha256`, `SkillName`, `NativeSkillSelection`, `NativeSkillPath`,
+`NativeSkillSha256` and `FirstPromptText` are removed.
+
+- A Start datom names the two module vectors where it named sources and
+  skills, and no bundle file:
+  `Start.{ { id [ spirit-core ] [ operation-main-flow ] { Field flow
+  Quaternary } UltraLow Claude haiku medium None [] session «brief» }
+  { origin session turn } }`.
+- `ComposedLaunch` carries the composed `SystemPrompt` (text and SHA-256);
+  `FirstPromptPayload` carries the `PromptPart` vector the first USER
+  message is sent as.
+- `NativeLaunchIntent`, `PromptDeliveryIntent` and `NativeTargetReceipt`
+  carry the part SHA-256 vector where they carried skill selections;
+  `PromptDeliveryIntent` adds `PartsSubmitted` and `StopsReported`, and
+  `NativeLaunchIntent` adds `SystemPromptSha256`.
+- `Launched` adds the flow's `HerdrRoute` between `SessionId` and
+  `OriginClue`.
+- `StartRejection` adds `ContextRefused.ContextRefusal`.
+
+Repin signal-flow 17.0.0 in every consumer together with the Flow Nexus;
+stored launch attempts of 16.0.0 no longer read as 17.0.0.
+
 ## 16.0.0: a launch names its Address
 
 `LaunchProfile` carries the launched seat's `Address` (`{ Aspect Topic

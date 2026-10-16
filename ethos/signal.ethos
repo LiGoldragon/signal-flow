@@ -105,11 +105,30 @@
 ; would be refused is refused before anything launches.
 ;
 ; Launched is what Start answers, carried by the Started reply; it was
-; named Started until 9.0.0, when Event's Started took that name.
+; named Started until 9.0.0, when Event's Started took that name. It names
+; the flow, its native session and the Herdr pane it runs in, so the
+; caller can register the seat with its messenger.
+;
+; A LaunchProfile names its seat's context only by module identity:
+; SystemModules for the system prompt and UserModules for the first USER
+; message. Flow has the context composer resolve those identities in the
+; context repositories and verifies the answer; no path and no context
+; text travels in a Start. The only text a Start carries is the seat's
+; first brief, InstructionPrompt.
+;
+; The first USER message is the composed modules followed by the brief,
+; sent once. When it does not fit one message it is split on module
+; boundaries into PromptParts, each naming itself part k of n; the brief is
+; in the last. A part after the first is sent only after the seat finished
+; its answer to the one before. The durable PromptDeliveryIntent holds
+; every part's SHA-256 in order, how many parts were submitted, and the
+; count of Stop reports seen when the last one was. The receipt is every
+; part observed in order as a user turn, then the seat's first answer at
+; the intended model and effort.
 
 Signal
 [
-  flow_ethos:[ Aspect Address FlowId Request Lock Sender Process Metaflow Key Recipient Layer Topic Subaspect Source OrdinarySocketPath MetaSocketPath Start ModelName HarnessKind ] ]
+  flow_ethos:[ Aspect Address FlowId Request Lock Sender Process Metaflow Key Recipient Layer Topic Subaspect OrdinarySocketPath MetaSocketPath Start ModelName HarnessKind ] ]
 [ Start.StartRequest
   Restart.RestartRequest
   ResolveRecipient.RecipientResolutionRequest
@@ -171,15 +190,16 @@ Signal
   HerdrPaneId.String
   HerdrTerminalId.String
   LaunchRequestId.String
-  SourcePath.String
-  SourceSha256.String
-  SkillName.String
+  ModuleIdentity.String
+  SystemModules.Vector<ModuleIdentity>
+  UserModules.Vector<ModuleIdentity>
   Effort.String
   RememberingDepth.Integer
-  SystemPromptBundleFile.String
+  SystemPromptText.String
+  SystemPromptSha256.String
   InstructionPrompt.String
   FirstPromptBody.String
-  FirstPromptText.String
+  PromptPartText.String
   PromptSha256.String
   NativeSessionId.String
   NativeTurnId.String
@@ -190,26 +210,26 @@ Signal
   TranscriptPrefixSha256.String
   TranscriptRootDevice.String
   TranscriptRootInode.String
-  NativeSkillPath.String
-  NativeSkillSha256.String
+  PartsSubmitted.Integer
+  StopsReported.Integer
   PowerLevel.[ High Medium Low UltraLow ]
-  LaunchSource.{ SourcePath SourceSha256 }
   RememberedFlow.{ FlowId RememberingDepth }
-  LaunchProfile.{ LaunchRequestId Vector<LaunchSource> Vector<SkillName> Address PowerLevel HarnessKind ModelName Effort Option<FlowId> Vector<RememberedFlow> HerdrSessionName SystemPromptBundleFile InstructionPrompt }
+  LaunchProfile.{ LaunchRequestId SystemModules UserModules Address PowerLevel HarnessKind ModelName Effort Option<FlowId> Vector<RememberedFlow> HerdrSessionName InstructionPrompt }
   TargetReceiptRequest.{ LaunchRequestId PromptSha256 }
-  FirstPromptPayload.{ FirstPromptBody PromptSha256 FirstPromptText }
-  ComposedLaunch.{ LaunchProfile FirstPromptPayload TargetReceiptRequest }
+  PromptPart.{ PromptPartText PromptSha256 }
+  FirstPromptPayload.{ FirstPromptBody PromptSha256 Vector<PromptPart> }
+  SystemPrompt.{ SystemPromptText SystemPromptSha256 }
+  ComposedLaunch.{ LaunchProfile SystemPrompt FirstPromptPayload TargetReceiptRequest }
   HerdrPaneBinding.{ LaunchRequestId HerdrSessionName HerdrAgentName HerdrWorkspaceId HerdrPaneId HerdrTerminalId }
-  NativeLaunchIntent.{ LaunchRequestId PromptSha256 HarnessKind ModelName Effort Vector<SkillName> }
+  NativeLaunchIntent.{ LaunchRequestId PromptSha256 SystemPromptSha256 HarnessKind ModelName Effort Vector<PromptSha256> }
   NativeLaunchBinding.{ LaunchRequestId FlowId NativeSessionId HarnessKind HerdrPaneBinding }
   RegistrationAcknowledgement.{ LaunchRequestId FlowId NativeSessionId HerdrPaneBinding }
   NativeTranscriptCursor.{ NativeSessionId HarnessKind TranscriptDevice TranscriptInode TranscriptByteOffset TranscriptPrefixSha256 }
   NativeTranscriptAbsence.{ NativeSessionId HarnessKind TranscriptRootDevice TranscriptRootInode }
   NativeTranscriptBoundary.[ Existing.NativeTranscriptCursor
                              Absent.NativeTranscriptAbsence ]
-  NativeSkillSelection.{ SkillName NativeSkillPath NativeSkillSha256 }
-  PromptDeliveryIntent.{ LaunchRequestId PromptSha256 FlowId NativeSessionId HarnessKind ModelName Effort Vector<NativeSkillSelection> HerdrPaneBinding NativeTranscriptBoundary }
-  NativeTargetReceipt.{ LaunchRequestId PromptSha256 FlowId NativeSessionId NativeTurnId ReceiptSha256 ModelName Effort Vector<NativeSkillSelection> }
+  PromptDeliveryIntent.{ LaunchRequestId PromptSha256 FlowId NativeSessionId HarnessKind ModelName Effort Vector<PromptSha256> PartsSubmitted StopsReported HerdrPaneBinding NativeTranscriptBoundary }
+  NativeTargetReceipt.{ LaunchRequestId PromptSha256 FlowId NativeSessionId NativeTurnId ReceiptSha256 ModelName Effort Vector<PromptSha256> }
   PromptDeliveryResult.[ Observed.NativeTargetReceipt
                          Ambiguous.PromptDeliveryIntent ]
   LaunchAttemptPhase.[ Reserved NativeLaunchIntentRecorded NativeBound RegistrationAcknowledged PromptIntentRecorded PromptObserved PromptAmbiguous ]
@@ -232,7 +252,7 @@ Signal
                         Unavailable ]
   FlowLifecycle.[ Pending Active Stopped Retired Exited ]
   FlowNode.{ FlowId SessionId HarnessKind EndpointSelection HerdrRouteSelection OriginClue FlowLifecycle }
-  Launched.{ FlowId SessionId OriginClue }
+  Launched.{ FlowId SessionId HerdrRoute OriginClue }
   Restarted.{ FlowId SessionId Generation }
   ; BindingRefusal names one checked native-binding failure without raw adapter text.
   ; PaneMismatch covers the agent name, workspace, or pane check.
@@ -245,10 +265,17 @@ Signal
   ; TransportRefused covers the Herdr request or response transport boundary.
   ; Unclassified marks a stored v10 unit refusal whose stage was not kept.
   BindingRefusal.[ PaneMismatch TerminalMismatch HarnessMismatch NotReady ReservedIdentityMismatch ClaimUnavailable ObservationRefused TransportRefused Unclassified ]
+  ; ContextRefusal names why a seat's context was not composed for its
+  ; Start: the composer could not be reached or rejected the request; its
+  ; answer named another metaflow; a payload's text differs from its
+  ; SHA-256; a requested module is missing from the composed provenance;
+  ; the system text exceeds one argument; or one module with its part
+  ; header does not fit one message.
+  ContextRefusal.[ ComposerUnavailable ComposerRejected MetaflowMismatch PayloadMismatch ModuleMissing SystemTooLarge ModuleTooLarge ]
   ; StartRejection preserves a typed BindingRefused result at the public wire.
   ; AddressAwake: the profile's Address is Awake as a live flow, or another
   ; unsettled launch names it. AddressEnded: the Address was ended.
-  StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused BindingRefused.BindingRefusal RegistrationRefused IntentPersistenceRefused OriginUnavailable AddressAwake AddressEnded ]
+  StartRejection.[ CompositionRefused ContextRefused.ContextRefusal LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused BindingRefused.BindingRefusal RegistrationRefused IntentPersistenceRefused OriginUnavailable AddressAwake AddressEnded ]
   RestartRejection.[ ProvenanceMismatch UnknownFlow ResumeRefused ]
   RecipientResolutionRejection.[ UnknownFlow FlowUnavailable ]
   StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused PersistenceRefused ]

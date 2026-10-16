@@ -22,23 +22,25 @@ pub type HerdrTerminalId = String;
 #[rustfmt::skip]
 pub type LaunchRequestId = String;
 #[rustfmt::skip]
-pub type SourcePath = String;
+pub type ModuleIdentity = String;
 #[rustfmt::skip]
-pub type SourceSha256 = String;
+pub type SystemModules = std::vec::Vec<ModuleIdentity>;
 #[rustfmt::skip]
-pub type SkillName = String;
+pub type UserModules = std::vec::Vec<ModuleIdentity>;
 #[rustfmt::skip]
 pub type Effort = String;
 #[rustfmt::skip]
 pub type RememberingDepth = i64;
 #[rustfmt::skip]
-pub type SystemPromptBundleFile = String;
+pub type SystemPromptText = String;
+#[rustfmt::skip]
+pub type SystemPromptSha256 = String;
 #[rustfmt::skip]
 pub type InstructionPrompt = String;
 #[rustfmt::skip]
 pub type FirstPromptBody = String;
 #[rustfmt::skip]
-pub type FirstPromptText = String;
+pub type PromptPartText = String;
 #[rustfmt::skip]
 pub type PromptSha256 = String;
 #[rustfmt::skip]
@@ -60,9 +62,9 @@ pub type TranscriptRootDevice = String;
 #[rustfmt::skip]
 pub type TranscriptRootInode = String;
 #[rustfmt::skip]
-pub type NativeSkillPath = String;
+pub type PartsSubmitted = i64;
 #[rustfmt::skip]
-pub type NativeSkillSha256 = String;
+pub type StopsReported = i64;
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
@@ -71,13 +73,6 @@ pub enum PowerLevel {
     Medium,
     Low,
     UltraLow,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct LaunchSource {
-    pub source_path: SourcePath,
-    pub source_sha256: SourceSha256,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -91,8 +86,8 @@ pub struct RememberedFlow {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct LaunchProfile {
     pub launch_request_id: LaunchRequestId,
-    pub launch_source_vector: std::vec::Vec<LaunchSource>,
-    pub skill_name_vector: std::vec::Vec<SkillName>,
+    pub system_modules: SystemModules,
+    pub user_modules: UserModules,
     pub address: flow_ethos::Address,
     pub power_level: PowerLevel,
     pub harness_kind: flow_ethos::HarnessKind,
@@ -101,7 +96,6 @@ pub struct LaunchProfile {
     pub flow_id_option: std::option::Option<flow_ethos::FlowId>,
     pub remembered_flow_vector: std::vec::Vec<RememberedFlow>,
     pub herdr_session_name: HerdrSessionName,
-    pub system_prompt_bundle_file: SystemPromptBundleFile,
     pub instruction_prompt: InstructionPrompt,
 }
 #[rustfmt::skip]
@@ -114,16 +108,31 @@ pub struct TargetReceiptRequest {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct PromptPart {
+    pub prompt_part_text: PromptPartText,
+    pub prompt_sha256: PromptSha256,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct FirstPromptPayload {
     pub first_prompt_body: FirstPromptBody,
     pub prompt_sha256: PromptSha256,
-    pub first_prompt_text: FirstPromptText,
+    pub prompt_part_vector: std::vec::Vec<PromptPart>,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct SystemPrompt {
+    pub system_prompt_text: SystemPromptText,
+    pub system_prompt_sha256: SystemPromptSha256,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct ComposedLaunch {
     pub launch_profile: LaunchProfile,
+    pub system_prompt: SystemPrompt,
     pub first_prompt_payload: FirstPromptPayload,
     pub target_receipt_request: TargetReceiptRequest,
 }
@@ -144,10 +153,11 @@ pub struct HerdrPaneBinding {
 pub struct NativeLaunchIntent {
     pub launch_request_id: LaunchRequestId,
     pub prompt_sha256: PromptSha256,
+    pub system_prompt_sha256: SystemPromptSha256,
     pub harness_kind: flow_ethos::HarnessKind,
     pub model_name: flow_ethos::ModelName,
     pub effort: Effort,
-    pub skill_name_vector: std::vec::Vec<SkillName>,
+    pub prompt_sha256_vector: std::vec::Vec<PromptSha256>,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -198,14 +208,6 @@ pub enum NativeTranscriptBoundary {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct NativeSkillSelection {
-    pub skill_name: SkillName,
-    pub native_skill_path: NativeSkillPath,
-    pub native_skill_sha256: NativeSkillSha256,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct PromptDeliveryIntent {
     pub launch_request_id: LaunchRequestId,
     pub prompt_sha256: PromptSha256,
@@ -214,7 +216,9 @@ pub struct PromptDeliveryIntent {
     pub harness_kind: flow_ethos::HarnessKind,
     pub model_name: flow_ethos::ModelName,
     pub effort: Effort,
-    pub native_skill_selection_vector: std::vec::Vec<NativeSkillSelection>,
+    pub prompt_sha256_vector: std::vec::Vec<PromptSha256>,
+    pub parts_submitted: PartsSubmitted,
+    pub stops_reported: StopsReported,
     pub herdr_pane_binding: HerdrPaneBinding,
     pub native_transcript_boundary: NativeTranscriptBoundary,
 }
@@ -230,7 +234,7 @@ pub struct NativeTargetReceipt {
     pub receipt_sha256: ReceiptSha256,
     pub model_name: flow_ethos::ModelName,
     pub effort: Effort,
-    pub native_skill_selection_vector: std::vec::Vec<NativeSkillSelection>,
+    pub prompt_sha256_vector: std::vec::Vec<PromptSha256>,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -384,6 +388,7 @@ pub struct FlowNode {
 pub struct Launched {
     pub flow_id: flow_ethos::FlowId,
     pub session_id: SessionId,
+    pub herdr_route: HerdrRoute,
     pub origin_clue: OriginClue,
 }
 #[rustfmt::skip]
@@ -411,8 +416,21 @@ pub enum BindingRefusal {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum ContextRefusal {
+    ComposerUnavailable,
+    ComposerRejected,
+    MetaflowMismatch,
+    PayloadMismatch,
+    ModuleMissing,
+    SystemTooLarge,
+    ModuleTooLarge,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum StartRejection {
     CompositionRefused,
+    ContextRefused(ContextRefusal),
     LaunchRequestConflict,
     LaunchPersistenceRefused,
     NativeLaunchRefused,
