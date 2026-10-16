@@ -2,6 +2,27 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 16.0.0: a launch names its Address
+
+`LaunchProfile` carries the launched seat's `Address` (`{ Aspect Topic
+Layer }`) in the position that held its `Aspect`. `StartRejection` gains
+`AddressAwake` and `AddressEnded`. The contract digest changes, so an
+older peer is refused at the greeting.
+
+- A Start datom names the Address where it named the Aspect:
+  `Start.{ { id [] [ skills ] { Field flow Quaternary } UltraLow Claude
+  haiku medium None [] session bundle «prompt» } { origin session turn } }`.
+- When the launch is confirmed, Flow records that Address's metaflow Awake
+  as the launched flow. A Start whose Address is Awake as a live flow, or
+  named by another unsettled launch, answers `StartRejected.AddressAwake`;
+  one whose Address was ended answers `StartRejected.AddressEnded`.
+- A stored `LaunchProfile` of 15.0.0 no longer reads as 16.0.0; a consumer
+  that keeps launch attempts must carry or set aside its old rows.
+
+Repin signal-flow 16.0.0 in every consumer, adapt each `LaunchProfile`
+construction and each `aspect` read to `address`, handle the two new
+rejections, and rebuild and restart the Flow Nexus and its clients together.
+
 ## 15.0.0: one shared Aspect type
 
 `LaunchProfile` and `Caller` now use the Library's `Aspect` directly;

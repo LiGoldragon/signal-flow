@@ -16,7 +16,8 @@ fn budget() -> Budget {
 #[test]
 fn every_ordinary_request_has_a_concrete_datom() {
     for text in [
-        "Start.{ { request-7 [ { Vision/flowNexus.md 54c08e7190360a308e560935c120c69b81c4aacb4975751a4841912b599f4f5a } ] [ spirit main-flow ] Field High Codex gpt-6-astra medium Some.836818 [ { 1b8ac0 1 } ] messaging-build /workspace/bundles/flow.md «Carry this bounded launch request.» } { fac697 session-1 turn-2 } }",
+        "Start.{ { request-7 [ { Vision/flowNexus.md 54c08e7190360a308e560935c120c69b81c4aacb4975751a4841912b599f4f5a } ] [ spirit main-flow ] { Field flow Primary } High Codex gpt-6-astra medium Some.836818 [ { 1b8ac0 1 } ] messaging-build /workspace/bundles/flow.md «Carry this bounded launch request.» } { fac697 session-1 turn-2 } }",
+        "Start.{ { field-flow-quaternary-1 [] [ spirit-core ] { Field flow Quaternary } UltraLow Claude haiku medium None [] fieldFlow /home/li/primary/bundles/field-flow-quaternary.md «Send the Order through Message.» } { da2038 field-session field-turn } }",
         "Restart.{ fac697 { fac697 session-1 turn-2 } }",
         "ResolveRecipient.fac697",
     ] {
@@ -76,7 +77,11 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
                 .into(),
         }],
         skill_name_vector: vec!["spirit".into(), "main-flow".into()],
-        aspect: signal_flow::Aspect::Field,
+        address: signal_flow::Address {
+            aspect: signal_flow::Aspect::Field,
+            topic: "flow".into(),
+            layer: signal_flow::Layer::Primary,
+        },
         power_level: signal_flow::PowerLevel::High,
         harness_kind: signal_flow::HarnessKind::Codex,
         model_name: "gpt-6-astra".into(),
@@ -154,7 +159,11 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
             launch_request_id: intent.launch_request_id.clone(),
             launch_source_vector: Vec::new(),
             skill_name_vector: vec!["spirit".into()],
-            aspect: signal_flow::Aspect::Field,
+            address: signal_flow::Address {
+                aspect: signal_flow::Aspect::Field,
+                topic: "flow".into(),
+                layer: signal_flow::Layer::Primary,
+            },
             power_level: signal_flow::PowerLevel::High,
             harness_kind: signal_flow::HarnessKind::Codex,
             model_name: intent.model_name.clone(),
@@ -277,7 +286,7 @@ fn the_ordinary_socket_carries_no_pane_write() {
 #[test]
 fn replace_and_launch_status_queries_have_concrete_datoms() {
     for text in [
-        "Replace.{ { request-8 [] [ spirit main-flow ] Field High Claude opus-5-5 high Some.fac697 [] messaging-build /workspace/bundles/flow.md «Carry on from fac697.» } { fac697 session-1 turn-2 } }",
+        "Replace.{ { request-8 [] [ spirit main-flow ] { Field flow Secondary } High Claude opus-5-5 high Some.fac697 [] messaging-build /workspace/bundles/flow.md «Carry on from fac697.» } { fac697 session-1 turn-2 } }",
         "LaunchStatus.request-8",
         "Observe.Launch.request-8",
     ] {
@@ -295,7 +304,7 @@ fn replace_and_launch_status_queries_have_concrete_datoms() {
 
 #[test]
 fn replace_carries_the_predecessor_in_its_launch_profile() {
-    let text = "Replace.{ { request-8 [] [ spirit ] Field High Claude opus-5-5 high Some.fac697 [] messaging-build /workspace/bundles/flow.md «Carry on from fac697.» } { fac697 session-1 turn-2 } }";
+    let text = "Replace.{ { request-8 [] [ spirit ] { Field flow Secondary } High Claude opus-5-5 high Some.fac697 [] messaging-build /workspace/bundles/flow.md «Carry on from fac697.» } { fac697 session-1 turn-2 } }";
     let Query::Replace(request) = Potential::<Query>::from(text)
         .actualize(&mut budget())
         .unwrap()
@@ -461,4 +470,31 @@ fn listed_asleep_metaflow_roundtrips_without_a_current_flow() {
         restored
     );
     assert_eq!(restored.datomize(vec![]).protosize().compact(), text);
+}
+
+#[test]
+fn start_names_the_address_of_the_seat_it_launches() {
+    let text = "Start.{ { field-flow-quaternary-1 [] [ spirit-core ] { Field flow Quaternary } UltraLow Claude haiku medium None [] fieldFlow /home/li/primary/bundles/field-flow-quaternary.md «Send the Order through Message.» } { da2038 field-session field-turn } }";
+    let Query::Start(request) = Potential::<Query>::from(text)
+        .actualize(&mut budget())
+        .unwrap()
+    else {
+        panic!("a Start query")
+    };
+    assert_eq!(
+        request.launch_profile.address,
+        signal_flow::Address {
+            aspect: Aspect::Field,
+            topic: "flow".into(),
+            layer: signal_flow::Layer::Quaternary,
+        }
+    );
+    assert_eq!(request.launch_profile.model_name, "haiku");
+    assert_eq!(request.launch_profile.effort, "medium");
+    for text in ["StartRejected.AddressAwake", "StartRejected.AddressEnded"] {
+        let response = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        assert_eq!(response.datomize(vec![]).protosize().compact(), text);
+    }
 }

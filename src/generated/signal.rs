@@ -93,7 +93,7 @@ pub struct LaunchProfile {
     pub launch_request_id: LaunchRequestId,
     pub launch_source_vector: std::vec::Vec<LaunchSource>,
     pub skill_name_vector: std::vec::Vec<SkillName>,
-    pub aspect: flow_ethos::Aspect,
+    pub address: flow_ethos::Address,
     pub power_level: PowerLevel,
     pub harness_kind: flow_ethos::HarnessKind,
     pub model_name: flow_ethos::ModelName,
@@ -420,6 +420,8 @@ pub enum StartRejection {
     RegistrationRefused,
     IntentPersistenceRefused,
     OriginUnavailable,
+    AddressAwake,
+    AddressEnded,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
