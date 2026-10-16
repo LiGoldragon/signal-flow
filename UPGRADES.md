@@ -28,6 +28,9 @@ places of `Vector<LaunchSource>` and `Vector<SkillName>`, and
 - `StartRejection` appends `ContextRefused.ContextRefusal`; the archived
   discriminants of its other variants are unchanged.
 
+The build generates with ethos-zero 17.0.0 at 07714b0; the generated module
+is byte-identical to 16.0.0's output for the same source.
+
 Repin signal-flow 17.0.0 in every consumer together with the Flow Nexus;
 stored launch attempts of 16.0.0 no longer read as 17.0.0.
 
