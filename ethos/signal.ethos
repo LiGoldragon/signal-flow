@@ -215,12 +215,26 @@ Signal
   StopsReported.Integer
   PowerLevel.[ High Medium Low UltraLow ]
   RememberedFlow.{ FlowId RememberingDepth }
-  LaunchProfile.{ LaunchRequestId SystemModules UserModules Address PowerLevel HarnessKind ModelName Effort Option<FlowId> Vector<RememberedFlow> HerdrSessionName InstructionPrompt }
+  ; A leave-out names one part of a harness's start that a flow goes
+  ; without: a tool or tool group, an instruction block, or a harness
+  ; feature. Each turns into the harness's own flag, environment variable
+  ; or setting. ToolSearch and BashTool are named so that leaving them out
+  ; is refused: without ToolSearch every deferred tool's schema loads, and
+  ; without Bash the flow cannot message, commit or build. SkillTool and
+  ; BundledSkills are refused unless WorkflowTool is left out too, since
+  ; Workflow then inlines its authoring reference. A Claude leave-out is
+  ; refused for a Codex start, and a Codex one for a Claude start.
+  LeaveOut.[ ClaudeAiConnectors ConfiguredMcpServers AgentTool ExplorePlanAgents FileTools WorkflowTool ScheduleWakeupTool ReportFindingsTool ListAgentsTool CronTools WebTools DeferredTools SkillTool BundledSkills ClaudeMd GitInstructions AttributionReminder UserSettings ToolSearch BashTool CodexSkillListing CodexAgentsMd CodexCollaborationMode CodexEnvironmentContext CodexPermissions CodexDeveloperInstructions ]
+  LeaveOuts.Vector<LeaveOut>
+  ; A Start's leave-outs, when it names them, replace the default its
+  ; metaflow's configuration names; None takes that default.
+  LaunchProfile.{ LaunchRequestId SystemModules UserModules Address PowerLevel HarnessKind ModelName Effort Option<FlowId> Vector<RememberedFlow> HerdrSessionName Option<LeaveOuts> InstructionPrompt }
   TargetReceiptRequest.{ LaunchRequestId PromptSha256 }
   PromptPart.{ PromptPartText PromptSha256 }
   FirstPromptPayload.{ FirstPromptBody PromptSha256 Vector<PromptPart> }
   SystemPrompt.{ SystemPromptText SystemPromptSha256 }
-  ComposedLaunch.{ LaunchProfile SystemPrompt FirstPromptPayload TargetReceiptRequest }
+  ; The effective leave-outs: the Start's, else its metaflow's default.
+  ComposedLaunch.{ LaunchProfile SystemPrompt FirstPromptPayload TargetReceiptRequest LeaveOuts }
   HerdrPaneBinding.{ LaunchRequestId HerdrSessionName HerdrAgentName HerdrWorkspaceId HerdrPaneId HerdrTerminalId }
   NativeLaunchIntent.{ LaunchRequestId PromptSha256 SystemPromptSha256 HarnessKind ModelName Effort Vector<PromptSha256> }
   NativeLaunchBinding.{ LaunchRequestId FlowId NativeSessionId HarnessKind HerdrPaneBinding }
@@ -229,7 +243,7 @@ Signal
   NativeTranscriptAbsence.{ NativeSessionId HarnessKind TranscriptRootDevice TranscriptRootInode }
   NativeTranscriptBoundary.[ Existing.NativeTranscriptCursor
                              Absent.NativeTranscriptAbsence ]
-  PromptDeliveryIntent.{ LaunchRequestId PromptSha256 FlowId NativeSessionId HarnessKind ModelName Effort Vector<PromptSha256> PartsSubmitted StopsReported HerdrPaneBinding NativeTranscriptBoundary }
+  PromptDeliveryIntent.{ LaunchRequestId PromptSha256 FlowId NativeSessionId HarnessKind ModelName Effort Vector<PromptSha256> PartsSubmitted StopsReported LeaveOuts HerdrPaneBinding NativeTranscriptBoundary }
   NativeTargetReceipt.{ LaunchRequestId PromptSha256 FlowId NativeSessionId NativeTurnId ReceiptSha256 ModelName Effort Vector<PromptSha256> }
   PromptDeliveryResult.[ Observed.NativeTargetReceipt
                          Ambiguous.PromptDeliveryIntent ]
@@ -272,11 +286,15 @@ Signal
   ; SHA-256; a requested module is missing from the composed provenance;
   ; the system text exceeds one argument; or one module with its part
   ; header does not fit one message.
+  ; LeaveOutRefusal names why a Start's effective leave-outs were refused:
+  ; a part a flow cannot go without, a skill leave-out with Workflow kept,
+  ; or a leave-out of the other harness.
+  LeaveOutRefusal.[ Indispensable.LeaveOut NeedsWorkflowLeftOut.LeaveOut NotForHarness.LeaveOut ]
   ContextRefusal.[ ComposerUnavailable ComposerRejected MetaflowMismatch PayloadMismatch ModuleMissing SystemTooLarge ModuleTooLarge ]
   ; StartRejection preserves a typed BindingRefused result at the public wire.
   ; AddressAwake: the profile's Address is Awake as a live flow, or another
   ; unsettled launch names it. AddressEnded: the Address was ended.
-  StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused BindingRefused.BindingRefusal RegistrationRefused IntentPersistenceRefused OriginUnavailable AddressAwake AddressEnded ContextRefused.ContextRefusal ]
+  StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused BindingRefused.BindingRefusal RegistrationRefused IntentPersistenceRefused OriginUnavailable AddressAwake AddressEnded ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal ]
   RestartRejection.[ ProvenanceMismatch UnknownFlow ResumeRefused ]
   RecipientResolutionRejection.[ UnknownFlow FlowUnavailable ]
   StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused PersistenceRefused ]

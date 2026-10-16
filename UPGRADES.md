@@ -14,7 +14,7 @@ places of `Vector<LaunchSource>` and `Vector<SkillName>`, and
 - A Start datom names the two module vectors where it named sources and
   skills, and no bundle file:
   `Start.{ { id [ spirit-core ] [ operation-main-flow ] { Field flow
-  Quaternary } UltraLow Claude haiku medium None [] session «brief» }
+  Quaternary } UltraLow Claude haiku medium None [] session None «brief» }
   { origin session turn } }`.
 - `ComposedLaunch` carries the composed `SystemPrompt` (text and SHA-256);
   `FirstPromptPayload` carries the `PromptPart` vector the first USER
@@ -27,6 +27,12 @@ places of `Vector<LaunchSource>` and `Vector<SkillName>`, and
   `OriginClue`.
 - `StartRejection` appends `ContextRefused.ContextRefusal`; the archived
   discriminants of its other variants are unchanged.
+- A `LeaveOut` names one part of a harness start a flow goes without (a
+  tool or tool group, an instruction block, a harness feature).
+  `LaunchProfile` carries `Option<LeaveOuts>` before `InstructionPrompt`
+  (None takes the metaflow's configured default); `ComposedLaunch` and
+  `PromptDeliveryIntent` carry the effective `LeaveOuts`; `StartRejection`
+  appends `LeaveOutRefused.LeaveOutRefusal`.
 
 The build generates with ethos-zero 17.0.0 at 07714b0; the generated module
 is byte-identical to 16.0.0's output for the same source.

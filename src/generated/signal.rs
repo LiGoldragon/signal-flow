@@ -84,6 +84,39 @@ pub struct RememberedFlow {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum LeaveOut {
+    ClaudeAiConnectors,
+    ConfiguredMcpServers,
+    AgentTool,
+    ExplorePlanAgents,
+    FileTools,
+    WorkflowTool,
+    ScheduleWakeupTool,
+    ReportFindingsTool,
+    ListAgentsTool,
+    CronTools,
+    WebTools,
+    DeferredTools,
+    SkillTool,
+    BundledSkills,
+    ClaudeMd,
+    GitInstructions,
+    AttributionReminder,
+    UserSettings,
+    ToolSearch,
+    BashTool,
+    CodexSkillListing,
+    CodexAgentsMd,
+    CodexCollaborationMode,
+    CodexEnvironmentContext,
+    CodexPermissions,
+    CodexDeveloperInstructions,
+}
+#[rustfmt::skip]
+pub type LeaveOuts = std::vec::Vec<LeaveOut>;
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct LaunchProfile {
     pub launch_request_id: LaunchRequestId,
     pub system_modules: SystemModules,
@@ -96,6 +129,7 @@ pub struct LaunchProfile {
     pub flow_id_option: std::option::Option<flow_ethos::FlowId>,
     pub remembered_flow_vector: std::vec::Vec<RememberedFlow>,
     pub herdr_session_name: HerdrSessionName,
+    pub leave_outs_option: std::option::Option<LeaveOuts>,
     pub instruction_prompt: InstructionPrompt,
 }
 #[rustfmt::skip]
@@ -135,6 +169,7 @@ pub struct ComposedLaunch {
     pub system_prompt: SystemPrompt,
     pub first_prompt_payload: FirstPromptPayload,
     pub target_receipt_request: TargetReceiptRequest,
+    pub leave_outs: LeaveOuts,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -219,6 +254,7 @@ pub struct PromptDeliveryIntent {
     pub prompt_sha256_vector: std::vec::Vec<PromptSha256>,
     pub parts_submitted: PartsSubmitted,
     pub stops_reported: StopsReported,
+    pub leave_outs: LeaveOuts,
     pub herdr_pane_binding: HerdrPaneBinding,
     pub native_transcript_boundary: NativeTranscriptBoundary,
 }
@@ -416,6 +452,14 @@ pub enum BindingRefusal {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum LeaveOutRefusal {
+    Indispensable(LeaveOut),
+    NeedsWorkflowLeftOut(LeaveOut),
+    NotForHarness(LeaveOut),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum ContextRefusal {
     ComposerUnavailable,
     ComposerRejected,
@@ -440,6 +484,7 @@ pub enum StartRejection {
     AddressAwake,
     AddressEnded,
     ContextRefused(ContextRefusal),
+    LeaveOutRefused(LeaveOutRefusal),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]

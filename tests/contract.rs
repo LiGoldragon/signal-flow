@@ -16,8 +16,8 @@ fn budget() -> Budget {
 #[test]
 fn every_ordinary_request_has_a_concrete_datom() {
     for text in [
-        "Start.{ { request-7 [ spirit-core ] [ operation-main-flow knowledge-flow ] { Field flow Primary } High Codex gpt-6-astra medium Some.836818 [ { 1b8ac0 1 } ] messaging-build «Carry this bounded launch request.» } { fac697 session-1 turn-2 } }",
-        "Start.{ { field-flow-quaternary-1 [ spirit-core ] [ operation-main-flow ] { Field flow Quaternary } UltraLow Claude haiku medium None [] fieldFlow «Send the Order through Message.» } { da2038 field-session field-turn } }",
+        "Start.{ { request-7 [ spirit-core ] [ operation-main-flow knowledge-flow ] { Field flow Primary } High Codex gpt-6-astra medium Some.836818 [ { 1b8ac0 1 } ] messaging-build Some.[ SkillTool WorkflowTool ] «Carry this bounded launch request.» } { fac697 session-1 turn-2 } }",
+        "Start.{ { field-flow-quaternary-1 [ spirit-core ] [ operation-main-flow ] { Field flow Quaternary } UltraLow Claude haiku medium None [] fieldFlow None «Send the Order through Message.» } { da2038 field-session field-turn } }",
         "Restart.{ fac697 { fac697 session-1 turn-2 } }",
         "ResolveRecipient.fac697",
     ] {
@@ -88,6 +88,7 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
             remembering_depth: 1,
         }],
         herdr_session_name: "messaging-build".into(),
+        leave_outs_option: Some(vec![signal_flow::LeaveOut::SkillTool, signal_flow::LeaveOut::WorkflowTool]),
         instruction_prompt: "Carry this bounded launch request.".into(),
     };
     let receipt_request = signal_flow::TargetReceiptRequest {
@@ -110,6 +111,7 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
             }],
         },
         target_receipt_request: receipt_request,
+        leave_outs: vec![signal_flow::LeaveOut::SkillTool, signal_flow::LeaveOut::WorkflowTool],
     };
 
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&composed).unwrap();
@@ -143,6 +145,7 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
         ],
         parts_submitted: 1,
         stops_reported: 0,
+        leave_outs: Vec::new(),
         herdr_pane_binding: binding,
         native_transcript_boundary: signal_flow::NativeTranscriptBoundary::Existing(
             signal_flow::NativeTranscriptCursor {
@@ -174,6 +177,7 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
             flow_id_option: None,
             remembered_flow_vector: Vec::new(),
             herdr_session_name: "messaging-build".into(),
+            leave_outs_option: None,
             instruction_prompt: "Carry this bounded launch request.".into(),
         },
         prompt_sha256: intent.prompt_sha256.clone(),
@@ -290,7 +294,7 @@ fn the_ordinary_socket_carries_no_pane_write() {
 #[test]
 fn replace_and_launch_status_queries_have_concrete_datoms() {
     for text in [
-        "Replace.{ { request-8 [ spirit-core ] [ operation-main-flow ] { Field flow Secondary } High Claude opus-5-5 high Some.fac697 [] messaging-build «Carry on from fac697.» } { fac697 session-1 turn-2 } }",
+        "Replace.{ { request-8 [ spirit-core ] [ operation-main-flow ] { Field flow Secondary } High Claude opus-5-5 high Some.fac697 [] messaging-build None «Carry on from fac697.» } { fac697 session-1 turn-2 } }",
         "LaunchStatus.request-8",
         "Observe.Launch.request-8",
     ] {
@@ -308,7 +312,7 @@ fn replace_and_launch_status_queries_have_concrete_datoms() {
 
 #[test]
 fn replace_carries_the_predecessor_in_its_launch_profile() {
-    let text = "Replace.{ { request-8 [ spirit-core ] [] { Field flow Secondary } High Claude opus-5-5 high Some.fac697 [] messaging-build «Carry on from fac697.» } { fac697 session-1 turn-2 } }";
+    let text = "Replace.{ { request-8 [ spirit-core ] [] { Field flow Secondary } High Claude opus-5-5 high Some.fac697 [] messaging-build None «Carry on from fac697.» } { fac697 session-1 turn-2 } }";
     let Query::Replace(request) = Potential::<Query>::from(text)
         .actualize(&mut budget())
         .unwrap()
@@ -486,7 +490,7 @@ fn listed_asleep_metaflow_roundtrips_without_a_current_flow() {
 
 #[test]
 fn start_names_the_address_of_the_seat_it_launches() {
-    let text = "Start.{ { field-flow-quaternary-1 [ spirit-core ] [ operation-main-flow ] { Field flow Quaternary } UltraLow Claude haiku medium None [] fieldFlow «Send the Order through Message.» } { da2038 field-session field-turn } }";
+    let text = "Start.{ { field-flow-quaternary-1 [ spirit-core ] [ operation-main-flow ] { Field flow Quaternary } UltraLow Claude haiku medium None [] fieldFlow None «Send the Order through Message.» } { da2038 field-session field-turn } }";
     let Query::Start(request) = Potential::<Query>::from(text)
         .actualize(&mut budget())
         .unwrap()
@@ -508,6 +512,8 @@ fn start_names_the_address_of_the_seat_it_launches() {
         "StartRejected.AddressEnded",
         "StartRejected.ContextRefused.MetaflowMismatch",
         "StartRejected.ContextRefused.ModuleTooLarge",
+        "StartRejected.LeaveOutRefused.Indispensable.ToolSearch",
+        "StartRejected.LeaveOutRefused.NeedsWorkflowLeftOut.SkillTool",
     ] {
         let response = Potential::<Response>::from(text)
             .actualize(&mut budget())
