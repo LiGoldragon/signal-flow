@@ -331,7 +331,7 @@ fn replace_and_launch_status_responses_have_concrete_datoms() {
         "ReplaceRejected.PredecessorAbsent",
         "ReplaceRejected.UnknownPredecessor",
         "ReplaceRejected.PredecessorStopped",
-        "ReplaceRejected.LaunchRefused.NativeLaunchRefused.{ Title PaneLabelRefused }",
+        "ReplaceRejected.LaunchRefused.NativeLaunchRefused.{ Naming PaneLabelRefused }",
         "ReplaceRejected.ReapRefused.CloseRefused",
         "LaunchStatusRejected.UnknownLaunchRequest",
         "LaunchStatusRejected.PersistenceRefused",

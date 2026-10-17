@@ -542,7 +542,7 @@ pub enum NativeLaunchStage {
     CodexThread,
     Spawn,
     Bind,
-    Title,
+    Naming,
     Receipt,
     Unclassified,
 }

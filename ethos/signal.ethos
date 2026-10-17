@@ -336,10 +336,10 @@ Signal
   ; NativeLaunchStage names the step of a launch that failed once Flow had
   ; begun it natively: opening the launch pane, opening the Codex thread,
   ; starting the harness before Herdr was asked, binding the started
-  ; harness, titling the claimed flow, or reading the launch receipt.
+  ; harness, naming the claimed flow (its title), or reading the launch receipt.
   ; Unclassified, in stage and category, marks a stored 18.0.0 unit refusal
   ; whose stage was not kept.
-  NativeLaunchStage.[ Open CodexThread Spawn Bind Title Receipt Unclassified ]
+  NativeLaunchStage.[ Open CodexThread Spawn Bind Naming Receipt Unclassified ]
   ; NativeLaunchFailure is the fixed category of that failure; no adapter
   ; text is carried. The receipt's own: the transcript boundary is not the
   ; intent's, the Codex transcript does not begin by naming the thread

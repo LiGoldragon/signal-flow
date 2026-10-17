@@ -18,7 +18,7 @@ table.
   `StartRejected.RegistrationRefused.NativeTarget.IdentityInexact`.
 - `NativeLaunchRefused.NativeLaunchRefusal`, `NativeLaunchRefusal.{
   NativeLaunchStage NativeLaunchFailure }`, `NativeLaunchStage.[ Open
-  CodexThread Spawn Bind Title Receipt ]`, and `NativeLaunchFailure` the
+  CodexThread Spawn Bind Naming Receipt ]`, and `NativeLaunchFailure` the
   fixed category, no adapter text: `StartRejected.NativeLaunchRefused.{
   Receipt PartDiffers }`.
 - `Unclassified` (in `RegistrationRefusal`, `NativeLaunchStage` and
