@@ -402,6 +402,9 @@ fn a_refused_registration_and_a_refused_native_step_carry_their_stage() {
         "StartRejected.NativeLaunchRefused.{ CodexThread AdapterRefused }",
         "StartRejected.NativeLaunchRefused.{ Receipt PartDiffers }",
         "StartRejected.NativeLaunchRefused.{ Receipt ModelOrEffortDiffers }",
+        "StartRejected.NativeLaunchRefused.{ Confirm SessionUnrecorded }",
+        "StartRejected.NativeLaunchRefused.{ Unclassified Unclassified }",
+        "StartRejected.RegistrationRefused.Unclassified",
         "ReplaceRejected.LaunchRefused.RegistrationRefused.NativeTarget.NoNativeSession",
     ] {
         let response = Potential::<Response>::from(text)

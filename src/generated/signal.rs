@@ -544,6 +544,7 @@ pub enum NativeLaunchStage {
     Bind,
     Naming,
     Receipt,
+    Confirm,
     Unclassified,
 }
 #[rustfmt::skip]
@@ -569,6 +570,7 @@ pub enum NativeLaunchFailure {
     PartDiffers,
     LeaveOutShown,
     ModelOrEffortDiffers,
+    SessionUnrecorded,
     Unclassified,
 }
 #[rustfmt::skip]
