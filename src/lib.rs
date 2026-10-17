@@ -3,7 +3,8 @@ pub use generated::signal::*;
 
 pub use flow_ethos::{
     Address, Aspect, FlowId, HarnessKind, Key, Layer, Lock, MetaSocketPath, Metaflow, ModelName,
-    OrdinarySocketPath, Process, Recipient, Request, Said, Sender, Source, Start, Subaspect, Topic,
+    OrdinarySocketPath, Process, QueuedRequest, Recipient, Request, Said, Sender, SentBy, Source,
+    Start, Subaspect, Topic,
 };
 
 pub use signal::{ByteViewable, Restorable, Signal, Signalizable};

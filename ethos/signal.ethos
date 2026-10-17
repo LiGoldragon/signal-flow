@@ -91,7 +91,10 @@
 ; process (PID and start time). Message's Identify result supplies the
 ; distinct Sender Address in Lock; Flow trusts that bound Message peer's
 ; assertion and does not independently resolve the Sender's origin. A
-; Sender must name an existing Awake metaflow. Unknown addresses are not
+; Sender must name an existing Awake metaflow. The request is queued with
+; that Sender (QueuedRequest.{ SentBy Request }), and a woken or drained
+; flow reads each queued request with who sent it; a request queued before
+; senders were kept reads SentBy Unknown. Unknown addresses are not
 ; created; an Asleep Sender is refused as Asleep and an Ended Sender as
 ; Ended.Address.
 ;
@@ -135,7 +138,7 @@
 
 Signal
 [
-  flow_ethos:[ Aspect Address FlowId Request Lock Sender Process Metaflow Key Recipient Layer Topic Subaspect OrdinarySocketPath MetaSocketPath Start ModelName HarnessKind ] ]
+  flow_ethos:[ Aspect Address FlowId Request SentBy QueuedRequest Lock Sender Process Metaflow Key Recipient Layer Topic Subaspect OrdinarySocketPath MetaSocketPath Start ModelName HarnessKind ] ]
 [ Start.LaunchProfile
   Restart.FlowId
   ResolveRecipient.RecipientResolutionRequest
@@ -347,8 +350,10 @@ Signal
   ; bound, a user turn differs from the startup parts, the session shows a
   ; part its leave-outs removed, or the model or effort differs from the
   ; intent. The confirmation's own: the received flow is not held with its
-  ; native session.
-  NativeLaunchFailure.[ PaneTargetMismatch NativeSessionMissing NativeIdentityConflict FlowClaimUnavailable HarnessMismatch HerdrUnreadable ForeignBinding InvalidFlowId NotReady TranscriptUnreadable TitleReadbackDiffers CodexNamingRefused PaneLabelRefused AdapterRefused BoundaryMismatch ThreadNotNamed PartDiffers LeaveOutShown ModelOrEffortDiffers SessionUnrecorded Unclassified ]
+  ; native session. SendToolUnsupported, at CodexThread: the Codex
+  ; app-server was not shown to accept Flow's send tool behind its
+  ; experimental API, so no thread was opened.
+  NativeLaunchFailure.[ PaneTargetMismatch NativeSessionMissing NativeIdentityConflict FlowClaimUnavailable HarnessMismatch HerdrUnreadable ForeignBinding InvalidFlowId NotReady TranscriptUnreadable TitleReadbackDiffers CodexNamingRefused PaneLabelRefused AdapterRefused BoundaryMismatch ThreadNotNamed PartDiffers LeaveOutShown ModelOrEffortDiffers SessionUnrecorded Unclassified SendToolUnsupported ]
   NativeLaunchRefusal.{ NativeLaunchStage NativeLaunchFailure }
   ; StartRejection preserves a typed BindingRefused result at the public wire.
   ; AddressAwake: the profile's Address is Awake as a live flow, or another

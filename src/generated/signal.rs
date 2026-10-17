@@ -572,6 +572,7 @@ pub enum NativeLaunchFailure {
     ModelOrEffortDiffers,
     SessionUnrecorded,
     Unclassified,
+    SendToolUnsupported,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]

@@ -2,6 +2,22 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 20.0.0: a queued request carries its sender; the send tool's refusal has its category
+
+- A metaflow's queue holds `QueuedRequest.{ SentBy Request }` (flow-ethos),
+  `SentBy.[ Sender Unknown ]`: the Sender Flow resolved for the request, or
+  `Unknown` for one queued before Flow kept senders. `Listed` carries it:
+  `Listed.[ { { Psyche flow Primary } Ended [ past-1 ] [ { Sender.{ Mind flow
+  Tertiary } Order.continue } ] } ]`. A store that keeps queues upgrades its
+  metaflow table, each older entry reading `Unknown`.
+- `NativeLaunchFailure` appends `SendToolUnsupported`: the Codex app-server
+  was not shown to accept Flow's send tool, so no thread was opened
+  (`StartRejected.NativeLaunchRefused.{ CodexThread SendToolUnsupported }`).
+  It is appended last, so every earlier archived discriminant is unchanged.
+- flow-ethos is pinned at flow 9e417bb.
+- The contract digest changes from baa84beb4f2cc84b to 5bf78e23e2f14c52:
+  every ordinary-socket peer repins.
+
 ## 19.0.0: a refused registration and a refused native step carry their stage
 
 `StartRejection`'s `NativeLaunchRefused` and `RegistrationRefused` carry
