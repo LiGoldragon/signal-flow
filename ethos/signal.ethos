@@ -299,10 +299,31 @@ Signal
   ; or a leave-out of the other harness.
   LeaveOutRefusal.[ Indispensable.LeaveOut NeedsWorkflowLeftOut.LeaveOut NotForHarness.LeaveOut ]
   ContextRefusal.[ ComposerUnavailable ComposerRejected MetaflowMismatch PayloadMismatch ModuleMissing SystemTooLarge ModuleTooLarge ]
+  ; HerdrRefusal is Herdr's own answer to a refused agent start, kept whole:
+  ; the error code and message of its JSON error body, or no code and the
+  ; whole text Herdr printed when it printed no such body.
+  HerdrErrorCode.String
+  HerdrErrorMessage.String
+  HerdrRefusal.{ Option<HerdrErrorCode> HerdrErrorMessage }
+  ; SpawnRefusalCause names why the harness start in the launch pane was
+  ; refused: Herdr refused it, or Flow refused it before Herdr was called
+  ; because an argument carries a control character or the typed command
+  ; is longer than one terminal line holds.
+  SpawnRefusalCause.[ Herdr.HerdrRefusal ControlCharacter CommandTooLong ]
+  ; OpenedThread accounts for the Codex thread Flow opened through the
+  ; app-server before a refused harness start: its id, what its first turn
+  ; had come to when the start was refused, and whether the app-server
+  ; archived it.
+  FirstTurn.[ Answered InProgress Unanswered Unread ]
+  ThreadArchive.[ Archived ArchiveRefused ]
+  OpenedThread.{ NativeSessionId FirstTurn ThreadArchive }
+  HarnessSpawnRefusal.{ SpawnRefusalCause Option<OpenedThread> }
   ; StartRejection preserves a typed BindingRefused result at the public wire.
   ; AddressAwake: the profile's Address is Awake as a live flow, or another
   ; unsettled launch names it. AddressEnded: the Address was ended.
-  StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused BindingRefused.BindingRefusal RegistrationRefused IntentPersistenceRefused OriginUnavailable AddressAwake AddressEnded ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal ]
+  ; NativeLaunchRefused: the harness was started and a later native step
+  ; failed. HarnessSpawnRefused: the harness start itself was refused.
+  StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused BindingRefused.BindingRefusal RegistrationRefused IntentPersistenceRefused OriginUnavailable AddressAwake AddressEnded ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ]
   RestartRejection.[ ProvenanceMismatch UnknownFlow ResumeRefused ]
   RecipientResolutionRejection.[ UnknownFlow FlowUnavailable ]
   StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused PersistenceRefused ]

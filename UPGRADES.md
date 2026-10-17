@@ -2,6 +2,25 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 18.0.0: a refused harness start carries its cause
+
+`StartRejection` appends `HarnessSpawnRefused.HarnessSpawnRefusal`; the
+archived discriminants of its other variants are unchanged, but the variant
+carries text, so an archived `StartRejection` has a new size and a store that
+keeps one upgrades its table.
+
+- `HarnessSpawnRefusal.{ SpawnRefusalCause Option<OpenedThread> }`.
+- `SpawnRefusalCause.[ Herdr.HerdrRefusal ControlCharacter CommandTooLong ]`:
+  Herdr refused the agent start, or Flow refused it before calling Herdr.
+- `HerdrRefusal.{ Option<HerdrErrorCode> HerdrErrorMessage }` keeps Herdr's
+  JSON error code and message, or no code and Herdr's whole printed text.
+- `OpenedThread.{ NativeSessionId FirstTurn ThreadArchive }` accounts for a
+  Codex thread opened before the refused start:
+  `FirstTurn.[ Answered InProgress Unanswered Unread ]`,
+  `ThreadArchive.[ Archived ArchiveRefused ]`.
+- `NativeLaunchRefused` now names only a failure after the harness started.
+- The contract digest changes: every ordinary-socket peer repins.
+
 ## 17.0.0: a launch names its context by module identity
 
 `LaunchProfile` names the seat's context only by module identity:

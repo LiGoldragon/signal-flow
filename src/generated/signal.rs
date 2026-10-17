@@ -461,6 +461,56 @@ pub enum ContextRefusal {
     ModuleTooLarge,
 }
 #[rustfmt::skip]
+pub type HerdrErrorCode = String;
+#[rustfmt::skip]
+pub type HerdrErrorMessage = String;
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct HerdrRefusal {
+    pub herdr_error_code_option: std::option::Option<HerdrErrorCode>,
+    pub herdr_error_message: HerdrErrorMessage,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum SpawnRefusalCause {
+    Herdr(HerdrRefusal),
+    ControlCharacter,
+    CommandTooLong,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum FirstTurn {
+    Answered,
+    InProgress,
+    Unanswered,
+    Unread,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum ThreadArchive {
+    Archived,
+    ArchiveRefused,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct OpenedThread {
+    pub native_session_id: NativeSessionId,
+    pub first_turn: FirstTurn,
+    pub thread_archive: ThreadArchive,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct HarnessSpawnRefusal {
+    pub spawn_refusal_cause: SpawnRefusalCause,
+    pub opened_thread_option: std::option::Option<OpenedThread>,
+}
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum StartRejection {
@@ -476,6 +526,7 @@ pub enum StartRejection {
     AddressEnded,
     ContextRefused(ContextRefusal),
     LeaveOutRefused(LeaveOutRefusal),
+    HarnessSpawnRefused(HarnessSpawnRefusal),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]

@@ -349,6 +349,43 @@ fn replace_and_launch_status_responses_have_concrete_datoms() {
 }
 
 #[test]
+fn a_refused_harness_start_carries_its_cause_and_its_opened_thread() {
+    for text in [
+        "StartRejected.HarnessSpawnRefused.{ Herdr.{ Some.invalid_agent_argument «agent arguments cannot be encoded safely for the target shell» } None }",
+        "StartRejected.HarnessSpawnRefused.{ Herdr.{ None «missing value for --kind» } Some.{ 01a14773-f58c-7ca1-978b-1ac675d19399 Answered Archived } }",
+        "StartRejected.HarnessSpawnRefused.{ ControlCharacter None }",
+        "StartRejected.HarnessSpawnRefused.{ CommandTooLong Some.{ thread-1 InProgress ArchiveRefused } }",
+        "StartRejected.NativeLaunchRefused",
+    ] {
+        let response = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            response
+        );
+        assert_eq!(response.datomize(vec![]).protosize().compact(), text);
+    }
+    let Response::StartRejected(signal_flow::StartRejection::HarnessSpawnRefused(refusal)) =
+        Potential::<Response>::from(
+            "StartRejected.HarnessSpawnRefused.{ Herdr.{ Some.timeout «timed out waiting for agent startup» } None }",
+        )
+        .actualize(&mut budget())
+        .unwrap()
+    else {
+        panic!("HarnessSpawnRefused");
+    };
+    assert_eq!(
+        refusal.spawn_refusal_cause,
+        signal_flow::SpawnRefusalCause::Herdr(signal_flow::HerdrRefusal {
+            herdr_error_code_option: Some("timeout".into()),
+            herdr_error_message: "timed out waiting for agent startup".into(),
+        })
+    );
+}
+
+#[test]
 fn replaced_names_the_stopped_predecessor_and_the_started_successor() {
     let reply = Response::Replaced(signal_flow::Replaced {
         flow_id: "fac697".into(),
