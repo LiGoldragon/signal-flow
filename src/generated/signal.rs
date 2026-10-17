@@ -513,13 +513,78 @@ pub struct HarnessSpawnRefusal {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum NativeTargetRefusal {
+    HerdrUnreadable,
+    PaneMismatch,
+    NoNativeSession,
+    IdentityInexact,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum RegistrationRefusal {
+    RouteUnverified,
+    RoleConflict,
+    RoleUnrecorded,
+    PaneBindingForeign,
+    AcknowledgementMismatch,
+    PromptNotCanonical,
+    NativeTarget(NativeTargetRefusal),
+    TranscriptBoundary,
+    ThreadNotNamed,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum NativeLaunchStage {
+    Open,
+    CodexThread,
+    Spawn,
+    Bind,
+    Title,
+    Receipt,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum NativeLaunchFailure {
+    PaneTargetMismatch,
+    NativeSessionMissing,
+    NativeIdentityConflict,
+    FlowClaimUnavailable,
+    HarnessMismatch,
+    HerdrUnreadable,
+    ForeignBinding,
+    InvalidFlowId,
+    NotReady,
+    TranscriptUnreadable,
+    TitleReadbackDiffers,
+    CodexNamingRefused,
+    PaneLabelRefused,
+    AdapterRefused,
+    BoundaryMismatch,
+    ThreadNotNamed,
+    PartDiffers,
+    LeaveOutShown,
+    ModelOrEffortDiffers,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct NativeLaunchRefusal {
+    pub native_launch_stage: NativeLaunchStage,
+    pub native_launch_failure: NativeLaunchFailure,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum StartRejection {
     CompositionRefused,
     LaunchRequestConflict,
     LaunchPersistenceRefused,
-    NativeLaunchRefused,
+    NativeLaunchRefused(NativeLaunchRefusal),
     BindingRefused(BindingRefusal),
-    RegistrationRefused,
+    RegistrationRefused(RegistrationRefusal),
     IntentPersistenceRefused,
     OriginUnavailable,
     AddressAwake,

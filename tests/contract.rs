@@ -331,7 +331,7 @@ fn replace_and_launch_status_responses_have_concrete_datoms() {
         "ReplaceRejected.PredecessorAbsent",
         "ReplaceRejected.UnknownPredecessor",
         "ReplaceRejected.PredecessorStopped",
-        "ReplaceRejected.LaunchRefused.NativeLaunchRefused",
+        "ReplaceRejected.LaunchRefused.NativeLaunchRefused.{ Title PaneLabelRefused }",
         "ReplaceRejected.ReapRefused.CloseRefused",
         "LaunchStatusRejected.UnknownLaunchRequest",
         "LaunchStatusRejected.PersistenceRefused",
@@ -355,7 +355,7 @@ fn a_refused_harness_start_carries_its_cause_and_its_opened_thread() {
         "StartRejected.HarnessSpawnRefused.{ Herdr.{ None «missing value for --kind» } Some.{ 01a14773-f58c-7ca1-978b-1ac675d19399 Answered Archived } }",
         "StartRejected.HarnessSpawnRefused.{ ControlCharacter None }",
         "StartRejected.HarnessSpawnRefused.{ CommandTooLong Some.{ thread-1 InProgress ArchiveRefused } }",
-        "StartRejected.NativeLaunchRefused",
+        "StartRejected.NativeLaunchRefused.{ Bind NativeSessionMissing }",
     ] {
         let response = Potential::<Response>::from(text)
             .actualize(&mut budget())
@@ -382,6 +382,51 @@ fn a_refused_harness_start_carries_its_cause_and_its_opened_thread() {
             herdr_error_code_option: Some("timeout".into()),
             herdr_error_message: "timed out waiting for agent startup".into(),
         })
+    );
+}
+
+#[test]
+fn a_refused_registration_and_a_refused_native_step_carry_their_stage() {
+    for text in [
+        "StartRejected.RegistrationRefused.RouteUnverified",
+        "StartRejected.RegistrationRefused.RoleConflict",
+        "StartRejected.RegistrationRefused.RoleUnrecorded",
+        "StartRejected.RegistrationRefused.PaneBindingForeign",
+        "StartRejected.RegistrationRefused.AcknowledgementMismatch",
+        "StartRejected.RegistrationRefused.PromptNotCanonical",
+        "StartRejected.RegistrationRefused.NativeTarget.HerdrUnreadable",
+        "StartRejected.RegistrationRefused.NativeTarget.IdentityInexact",
+        "StartRejected.RegistrationRefused.TranscriptBoundary",
+        "StartRejected.RegistrationRefused.ThreadNotNamed",
+        "StartRejected.NativeLaunchRefused.{ Open AdapterRefused }",
+        "StartRejected.NativeLaunchRefused.{ CodexThread AdapterRefused }",
+        "StartRejected.NativeLaunchRefused.{ Receipt PartDiffers }",
+        "StartRejected.NativeLaunchRefused.{ Receipt ModelOrEffortDiffers }",
+        "ReplaceRejected.LaunchRefused.RegistrationRefused.NativeTarget.NoNativeSession",
+    ] {
+        let response = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            response
+        );
+        assert_eq!(response.datomize(vec![]).protosize().compact(), text);
+    }
+    let Response::StartRejected(signal_flow::StartRejection::NativeLaunchRefused(refusal)) =
+        Potential::<Response>::from("StartRejected.NativeLaunchRefused.{ Receipt LeaveOutShown }")
+            .actualize(&mut budget())
+            .unwrap()
+    else {
+        panic!("NativeLaunchRefused");
+    };
+    assert_eq!(
+        refusal,
+        signal_flow::NativeLaunchRefusal {
+            native_launch_stage: signal_flow::NativeLaunchStage::Receipt,
+            native_launch_failure: signal_flow::NativeLaunchFailure::LeaveOutShown,
+        }
     );
 }
 

@@ -2,6 +2,27 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 19.0.0: a refused registration and a refused native step carry their stage
+
+`StartRejection`'s `NativeLaunchRefused` and `RegistrationRefused` carry
+their typed reason; the archived discriminants of every variant are
+unchanged, but both variants now carry data, so an archived
+`StartRejection` has a new size and a store that keeps one upgrades its
+table.
+
+- `RegistrationRefused.RegistrationRefusal`, `RegistrationRefusal.[
+  RouteUnverified RoleConflict RoleUnrecorded PaneBindingForeign
+  AcknowledgementMismatch PromptNotCanonical NativeTarget.NativeTargetRefusal
+  TranscriptBoundary ThreadNotNamed ]`, `NativeTargetRefusal.[
+  HerdrUnreadable PaneMismatch NoNativeSession IdentityInexact ]`:
+  `StartRejected.RegistrationRefused.NativeTarget.IdentityInexact`.
+- `NativeLaunchRefused.NativeLaunchRefusal`, `NativeLaunchRefusal.{
+  NativeLaunchStage NativeLaunchFailure }`, `NativeLaunchStage.[ Open
+  CodexThread Spawn Bind Title Receipt ]`, and `NativeLaunchFailure` the
+  fixed category, no adapter text: `StartRejected.NativeLaunchRefused.{
+  Receipt PartDiffers }`.
+- The contract digest changes: every ordinary-socket peer repins.
+
 ## 18.0.0: a refused harness start carries its cause
 
 `StartRejection` appends `HarnessSpawnRefused.HarnessSpawnRefusal`; the
