@@ -13,14 +13,14 @@ table.
 - `RegistrationRefused.RegistrationRefusal`, `RegistrationRefusal.[
   RouteUnverified RoleConflict RoleUnrecorded PaneBindingForeign
   AcknowledgementMismatch PromptNotCanonical NativeTarget.NativeTargetRefusal
-  TranscriptBoundary ThreadNotNamed ]`, `NativeTargetRefusal.[
+  TranscriptBoundary ThreadNotNamed Unclassified ]`, `NativeTargetRefusal.[
   HerdrUnreadable PaneMismatch NoNativeSession IdentityInexact ]`:
   `StartRejected.RegistrationRefused.NativeTarget.IdentityInexact`.
 - `NativeLaunchRefused.NativeLaunchRefusal`, `NativeLaunchRefusal.{
   NativeLaunchStage NativeLaunchFailure }`, `NativeLaunchStage.[ Open
-  CodexThread Spawn Bind Naming Receipt Confirm Unclassified ]`, and `NativeLaunchFailure` the
-  fixed category, no adapter text: `StartRejected.NativeLaunchRefused.{
-  Receipt PartDiffers }`.
+  CodexThread Spawn Bind Naming Receipt Confirm Unclassified ]`, and
+  `NativeLaunchFailure` the fixed category, no adapter text:
+  `StartRejected.NativeLaunchRefused.{ Receipt PartDiffers }`.
 - `Unclassified` (in `RegistrationRefusal`, `NativeLaunchStage` and
   `NativeLaunchFailure`) is what a stored 18.0.0 unit refusal upgrades to.
 - The contract digest changes: every ordinary-socket peer repins.
