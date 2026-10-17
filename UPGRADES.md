@@ -21,6 +21,8 @@ table.
   CodexThread Spawn Bind Title Receipt ]`, and `NativeLaunchFailure` the
   fixed category, no adapter text: `StartRejected.NativeLaunchRefused.{
   Receipt PartDiffers }`.
+- `Unclassified` (in `RegistrationRefusal`, `NativeLaunchStage` and
+  `NativeLaunchFailure`) is what a stored 18.0.0 unit refusal upgrades to.
 - The contract digest changes: every ordinary-socket peer repins.
 
 ## 18.0.0: a refused harness start carries its cause

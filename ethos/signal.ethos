@@ -330,20 +330,23 @@ Signal
   ; acknowledgement is not the native binding; the composed first prompt is
   ; not canonical; the native target is not the one bound; the transcript
   ; boundary could not be captured; or a Codex transcript does not begin by
-  ; naming the thread Flow opened.
-  RegistrationRefusal.[ RouteUnverified RoleConflict RoleUnrecorded PaneBindingForeign AcknowledgementMismatch PromptNotCanonical NativeTarget.NativeTargetRefusal TranscriptBoundary ThreadNotNamed ]
+  ; naming the thread Flow opened. Unclassified marks a stored 18.0.0 unit
+  ; refusal whose stage was not kept.
+  RegistrationRefusal.[ RouteUnverified RoleConflict RoleUnrecorded PaneBindingForeign AcknowledgementMismatch PromptNotCanonical NativeTarget.NativeTargetRefusal TranscriptBoundary ThreadNotNamed Unclassified ]
   ; NativeLaunchStage names the step of a launch that failed once Flow had
   ; begun it natively: opening the launch pane, opening the Codex thread,
   ; starting the harness before Herdr was asked, binding the started
   ; harness, titling the claimed flow, or reading the launch receipt.
-  NativeLaunchStage.[ Open CodexThread Spawn Bind Title Receipt ]
+  ; Unclassified, in stage and category, marks a stored 18.0.0 unit refusal
+  ; whose stage was not kept.
+  NativeLaunchStage.[ Open CodexThread Spawn Bind Title Receipt Unclassified ]
   ; NativeLaunchFailure is the fixed category of that failure; no adapter
   ; text is carried. The receipt's own: the transcript boundary is not the
   ; intent's, the Codex transcript does not begin by naming the thread
   ; bound, a user turn differs from the startup parts, the session shows a
   ; part its leave-outs removed, or the model or effort differs from the
   ; intent.
-  NativeLaunchFailure.[ PaneTargetMismatch NativeSessionMissing NativeIdentityConflict FlowClaimUnavailable HarnessMismatch HerdrUnreadable ForeignBinding InvalidFlowId NotReady TranscriptUnreadable TitleReadbackDiffers CodexNamingRefused PaneLabelRefused AdapterRefused BoundaryMismatch ThreadNotNamed PartDiffers LeaveOutShown ModelOrEffortDiffers ]
+  NativeLaunchFailure.[ PaneTargetMismatch NativeSessionMissing NativeIdentityConflict FlowClaimUnavailable HarnessMismatch HerdrUnreadable ForeignBinding InvalidFlowId NotReady TranscriptUnreadable TitleReadbackDiffers CodexNamingRefused PaneLabelRefused AdapterRefused BoundaryMismatch ThreadNotNamed PartDiffers LeaveOutShown ModelOrEffortDiffers Unclassified ]
   NativeLaunchRefusal.{ NativeLaunchStage NativeLaunchFailure }
   ; StartRejection preserves a typed BindingRefused result at the public wire.
   ; AddressAwake: the profile's Address is Awake as a live flow, or another

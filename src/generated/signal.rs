@@ -532,6 +532,7 @@ pub enum RegistrationRefusal {
     NativeTarget(NativeTargetRefusal),
     TranscriptBoundary,
     ThreadNotNamed,
+    Unclassified,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -543,6 +544,7 @@ pub enum NativeLaunchStage {
     Bind,
     Title,
     Receipt,
+    Unclassified,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -567,6 +569,7 @@ pub enum NativeLaunchFailure {
     PartDiffers,
     LeaveOutShown,
     ModelOrEffortDiffers,
+    Unclassified,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
