@@ -7,7 +7,7 @@ How to deploy each breaking change of signal-flow.
 - A topic never dies: it goes idle. `Query.End`, `Response.Ended`,
   `Current.Ended`, `Refusal.Ended` and `StartRejection.AddressEnded` are
   removed, and flow-ethos `State` is `[ Awake.FlowId Asleep ]` (flow
-  06171a5). `End.{ Psyche flow Primary }` and `Refused.Ended.{ Psyche flow
+  06171a5). `Refusal.OffRoute`, which only `End` answered, is removed. `End.{ Psyche flow Primary }` and `Refused.Ended.{ Psyche flow
   Primary }` no longer read. Every later `Query`, `Response`, `Refusal` and
   `StartRejection` discriminant moves, so every ordinary-socket peer and
   every store that keeps an archived `StartRejection` or `State` upgrades.
@@ -15,7 +15,7 @@ How to deploy each breaking change of signal-flow.
   Primary is refused before anything launches or is written unless a
   metaflow is recorded, Awake or Asleep, at the Secondary of its aspect and
   topic: `StartRejected.NoSecondary`.
-- The contract digest changes from 5aa2992669c14992 to 156b886bd9673e82:
+- The contract digest changes from 5aa2992669c14992 to 32765a41a9454b06:
   every ordinary-socket peer repins.
 
 ## 22.0.0: workspace label refusal, model refusal, thread identification, native Stop and prompt identity

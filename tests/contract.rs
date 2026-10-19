@@ -662,6 +662,7 @@ fn an_ended_metaflow_is_no_datom_of_the_contract() {
         "Ended",
         "Current.Ended",
         "Refused.Ended.{ Psyche flow Primary }",
+        "Refused.OffRoute",
         "Listed.[ { { Psyche flow Primary } Ended [] [] } ]",
         "StartRejected.AddressEnded",
     ] {

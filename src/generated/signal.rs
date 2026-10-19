@@ -729,7 +729,6 @@ pub enum Refusal {
     Unknown(Unknown_Data),
     NoLayer,
     NotConfigured,
-    OffRoute,
     NoneAbove,
     NotMessage,
     Taken(flow_ethos::Address),

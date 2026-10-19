@@ -412,7 +412,6 @@ Signal
             Unknown.[ Address.Address Lock.Lock FlowId.FlowId Key.Key ]
             NoLayer
             NotConfigured
-            OffRoute
             NoneAbove
             NotMessage
             Taken.Address
