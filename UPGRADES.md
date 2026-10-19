@@ -2,46 +2,27 @@
 
 How to deploy each breaking change of signal-flow.
 
-## 21.0.0: a refused workspace label has its own category
+## 22.0.0: workspace label refusal, model refusal, thread identification, native Stop and prompt identity
 
 - `NativeLaunchFailure` appends `WorkspaceLabelRefused`: Herdr refused the
   label Flow sets on the started flow's workspace
   (`StartRejected.NativeLaunchRefused.{ Naming WorkspaceLabelRefused }`).
-  `PaneLabelRefused` remains the pane's own label. It is appended last, so
-  every earlier archived discriminant is unchanged.
-- The contract digest changes: every ordinary-socket peer repins.
-
-## 21.0.0: a Start whose model is not the configured one is refused
-
-`StartRejection` appends `ModelRefused.ModelRefusal`,
-`ModelRefusal.[ Unconfigured Differs.ModelName ]`: the profile's model is
-not the model configured for its Address's layer and aspect, compared name
-for name; `Differs` carries the configured model, `Unconfigured` says none
-is configured for that layer and aspect. The Nexus refuses such a Start, or
-the successor of a Replace, before anything launches or is written:
-`StartRejected.ModelRefused.Differs.claude-opus-5-5`,
-`ReplaceRejected.LaunchRefused.ModelRefused.Unconfigured`. It is appended
-last, so every earlier archived discriminant is unchanged.
-
-The contract digest changes from 5bf78e23e2f14c52 to 9fa1faae6a900154:
-every ordinary-socket peer repins.
-
-## 21.0.0: a send server identifies the Codex thread it serves
-
-- `Query` appends `IdentifyThread.{ Process NativeSessionId }`: Message sends
+  `PaneLabelRefused` remains the pane's own label.
+- `StartRejection` appends `ModelRefused.ModelRefusal`,
+  `ModelRefusal.[ Unconfigured Differs.ModelName ]`: the profile's model is
+  not the model configured for its Address's layer and aspect, compared name
+  for name; `Differs` carries the configured model, `Unconfigured` says none
+  is configured for that layer and aspect. The Nexus refuses such a Start, or
+  the successor of a Replace, before anything launches or is written:
+  `StartRejected.ModelRefused.Differs.claude-opus-5-5`,
+  `ReplaceRejected.LaunchRefused.ModelRefused.Unconfigured`.
+- `Query` gains `IdentifyThread.{ Process NativeSessionId }`: Message sends
   it for an MCP send server, with the process its socket reports for that
   server and the thread id Codex stamped on the call
   (`IdentifyThread.{ { 4242 987654 } 01a0fdcc-c1a1-7f43-8c23-06d41fa34438 }`).
   It answers `Identified.Address`, `Refused.Unidentified.Process`,
   `Refused.NotConfigured`, `Refused.NotMessage`, or the new
-  `Refused.NotSendServer.Process`.
-- `Refusal` appends `NotSendServer.Process`; every earlier archived
-  discriminant is unchanged.
-- The contract digest changes from 5bf78e23e2f14c52 to 28e4f853ba798c44:
-  every ordinary-socket peer repins.
-
-## 21.0.0: a Stop and a submitted prompt carry their native identity; QueueTurnEnd is removed
-
+  `Refused.NotSendServer.Process`. `Refusal` appends `NotSendServer.Process`.
 - `Event.Stopped` carries `NativeStop.{ Option<NativeSessionId>
   Option<TranscriptPath> }`, the session and transcript the harness gave its
   Stop hook: `Report.{ f1c841 Stopped.{ Some.s1 Some./p/s1.jsonl } }`.
@@ -53,7 +34,11 @@ every ordinary-socket peer repins.
   `TurnEndRequest`, `TurnEndRejection` and `TurnId` are removed: the
   correlated Stop report is the turn end. Every later `Query` and `Response`
   discriminant moves, so every ordinary-socket peer and every store that
-  keeps an archived `Event` upgrades.
+  keeps an archived `Event` upgrades. The appended `NativeLaunchFailure`,
+  `StartRejection` and `Refusal` variants leave every earlier discriminant
+  of those enums unchanged.
+- The contract digest changes from 5bf78e23e2f14c52 to 5aa2992669c14992:
+  every ordinary-socket peer repins.
 
 ## 20.0.0: a queued request carries its sender; the send tool's refusal has its category
 
