@@ -40,6 +40,21 @@ every ordinary-socket peer repins.
 - The contract digest changes from 5bf78e23e2f14c52 to 28e4f853ba798c44:
   every ordinary-socket peer repins.
 
+## 21.0.0: a Stop and a submitted prompt carry their native identity; QueueTurnEnd is removed
+
+- `Event.Stopped` carries `NativeStop.{ Option<NativeSessionId>
+  Option<TranscriptPath> }`, the session and transcript the harness gave its
+  Stop hook: `Report.{ f1c841 Stopped.{ Some.s1 Some./p/s1.jsonl } }`.
+- `Event` appends `PromptSubmitted.NativePrompt`, `NativePrompt.{
+  Option<NativeSessionId> Option<PromptId> PromptSha256 }`: the SHA-256 of a
+  prompt the harness took, with its paste wrapper taken off, and the
+  harness's prompt id when it gave one.
+- `Query.QueueTurnEnd`, `Response.TurnEndQueued`, `Response.TurnEndRejected`,
+  `TurnEndRequest`, `TurnEndRejection` and `TurnId` are removed: the
+  correlated Stop report is the turn end. Every later `Query` and `Response`
+  discriminant moves, so every ordinary-socket peer and every store that
+  keeps an archived `Event` upgrades.
+
 ## 20.0.0: a queued request carries its sender; the send tool's refusal has its category
 
 - A metaflow's queue holds `QueuedRequest.{ SentBy Request }` (flow-ethos),

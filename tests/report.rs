@@ -1,13 +1,27 @@
 //! Report carries one harness event of a flow Flow holds; Reported answers
 //! it, and a FlowId Flow does not hold is refused as Refused.Unknown.FlowId.
 
-use signal_flow::{Event, Query, Refusal, Report_Data, Response, Unknown_Data};
+use signal_flow::{
+    Event, NativePrompt, NativeStop, Query, Refusal, Report_Data, Response, Unknown_Data,
+};
 
 fn reports() -> Vec<Query> {
     [
         Event::Started,
         Event::ToolUsed("Bash".into()),
-        Event::Stopped,
+        Event::Stopped(NativeStop {
+            native_session_id_option: Some("s1".into()),
+            transcript_path_option: Some("/p/s1.jsonl".into()),
+        }),
+        Event::Stopped(NativeStop {
+            native_session_id_option: None,
+            transcript_path_option: None,
+        }),
+        Event::PromptSubmitted(NativePrompt {
+            native_session_id_option: Some("s1".into()),
+            prompt_id_option: Some("p1".into()),
+            prompt_sha256: "ab12".into(),
+        }),
     ]
     .into_iter()
     .map(|event| {
@@ -64,7 +78,9 @@ mod datom {
         for (query, expected) in super::reports().into_iter().zip([
             "Report.{ f1c841 Started }",
             "Report.{ f1c841 ToolUsed.Bash }",
-            "Report.{ f1c841 Stopped }",
+            "Report.{ f1c841 Stopped.{ Some.s1 Some./p/s1.jsonl } }",
+            "Report.{ f1c841 Stopped.{ None None } }",
+            "Report.{ f1c841 PromptSubmitted.{ Some.s1 Some.p1 ab12 } }",
         ]) {
             let text = query.datomize(vec![]).protosize().compact();
             assert_eq!(text, expected);
@@ -79,6 +95,9 @@ mod datom {
             "Report.{ f1c841 }",
             "Report.{ f1c841 Started extra }",
             "Report.{ f1c841 Paused }",
+            "Report.{ f1c841 Stopped }",
+            "Report.{ f1c841 Stopped.{ Some.s1 } }",
+            "Report.{ f1c841 PromptSubmitted.{ Some.s1 None } }",
         ] {
             assert!(
                 Potential::<Query>::from(refused)

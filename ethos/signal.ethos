@@ -1,14 +1,6 @@
 ; Presentation names the living-directed output's book; it carries no body
 ; or sender. Transcript content ownership is deliberately not declared.
 ;
-; QueueTurnEnd is a pre-end wakeup, not evidence that the turn completed.
-; Stop may precede the final native record or repeat while a turn continues.
-; TurnEndQueued acknowledges durable enqueue only and must return without
-; waiting for the final transcript record. The Nexus verifies completion and
-; deduplicates actual native (SessionId, TurnId) before any downstream work.
-; A missing transcript path is None, never an invented empty path.
-; No handler, hook or state subscription is implemented by this vocabulary.
-;
 ; Flow ordinary Signal.
 ;
 ; Start and Replace carry a LaunchProfile; a Replace's profile names the
@@ -118,6 +110,16 @@
 ; Reported. A FlowId Flow does not hold is refused, Refused.Unknown.FlowId,
 ; never adopted: a flow Flow did not launch is a flow Flow does not know.
 ;
+; Stopped and PromptSubmitted carry the native identity the harness gave
+; its hook: the session, and for a Stop the transcript it writes. Flow
+; acts on such an event only when that identity is the flow's registered
+; native binding; any other is recorded and acts on nothing. A field the
+; harness did not give is None, never an invented empty value.
+; PromptSubmitted carries the SHA-256 of the submitted prompt, after the
+; harness's own paste wrapper is taken off, and the harness's prompt id
+; when it gave one: an exact digest of the whole prompt is the receipt
+; that the harness took one queued request, and no prompt text travels.
+;
 ; A LaunchProfile names the Address of the seat it launches. When the
 ; launch is confirmed, the Nexus records that Address's metaflow Awake as
 ; the launched flow, under the rules Bind applies: a metaflow Awake as a
@@ -161,7 +163,6 @@ Signal
   LaunchStatus.LaunchRequestId
   Observe.ObserveSelection
   ResolveCaller.Option<FlowId>
-  QueueTurnEnd.TurnEndRequest
   Report.{ FlowId Event }
   Lock.{ Sender Recipient }
   Bind.{ Address Process }
@@ -190,8 +191,6 @@ Signal
   CallerResolved.Caller
   CallerResolutionRejected.CallerResolutionRejection
   AgentObserved.AgentObservation
-  TurnEndQueued.TurnEndRequest
-  TurnEndRejected.TurnEndRejection
   Reported
   Locked.Lock
   Bound.FlowId
@@ -205,7 +204,6 @@ Signal
   Refused.Refusal ]
 [
   SessionId.String
-  TurnId.String
   FlowType.String
   Generation.Integer
   EndpointPath.String
@@ -407,8 +405,6 @@ Signal
   Title.String
   Presentation.{ Title }
   TranscriptPath.String
-  TurnEndRequest.{ SessionId TurnId Option<TranscriptPath> }
-  TurnEndRejection.[ UnknownSession SessionMismatch InvalidTurnId InvalidTranscriptPath QueueRefused ]
   Refusal.[ Locked
             Held.Lock
             Awake.FlowId
@@ -425,6 +421,10 @@ Signal
             Unidentified.Process
             Store.String
             NotSendServer.Process ]
+  PromptId.String
+  NativeStop.{ Option<NativeSessionId> Option<TranscriptPath> }
+  NativePrompt.{ Option<NativeSessionId> Option<PromptId> PromptSha256 }
   Event.[ Started
           ToolUsed.String
-          Stopped ] ]
+          Stopped.NativeStop
+          PromptSubmitted.NativePrompt ] ]

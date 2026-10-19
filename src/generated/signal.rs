@@ -2,8 +2,6 @@
 #[rustfmt::skip]
 pub type SessionId = String;
 #[rustfmt::skip]
-pub type TurnId = String;
-#[rustfmt::skip]
 pub type FlowType = String;
 #[rustfmt::skip]
 pub type Generation = i64;
@@ -713,24 +711,6 @@ pub type TranscriptPath = String;
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct TurnEndRequest {
-    pub session_id: SessionId,
-    pub turn_id: TurnId,
-    pub transcript_path_option: std::option::Option<TranscriptPath>,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum TurnEndRejection {
-    UnknownSession,
-    SessionMismatch,
-    InvalidTurnId,
-    InvalidTranscriptPath,
-    QueueRefused,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Unknown_Data {
     Address(flow_ethos::Address),
     Lock(flow_ethos::Lock),
@@ -759,12 +739,30 @@ pub enum Refusal {
     NotSendServer(flow_ethos::Process),
 }
 #[rustfmt::skip]
+pub type PromptId = String;
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct NativeStop {
+    pub native_session_id_option: std::option::Option<NativeSessionId>,
+    pub transcript_path_option: std::option::Option<TranscriptPath>,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct NativePrompt {
+    pub native_session_id_option: std::option::Option<NativeSessionId>,
+    pub prompt_id_option: std::option::Option<PromptId>,
+    pub prompt_sha256: PromptSha256,
+}
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Event {
     Started,
     ToolUsed(String),
-    Stopped,
+    Stopped(NativeStop),
+    PromptSubmitted(NativePrompt),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -813,7 +811,6 @@ pub enum Query {
     LaunchStatus(LaunchRequestId),
     Observe(ObserveSelection),
     ResolveCaller(std::option::Option<flow_ethos::FlowId>),
-    QueueTurnEnd(TurnEndRequest),
     Report(Report_Data),
     Lock(Lock_Data),
     Bind(Bind_Data),
@@ -856,8 +853,6 @@ pub enum Response {
     CallerResolved(Caller),
     CallerResolutionRejected(CallerResolutionRejection),
     AgentObserved(AgentObservation),
-    TurnEndQueued(TurnEndRequest),
-    TurnEndRejected(TurnEndRejection),
     Reported,
     Locked(flow_ethos::Lock),
     Bound(flow_ethos::FlowId),
