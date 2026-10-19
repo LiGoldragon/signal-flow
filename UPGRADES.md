@@ -2,6 +2,15 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 21.0.0: a refused workspace label has its own category
+
+- `NativeLaunchFailure` appends `WorkspaceLabelRefused`: Herdr refused the
+  label Flow sets on the started flow's workspace
+  (`StartRejected.NativeLaunchRefused.{ Naming WorkspaceLabelRefused }`).
+  `PaneLabelRefused` remains the pane's own label. It is appended last, so
+  every earlier archived discriminant is unchanged.
+- The contract digest changes: every ordinary-socket peer repins.
+
 ## 20.0.0: a queued request carries its sender; the send tool's refusal has its category
 
 - A metaflow's queue holds `QueuedRequest.{ SentBy Request }` (flow-ethos),

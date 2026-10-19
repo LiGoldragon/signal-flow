@@ -332,6 +332,7 @@ fn replace_and_launch_status_responses_have_concrete_datoms() {
         "ReplaceRejected.UnknownPredecessor",
         "ReplaceRejected.PredecessorStopped",
         "ReplaceRejected.LaunchRefused.NativeLaunchRefused.{ Naming PaneLabelRefused }",
+        "ReplaceRejected.LaunchRefused.NativeLaunchRefused.{ Naming WorkspaceLabelRefused }",
         "ReplaceRejected.ReapRefused.CloseRefused",
         "LaunchStatusRejected.UnknownLaunchRequest",
         "LaunchStatusRejected.PersistenceRefused",
@@ -404,6 +405,7 @@ fn a_refused_registration_and_a_refused_native_step_carry_their_stage() {
         "StartRejected.NativeLaunchRefused.{ Receipt ModelOrEffortDiffers }",
         "StartRejected.NativeLaunchRefused.{ Confirm SessionUnrecorded }",
         "StartRejected.NativeLaunchRefused.{ Unclassified Unclassified }",
+        "StartRejected.NativeLaunchRefused.{ Naming WorkspaceLabelRefused }",
         "StartRejected.RegistrationRefused.Unclassified",
         "ReplaceRejected.LaunchRefused.RegistrationRefused.NativeTarget.NoNativeSession",
     ] {
