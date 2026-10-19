@@ -436,6 +436,33 @@ fn a_refused_registration_and_a_refused_native_step_carry_their_stage() {
 }
 
 #[test]
+fn a_start_whose_model_is_not_the_configured_one_is_refused_with_its_reason() {
+    for text in [
+        "StartRejected.ModelRefused.Unconfigured",
+        "StartRejected.ModelRefused.Differs.claude-opus-5-5",
+        "ReplaceRejected.LaunchRefused.ModelRefused.Differs.gpt-6-sol",
+    ] {
+        let response = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            response
+        );
+        assert_eq!(response.datomize(vec![]).protosize().compact(), text);
+    }
+    assert_eq!(
+        Potential::<Response>::from("StartRejected.ModelRefused.Differs.gpt-6-sol")
+            .actualize(&mut budget())
+            .unwrap(),
+        Response::StartRejected(signal_flow::StartRejection::ModelRefused(
+            signal_flow::ModelRefusal::Differs("gpt-6-sol".into())
+        ))
+    );
+}
+
+#[test]
 fn replaced_names_the_stopped_predecessor_and_the_started_successor() {
     let reply = Response::Replaced(signal_flow::Replaced {
         flow_id: "fac697".into(),

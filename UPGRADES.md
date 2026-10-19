@@ -11,6 +11,21 @@ How to deploy each breaking change of signal-flow.
   every earlier archived discriminant is unchanged.
 - The contract digest changes: every ordinary-socket peer repins.
 
+## 21.0.0: a Start whose model is not the configured one is refused
+
+`StartRejection` appends `ModelRefused.ModelRefusal`,
+`ModelRefusal.[ Unconfigured Differs.ModelName ]`: the profile's model is
+not the model configured for its Address's layer and aspect, compared name
+for name; `Differs` carries the configured model, `Unconfigured` says none
+is configured for that layer and aspect. The Nexus refuses such a Start, or
+the successor of a Replace, before anything launches or is written:
+`StartRejected.ModelRefused.Differs.claude-opus-5-5`,
+`ReplaceRejected.LaunchRefused.ModelRefused.Unconfigured`. It is appended
+last, so every earlier archived discriminant is unchanged.
+
+The contract digest changes from 5bf78e23e2f14c52 to 9fa1faae6a900154:
+every ordinary-socket peer repins.
+
 ## 20.0.0: a queued request carries its sender; the send tool's refusal has its category
 
 - A metaflow's queue holds `QueuedRequest.{ SentBy Request }` (flow-ethos),
