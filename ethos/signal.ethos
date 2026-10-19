@@ -301,6 +301,11 @@ Signal
   ; a part a flow cannot go without, a skill leave-out with Workflow kept,
   ; or a leave-out of the other harness.
   LeaveOutRefusal.[ Indispensable.LeaveOut NeedsWorkflowLeftOut.LeaveOut NotForHarness.LeaveOut ]
+  ; ModelRefusal names why a Start's model was refused: no model is
+  ; configured for its Address's layer and aspect, or the configured model,
+  ; which it carries, is another one. Models are compared exactly, name for
+  ; name.
+  ModelRefusal.[ Unconfigured Differs.ModelName ]
   ContextRefusal.[ ComposerUnavailable ComposerRejected MetaflowMismatch PayloadMismatch ModuleMissing SystemTooLarge ModuleTooLarge ]
   ; HerdrRefusal is Herdr's own answer to a refused agent start, kept whole:
   ; the error code and message of its JSON error body, or no code and the
@@ -361,7 +366,10 @@ Signal
   ; NativeLaunchRefused: a native step of the launch failed, at its stage.
   ; RegistrationRefused: the started flow was not registered, at its stage.
   ; HarnessSpawnRefused: the harness start itself was refused.
-  StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake AddressEnded ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ]
+  ; ModelRefused: the profile's model is not the model configured for its
+  ; Address's layer and aspect; the Start is refused before anything
+  ; launches or is written.
+  StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake AddressEnded ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal ]
   RestartRejection.[ ProvenanceMismatch UnknownFlow ResumeRefused ]
   RecipientResolutionRejection.[ UnknownFlow FlowUnavailable ]
   StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused PersistenceRefused ]

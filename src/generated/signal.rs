@@ -451,6 +451,13 @@ pub enum LeaveOutRefusal {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum ModelRefusal {
+    Unconfigured,
+    Differs(flow_ethos::ModelName),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum ContextRefusal {
     ComposerUnavailable,
     ComposerRejected,
@@ -598,6 +605,7 @@ pub enum StartRejection {
     ContextRefused(ContextRefusal),
     LeaveOutRefused(LeaveOutRefusal),
     HarnessSpawnRefused(HarnessSpawnRefusal),
+    ModelRefused(ModelRefusal),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
