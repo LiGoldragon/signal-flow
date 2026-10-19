@@ -646,3 +646,35 @@ fn start_names_the_address_of_the_seat_it_launches() {
         assert_eq!(response.datomize(vec![]).protosize().compact(), text);
     }
 }
+
+/// A send server's identification names its process and the Codex thread
+/// the call was stamped with; a process that is no trusted send server is
+/// refused with that process.
+#[test]
+fn identify_thread_and_its_refusal_have_concrete_datoms() {
+    let text = "IdentifyThread.{ { 4242 987654 } 01a0fdcc-c1a1-7f43-8c23-06d41fa34438 }";
+    let query = Potential::<Query>::from(text)
+        .actualize(&mut budget())
+        .unwrap();
+    assert_eq!(
+        query,
+        Query::IdentifyThread(signal_flow::IdentifyThread_Data {
+            process: signal_flow::Process {
+                pid: 4242,
+                started: 987654,
+            },
+            native_session_id: "01a0fdcc-c1a1-7f43-8c23-06d41fa34438".into(),
+        })
+    );
+    assert_eq!(query.datomize(vec![]).protosize().compact(), text);
+    for text in [
+        "Identified.{ Mind flow Secondary }",
+        "Refused.NotSendServer.{ 4242 987654 }",
+        "Refused.Unidentified.{ 4242 987654 }",
+    ] {
+        let response = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        assert_eq!(response.datomize(vec![]).protosize().compact(), text);
+    }
+}

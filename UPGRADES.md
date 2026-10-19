@@ -26,6 +26,20 @@ last, so every earlier archived discriminant is unchanged.
 The contract digest changes from 5bf78e23e2f14c52 to 9fa1faae6a900154:
 every ordinary-socket peer repins.
 
+## 21.0.0: a send server identifies the Codex thread it serves
+
+- `Query` appends `IdentifyThread.{ Process NativeSessionId }`: Message sends
+  it for an MCP send server, with the process its socket reports for that
+  server and the thread id Codex stamped on the call
+  (`IdentifyThread.{ { 4242 987654 } 01a0fdcc-c1a1-7f43-8c23-06d41fa34438 }`).
+  It answers `Identified.Address`, `Refused.Unidentified.Process`,
+  `Refused.NotConfigured`, `Refused.NotMessage`, or the new
+  `Refused.NotSendServer.Process`.
+- `Refusal` appends `NotSendServer.Process`; every earlier archived
+  discriminant is unchanged.
+- The contract digest changes from 5bf78e23e2f14c52 to 28e4f853ba798c44:
+  every ordinary-socket peer repins.
+
 ## 20.0.0: a queued request carries its sender; the send tool's refusal has its category
 
 - A metaflow's queue holds `QueuedRequest.{ SentBy Request }` (flow-ethos),

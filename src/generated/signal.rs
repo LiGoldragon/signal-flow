@@ -756,6 +756,7 @@ pub enum Refusal {
     Taken(flow_ethos::Address),
     Unidentified(flow_ethos::Process),
     Store(String),
+    NotSendServer(flow_ethos::Process),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -796,6 +797,13 @@ pub struct Deliver_Data {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct IdentifyThread_Data {
+    pub process: flow_ethos::Process,
+    pub native_session_id: NativeSessionId,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Query {
     Start(LaunchProfile),
     Restart(flow_ethos::FlowId),
@@ -815,6 +823,7 @@ pub enum Query {
     End(flow_ethos::Address),
     Current(flow_ethos::Address),
     Metaflows,
+    IdentifyThread(IdentifyThread_Data),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]

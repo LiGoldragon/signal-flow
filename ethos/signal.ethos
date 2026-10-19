@@ -98,6 +98,20 @@
 ; created; an Asleep Sender is refused as Asleep and an Ended Sender as
 ; Ended.Address.
 ;
+; IdentifyThread names the metaflow a Codex thread runs as, for an MCP
+; send server serving that thread. Message sends it, as it sends Identify,
+; with the process its own socket reports for the send server and the
+; thread id Codex stamped on the tool call (its _meta threadId). Flow
+; accepts it only from the bound Message process, and only when that
+; process's kernel-reported executable is a configured send server's and
+; its parent's is the Codex app-server executable configured with it (the
+; meta SendServers family): another executable or parent is NotSendServer,
+; and no configured send server is NotConfigured. The thread then names the
+; Address of the metaflow Awake as the one live Codex flow whose thread Flow
+; recorded at its Start; any other thread, or one whose metaflow is not
+; Awake, is Unidentified. Neither the process's environment nor the
+; app-server as a whole names a flow.
+;
 ; Report carries one harness event of a flow Flow holds, sent by the
 ; harness's hook through the Flow CLI with the FlowId the flow was
 ; launched with. Flow stores the event in that flow's Memory and answers
@@ -156,7 +170,8 @@ Signal
   Release.Lock
   End.Address
   Current.Address
-  Metaflows ]
+  Metaflows
+  IdentifyThread.{ Process NativeSessionId } ]
 [ Started.Launched
   LaunchPending.LaunchAttempt
   StartAmbiguous.PromptDeliveryIntent
@@ -408,7 +423,8 @@ Signal
             NotMessage
             Taken.Address
             Unidentified.Process
-            Store.String ]
+            Store.String
+            NotSendServer.Process ]
   Event.[ Started
           ToolUsed.String
           Stopped ] ]
