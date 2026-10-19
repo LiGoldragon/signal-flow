@@ -2,6 +2,30 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 23.0.0: a prompt's origin, a published book, a held Stop
+
+- `NativePrompt` appends `PromptOrigin`, `PromptOrigin.[ Typed Psyche
+  Message Queued Notification ]`: where the submitted prompt came from, as
+  the hook read its text. `Report.{ f1c841 PromptSubmitted.{ Some.s1
+  Some.p1 ab12 Psyche } }`. A `PromptSubmitted` without its origin no
+  longer reads.
+- `Event` appends `StopHeld.NativeStop` and `Published.Publication`,
+  `Publication.{ Option<NativeSessionId> Option<PromptId> ArtifactUrl }`,
+  `ArtifactUrl.String`: the URL of a book the flow published,
+  `Report.{ f1c841 Published.{ Some.s1 Some.p1
+  https://claude.ai/code/artifact/4fcc3326 } }`. The Nexus records a
+  correlated Stop it holds as `StopHeld`; a hook never sends one.
+- `Response` appends `TurnHeld.Reason` (flow-ethos `Reason`), Report's
+  answer to a Stop whose flow owes the living a book:
+  `TurnHeld.«Make the book for the living's words before ending: ...»`.
+  The flow's hook keeps the turn going with that reason.
+- `NativePrompt` grows, so `Event`'s archived layout changes: every store
+  that keeps archived events upgrades, and meta-signal-flow, which imports
+  `Event`, repins. The appended `Event` and `Response` variants leave every
+  earlier discriminant unchanged.
+- The contract digest changes from 5aa2992669c14992 to c08899110362ba2d: every
+  ordinary-socket peer repins.
+
 ## 22.0.0: workspace label refusal, model refusal, thread identification, native Stop and prompt identity
 
 - `NativeLaunchFailure` appends `WorkspaceLabelRefused`: Herdr refused the

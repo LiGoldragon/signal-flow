@@ -2,7 +2,8 @@
 //! it, and a FlowId Flow does not hold is refused as Refused.Unknown.FlowId.
 
 use signal_flow::{
-    Event, NativePrompt, NativeStop, Query, Refusal, Report_Data, Response, Unknown_Data,
+    Event, NativePrompt, NativeStop, PromptOrigin, Publication, Query, Refusal, Report_Data,
+    Response, Unknown_Data,
 };
 
 fn reports() -> Vec<Query> {
@@ -21,6 +22,22 @@ fn reports() -> Vec<Query> {
             native_session_id_option: Some("s1".into()),
             prompt_id_option: Some("p1".into()),
             prompt_sha256: "ab12".into(),
+            prompt_origin: PromptOrigin::Psyche,
+        }),
+        Event::PromptSubmitted(NativePrompt {
+            native_session_id_option: Some("s1".into()),
+            prompt_id_option: None,
+            prompt_sha256: "cd34".into(),
+            prompt_origin: PromptOrigin::Queued,
+        }),
+        Event::StopHeld(NativeStop {
+            native_session_id_option: Some("s1".into()),
+            transcript_path_option: Some("/p/s1.jsonl".into()),
+        }),
+        Event::Published(Publication {
+            native_session_id_option: Some("s1".into()),
+            prompt_id_option: Some("p1".into()),
+            artifact_url: "https://claude.ai/code/artifact/4fcc3326".into(),
         }),
     ]
     .into_iter()
@@ -37,6 +54,7 @@ fn replies() -> Vec<Response> {
     vec![
         Response::Reported,
         Response::Refused(Refusal::Unknown(Unknown_Data::FlowId("0a0a0a".into()))),
+        Response::TurnHeld("Make the book for the living's words before ending".into()),
     ]
 }
 
@@ -80,7 +98,10 @@ mod datom {
             "Report.{ f1c841 ToolUsed.Bash }",
             "Report.{ f1c841 Stopped.{ Some.s1 Some./p/s1.jsonl } }",
             "Report.{ f1c841 Stopped.{ None None } }",
-            "Report.{ f1c841 PromptSubmitted.{ Some.s1 Some.p1 ab12 } }",
+            "Report.{ f1c841 PromptSubmitted.{ Some.s1 Some.p1 ab12 Psyche } }",
+            "Report.{ f1c841 PromptSubmitted.{ Some.s1 None cd34 Queued } }",
+            "Report.{ f1c841 StopHeld.{ Some.s1 Some./p/s1.jsonl } }",
+            "Report.{ f1c841 Published.{ Some.s1 Some.p1 https://claude.ai/code/artifact/4fcc3326 } }",
         ]) {
             let text = query.datomize(vec![]).protosize().compact();
             assert_eq!(text, expected);
@@ -98,6 +119,9 @@ mod datom {
             "Report.{ f1c841 Stopped }",
             "Report.{ f1c841 Stopped.{ Some.s1 } }",
             "Report.{ f1c841 PromptSubmitted.{ Some.s1 None } }",
+            "Report.{ f1c841 PromptSubmitted.{ Some.s1 Some.p1 ab12 } }",
+            "Report.{ f1c841 PromptSubmitted.{ Some.s1 Some.p1 ab12 Living } }",
+            "Report.{ f1c841 Published.{ Some.s1 Some.p1 } }",
         ] {
             assert!(
                 Potential::<Query>::from(refused)
@@ -109,10 +133,11 @@ mod datom {
 
     #[test]
     fn reported_and_unknown_flow_have_exact_inline_datoms() {
-        for (reply, expected) in super::replies()
-            .into_iter()
-            .zip(["Reported", "Refused.Unknown.FlowId.0a0a0a"])
-        {
+        for (reply, expected) in super::replies().into_iter().zip([
+            "Reported",
+            "Refused.Unknown.FlowId.0a0a0a",
+            "TurnHeld.«Make the book for the living's words before ending»",
+        ]) {
             let text = reply.datomize(vec![]).protosize().compact();
             assert_eq!(text, expected);
             assert_eq!(

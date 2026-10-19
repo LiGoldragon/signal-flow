@@ -750,10 +750,31 @@ pub struct NativeStop {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum PromptOrigin {
+    Typed,
+    Psyche,
+    Message,
+    Queued,
+    Notification,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct NativePrompt {
     pub native_session_id_option: std::option::Option<NativeSessionId>,
     pub prompt_id_option: std::option::Option<PromptId>,
     pub prompt_sha256: PromptSha256,
+    pub prompt_origin: PromptOrigin,
+}
+#[rustfmt::skip]
+pub type ArtifactUrl = String;
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Publication {
+    pub native_session_id_option: std::option::Option<NativeSessionId>,
+    pub prompt_id_option: std::option::Option<PromptId>,
+    pub artifact_url: ArtifactUrl,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -763,6 +784,8 @@ pub enum Event {
     ToolUsed(String),
     Stopped(NativeStop),
     PromptSubmitted(NativePrompt),
+    StopHeld(NativeStop),
+    Published(Publication),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -864,4 +887,5 @@ pub enum Response {
     Ended,
     Current(Current_Data),
     Refused(Refusal),
+    TurnHeld(flow_ethos::Reason),
 }

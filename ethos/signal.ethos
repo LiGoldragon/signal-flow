@@ -119,6 +119,18 @@
 ; harness's own paste wrapper is taken off, and the harness's prompt id
 ; when it gave one: an exact digest of the whole prompt is the receipt
 ; that the harness took one queued request, and no prompt text travels.
+; It carries the prompt's origin too, which says whether it owes the
+; living a book: a Typed or Psyche prompt does, a Message or Notification
+; does not, and a Queued hand-over does when a request it hands over is
+; the living's psyche. A startup part before the last owes none.
+;
+; Published is a book the flow published: the harness's Artifact tool
+; answered a publication with its URL. A correlated Stop whose flow's
+; newest prompt that owes a book has no Published after it is recorded as
+; StopHeld, not Stopped, and answered TurnHeld with what is owed: the
+; harness's hook keeps the turn going with that reason, and the held Stop
+; is no turn end, so it neither drains the flow's queue nor sends a
+; startup part.
 ;
 ; A LaunchProfile names the Address of the seat it launches. When the
 ; launch is confirmed, the Nexus records that Address's metaflow Awake as
@@ -154,7 +166,7 @@
 
 Signal
 [
-  flow_ethos:[ Aspect Address FlowId Request SentBy QueuedRequest Lock Sender Process Metaflow Key Recipient Layer Topic Subaspect OrdinarySocketPath MetaSocketPath Start ModelName HarnessKind ] ]
+  flow_ethos:[ Aspect Address FlowId Request SentBy QueuedRequest Lock Sender Process Metaflow Key Recipient Layer Topic Subaspect OrdinarySocketPath MetaSocketPath Start ModelName HarnessKind Reason ] ]
 [ Start.LaunchProfile
   Restart.FlowId
   ResolveRecipient.RecipientResolutionRequest
@@ -201,7 +213,8 @@ Signal
   Released
   Ended
   Current.[ Awake.FlowId Asleep Ended Unknown ]
-  Refused.Refusal ]
+  Refused.Refusal
+  TurnHeld.Reason ]
 [
   SessionId.String
   FlowType.String
@@ -423,8 +436,17 @@ Signal
             NotSendServer.Process ]
   PromptId.String
   NativeStop.{ Option<NativeSessionId> Option<TranscriptPath> }
-  NativePrompt.{ Option<NativeSessionId> Option<PromptId> PromptSha256 }
+  ; Where a submitted prompt came from, as its text shows it: the living's
+  ; words relayed as psyche (#psyche, #psyches), a flow's message (#msg),
+  ; the work Flow hands over from a metaflow's queue, the harness's own
+  ; notice that a background task ended, or anything else typed.
+  PromptOrigin.[ Typed Psyche Message Queued Notification ]
+  NativePrompt.{ Option<NativeSessionId> Option<PromptId> PromptSha256 PromptOrigin }
+  ArtifactUrl.String
+  Publication.{ Option<NativeSessionId> Option<PromptId> ArtifactUrl }
   Event.[ Started
           ToolUsed.String
           Stopped.NativeStop
-          PromptSubmitted.NativePrompt ] ]
+          PromptSubmitted.NativePrompt
+          StopHeld.NativeStop
+          Published.Publication ] ]
