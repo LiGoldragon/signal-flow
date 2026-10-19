@@ -352,8 +352,10 @@ Signal
   ; intent. The confirmation's own: the received flow is not held with its
   ; native session. SendToolUnsupported, at CodexThread: the Codex
   ; app-server was not shown to accept Flow's send tool behind its
-  ; experimental API, so no thread was opened.
-  NativeLaunchFailure.[ PaneTargetMismatch NativeSessionMissing NativeIdentityConflict FlowClaimUnavailable HarnessMismatch HerdrUnreadable ForeignBinding InvalidFlowId NotReady TranscriptUnreadable TitleReadbackDiffers CodexNamingRefused PaneLabelRefused AdapterRefused BoundaryMismatch ThreadNotNamed PartDiffers LeaveOutShown ModelOrEffortDiffers SessionUnrecorded Unclassified SendToolUnsupported ]
+  ; experimental API, so no thread was opened. WorkspaceLabelRefused: Herdr
+  ; refused the label Flow sets on the started flow's workspace (PaneLabelRefused
+  ; is the pane's own label).
+  NativeLaunchFailure.[ PaneTargetMismatch NativeSessionMissing NativeIdentityConflict FlowClaimUnavailable HarnessMismatch HerdrUnreadable ForeignBinding InvalidFlowId NotReady TranscriptUnreadable TitleReadbackDiffers CodexNamingRefused PaneLabelRefused AdapterRefused BoundaryMismatch ThreadNotNamed PartDiffers LeaveOutShown ModelOrEffortDiffers SessionUnrecorded Unclassified SendToolUnsupported WorkspaceLabelRefused ]
   NativeLaunchRefusal.{ NativeLaunchStage NativeLaunchFailure }
   ; StartRejection preserves a typed BindingRefused result at the public wire.
   ; AddressAwake: the profile's Address is Awake as a live flow, or another
