@@ -542,7 +542,7 @@ fn metaflows_query_and_listed_metaflow_roundtrip() {
         .unwrap();
     assert_eq!(query, Query::Metaflows);
 
-    let text = "Listed.[ { { Psyche flow Primary } Ended [ past-1 ] [ { Sender.{ Mind flow Tertiary } Order.continue } { Unknown Notice.kept } ] } ]";
+    let text = "Listed.[ { { Psyche flow Primary } Awake.f1c841 [ past-1 ] [ { Sender.{ Mind flow Tertiary } Order.continue } { Unknown Notice.kept } ] } ]";
     let restored = Potential::<Response>::from(text)
         .actualize(&mut budget())
         .unwrap();
@@ -552,7 +552,7 @@ fn metaflows_query_and_listed_metaflow_roundtrip() {
     assert_eq!(rows.len(), 1);
     assert_eq!(rows[0].address.aspect, Aspect::Psyche);
     assert_eq!(rows[0].address.topic, "flow");
-    assert_eq!(rows[0].state, flow_ethos::State::Ended);
+    assert_eq!(rows[0].state, flow_ethos::State::Awake("f1c841".into()));
     assert_eq!(rows[0].past, vec!["past-1".to_owned()]);
     assert_eq!(
         rows[0].queue,
@@ -634,7 +634,7 @@ fn start_names_the_address_of_the_seat_it_launches() {
     assert_eq!(profile.effort, "medium");
     for text in [
         "StartRejected.AddressAwake",
-        "StartRejected.AddressEnded",
+        "StartRejected.NoSecondary",
         "StartRejected.ContextRefused.MetaflowMismatch",
         "StartRejected.ContextRefused.ModuleTooLarge",
         "StartRejected.LeaveOutRefused.Indispensable.ToolSearch",
@@ -645,6 +645,57 @@ fn start_names_the_address_of_the_seat_it_launches() {
             .unwrap();
         assert_eq!(response.datomize(vec![]).protosize().compact(), text);
     }
+}
+
+/// A topic never dies: a metaflow is Awake or Asleep. The End query, its
+/// Ended answer, the Ended refusal, an Ended state and the AddressEnded
+/// rejection are no datom of this contract.
+#[test]
+fn an_ended_metaflow_is_no_datom_of_the_contract() {
+    assert!(
+        Potential::<Query>::from("End.{ Psyche flow Primary }")
+            .actualize(&mut budget())
+            .is_err(),
+        "End is refused"
+    );
+    for text in [
+        "Ended",
+        "Current.Ended",
+        "Refused.Ended.{ Psyche flow Primary }",
+        "Listed.[ { { Psyche flow Primary } Ended [] [] } ]",
+        "StartRejected.AddressEnded",
+    ] {
+        assert!(
+            Potential::<Response>::from(text)
+                .actualize(&mut budget())
+                .is_err(),
+            "{text} is refused"
+        );
+    }
+    for text in ["Current.Asleep", "Current.Awake.f1c841", "Current.Unknown"] {
+        let response = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        assert_eq!(response.datomize(vec![]).protosize().compact(), text);
+    }
+}
+
+/// A Start of a Primary whose Secondary metaflow is not recorded is refused
+/// with NoSecondary.
+#[test]
+fn no_secondary_start_rejection_round_trips() {
+    let response = Potential::<Response>::from("StartRejected.NoSecondary")
+        .actualize(&mut budget())
+        .unwrap();
+    assert_eq!(
+        response,
+        Response::StartRejected(signal_flow::StartRejection::NoSecondary)
+    );
+    let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
+    assert_eq!(
+        rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+        response
+    );
 }
 
 /// A send server's identification names its process and the Codex thread

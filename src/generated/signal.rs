@@ -600,11 +600,11 @@ pub enum StartRejection {
     IntentPersistenceRefused,
     OriginUnavailable,
     AddressAwake,
-    AddressEnded,
     ContextRefused(ContextRefusal),
     LeaveOutRefused(LeaveOutRefusal),
     HarnessSpawnRefused(HarnessSpawnRefusal),
     ModelRefused(ModelRefusal),
+    NoSecondary,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -729,7 +729,6 @@ pub enum Refusal {
     Unknown(Unknown_Data),
     NoLayer,
     NotConfigured,
-    Ended(flow_ethos::Address),
     OffRoute,
     NoneAbove,
     NotMessage,
@@ -817,7 +816,6 @@ pub enum Query {
     Identify(flow_ethos::Process),
     Deliver(Deliver_Data),
     Release(flow_ethos::Lock),
-    End(flow_ethos::Address),
     Current(flow_ethos::Address),
     Metaflows,
     IdentifyThread(IdentifyThread_Data),
@@ -828,7 +826,6 @@ pub enum Query {
 pub enum Current_Data {
     Awake(flow_ethos::FlowId),
     Asleep,
-    Ended,
     Unknown,
 }
 #[rustfmt::skip]
@@ -861,7 +858,6 @@ pub enum Response {
     Queued,
     Woken(flow_ethos::FlowId),
     Released,
-    Ended,
     Current(Current_Data),
     Refused(Refusal),
 }

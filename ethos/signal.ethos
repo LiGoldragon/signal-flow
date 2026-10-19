@@ -87,8 +87,7 @@
 ; that Sender (QueuedRequest.{ SentBy Request }), and a woken or drained
 ; flow reads each queued request with who sent it; a request queued before
 ; senders were kept reads SentBy Unknown. Unknown addresses are not
-; created; an Asleep Sender is refused as Asleep and an Ended Sender as
-; Ended.Address.
+; created; an Asleep Sender is refused as Asleep.
 ;
 ; IdentifyThread names the metaflow a Codex thread runs as, for an MCP
 ; send server serving that thread. Message sends it, as it sends Identify,
@@ -123,9 +122,8 @@
 ; A LaunchProfile names the Address of the seat it launches. When the
 ; launch is confirmed, the Nexus records that Address's metaflow Awake as
 ; the launched flow, under the rules Bind applies: a metaflow Awake as a
-; live flow is refused (AddressAwake), an Ended one is refused
-; (AddressEnded), and an Asleep one, or one Awake as a flow no longer live,
-; is taken over, a displaced flow joining Past. A replacement takes over
+; live flow is refused (AddressAwake), and an Asleep one, or one Awake as
+; a flow no longer live, is taken over, a displaced flow joining Past. A replacement takes over
 ; the metaflow of the predecessor its profile names. A Start whose Address
 ; would be refused is refused before anything launches.
 ;
@@ -169,7 +167,6 @@ Signal
   Identify.Process
   Deliver.{ Lock Request }
   Release.Lock
-  End.Address
   Current.Address
   Metaflows
   IdentifyThread.{ Process NativeSessionId } ]
@@ -199,8 +196,7 @@ Signal
   Queued
   Woken.FlowId
   Released
-  Ended
-  Current.[ Awake.FlowId Asleep Ended Unknown ]
+  Current.[ Awake.FlowId Asleep Unknown ]
   Refused.Refusal ]
 [
   SessionId.String
@@ -377,14 +373,17 @@ Signal
   NativeLaunchRefusal.{ NativeLaunchStage NativeLaunchFailure }
   ; StartRejection preserves a typed BindingRefused result at the public wire.
   ; AddressAwake: the profile's Address is Awake as a live flow, or another
-  ; unsettled launch names it. AddressEnded: the Address was ended.
+  ; unsettled launch names it.
   ; NativeLaunchRefused: a native step of the launch failed, at its stage.
   ; RegistrationRefused: the started flow was not registered, at its stage.
   ; HarnessSpawnRefused: the harness start itself was refused.
   ; ModelRefused: the profile's model is not the model configured for its
   ; Address's layer and aspect; the Start is refused before anything
   ; launches or is written.
-  StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake AddressEnded ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal ]
+  ; NoSecondary: the profile's Address is a Primary and no metaflow is
+  ; recorded, Awake or Asleep, at the Secondary of its aspect and topic; the
+  ; Start is refused before anything launches or is written.
+  StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal NoSecondary ]
   RestartRejection.[ ProvenanceMismatch UnknownFlow ResumeRefused ]
   RecipientResolutionRejection.[ UnknownFlow FlowUnavailable ]
   StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused PersistenceRefused ]
@@ -413,7 +412,6 @@ Signal
             Unknown.[ Address.Address Lock.Lock FlowId.FlowId Key.Key ]
             NoLayer
             NotConfigured
-            Ended.Address
             OffRoute
             NoneAbove
             NotMessage
