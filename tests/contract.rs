@@ -2,7 +2,7 @@
 
 use datom_codec::{Actualizing, Budget, Datomizable, Potential};
 use protos::{Compactable, Protosizable, ReaderBudget};
-use signal_flow::{Query, Response};
+use signal_flow::{Aspect, Query, Refusal, Response};
 
 fn budget() -> Budget {
     Budget {
@@ -76,7 +76,7 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
                 .into(),
         }],
         skill_name_vector: vec!["spirit".into(), "main-flow".into()],
-        flow_aspect: signal_flow::FlowAspect::Field,
+        aspect: signal_flow::Aspect::Field,
         power_level: signal_flow::PowerLevel::High,
         harness_kind: signal_flow::HarnessKind::Codex,
         model_name: "gpt-6-astra".into(),
@@ -154,7 +154,7 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
             launch_request_id: intent.launch_request_id.clone(),
             launch_source_vector: Vec::new(),
             skill_name_vector: vec!["spirit".into()],
-            flow_aspect: signal_flow::FlowAspect::Field,
+            aspect: signal_flow::Aspect::Field,
             power_level: signal_flow::PowerLevel::High,
             harness_kind: signal_flow::HarnessKind::Codex,
             model_name: intent.model_name.clone(),
@@ -386,7 +386,7 @@ fn resolve_caller_queries_and_replies_have_concrete_datoms() {
 fn caller_names_the_flow_its_aspect_power_and_model() {
     let reply = Response::CallerResolved(signal_flow::Caller {
         flow_id: "38de5b".into(),
-        flow_aspect: signal_flow::FlowAspect::Psyche,
+        aspect: signal_flow::Aspect::Psyche,
         power_level: signal_flow::PowerLevel::High,
         model_name: "claude-opus-5-5".into(),
     });
@@ -396,57 +396,65 @@ fn caller_names_the_flow_its_aspect_power_and_model() {
     );
 }
 
-/// The three ways a flow stops being live are distinct on the wire, because
-/// each names who ended it: Stopped is Flow's act, Exited is the seat's, and
-/// Retired is an owner's. None is reported with an Available route, and each
-/// keeps the flow's row and origin. The concrete text is the specification.
+/// Metaflows lists preserve the address, current state, past flows and queued
+/// requests as one typed record. The concrete text is the specification.
 #[test]
-fn each_ended_lifecycle_lists_with_no_route() {
-    for ended in ["Stopped", "Exited", "Retired"] {
-        let text = format!(
-            "Listed.[ {{ d8df70 session-9 Claude Unavailable Unavailable {{ e51411 session-8 turn-3 }} {ended} }} ]"
-        );
-        let restored = Potential::<Response>::from(text.clone())
-            .actualize(&mut budget())
-            .unwrap();
-        let Response::Listed(rows) = &restored else {
-            panic!("List answers with a flow list")
-        };
-        assert_eq!(rows.len(), 1);
-        assert_eq!(
-            rows[0].herdr_route_selection,
-            signal_flow::HerdrRouteSelection::Unavailable,
-            "{ended}"
-        );
-        assert_eq!(rows[0].origin_clue.flow_id, "e51411", "{ended}");
-        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&restored).unwrap();
-        assert_eq!(
-            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
-            restored,
-            "{ended}"
-        );
-        assert_eq!(restored.datomize(vec![]).protosize().compact(), text);
-    }
-}
+fn metaflows_query_and_listed_metaflow_roundtrip() {
+    let query = Potential::<Query>::from("Metaflows")
+        .actualize(&mut budget())
+        .unwrap();
+    assert_eq!(query, Query::Metaflows);
 
-/// A pane that is gone means Exited, never Retired: the two are different
-/// values and never stand in for one another.
-#[test]
-fn a_gone_pane_is_exited_and_not_retired() {
-    let text = "Listed.[ { d8df70 session-9 Claude Unavailable Unavailable { e51411 session-8 turn-3 } Exited } ]";
+    let text = "Listed.[ { { Psyche flow Primary } Ended [ past-1 ] [ Order.continue ] } ]";
     let restored = Potential::<Response>::from(text)
         .actualize(&mut budget())
         .unwrap();
     let Response::Listed(rows) = &restored else {
-        panic!("List answers with a flow list")
+        panic!("Metaflows answers with typed metaflow records")
     };
     assert_eq!(rows.len(), 1);
-    assert_eq!(rows[0].flow_lifecycle, signal_flow::FlowLifecycle::Exited);
-    assert_ne!(rows[0].flow_lifecycle, signal_flow::FlowLifecycle::Retired);
+    assert_eq!(rows[0].address.aspect, Aspect::Psyche);
+    assert_eq!(rows[0].address.topic, "flow");
+    assert_eq!(rows[0].state, flow_ethos::State::Ended);
+    assert_eq!(rows[0].past, vec!["past-1".to_owned()]);
     assert_eq!(
-        rows[0].herdr_route_selection,
-        signal_flow::HerdrRouteSelection::Unavailable
+        rows[0].queue,
+        vec![flow_ethos::Request::Order("continue".into())]
     );
+    let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&restored).unwrap();
+    assert_eq!(
+        rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+        restored
+    );
+    assert_eq!(restored.datomize(vec![]).protosize().compact(), text);
+}
+
+/// Store failures retain their diagnostic as a typed Signal payload.
+#[test]
+fn store_refusal_roundtrips_with_its_error_text() {
+    let text = "Refused.Store.«database unavailable»";
+    let response = Potential::<Response>::from(text)
+        .actualize(&mut budget())
+        .unwrap();
+    assert_eq!(
+        response,
+        Response::Refused(Refusal::Store("database unavailable".into()))
+    );
+    assert_eq!(response.datomize(vec![]).protosize().compact(), text);
+}
+
+/// A sleeping metaflow retains its queue without claiming an awake flow.
+#[test]
+fn listed_asleep_metaflow_roundtrips_without_a_current_flow() {
+    let text = "Listed.[ { { Mind topics Primary } Asleep [] [] } ]";
+    let restored = Potential::<Response>::from(text)
+        .actualize(&mut budget())
+        .unwrap();
+    let Response::Listed(rows) = &restored else {
+        panic!("Metaflows answers with typed metaflow records")
+    };
+    assert_eq!(rows.len(), 1);
+    assert_eq!(rows[0].state, flow_ethos::State::Asleep);
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&restored).unwrap();
     assert_eq!(
         rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),

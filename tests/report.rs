@@ -1,7 +1,7 @@
 //! Report carries one harness event of a flow Flow holds; Reported answers
-//! it, and a FlowId Flow does not hold is refused as Refused.UnknownFlow.
+//! it, and a FlowId Flow does not hold is refused as Refused.Unknown.FlowId.
 
-use signal_flow::{Event, Query, Refused_Data, Report_Data, Response};
+use signal_flow::{Event, Query, Refusal, Report_Data, Response, Unknown_Data};
 
 fn reports() -> Vec<Query> {
     [
@@ -22,7 +22,7 @@ fn reports() -> Vec<Query> {
 fn replies() -> Vec<Response> {
     vec![
         Response::Reported,
-        Response::Refused(Refused_Data::UnknownFlow("0a0a0a".into())),
+        Response::Refused(Refusal::Unknown(Unknown_Data::FlowId("0a0a0a".into()))),
     ]
 }
 
@@ -92,7 +92,7 @@ mod datom {
     fn reported_and_unknown_flow_have_exact_inline_datoms() {
         for (reply, expected) in super::replies()
             .into_iter()
-            .zip(["Reported", "Refused.UnknownFlow.0a0a0a"])
+            .zip(["Reported", "Refused.Unknown.FlowId.0a0a0a"])
         {
             let text = reply.datomize(vec![]).protosize().compact();
             assert_eq!(text, expected);

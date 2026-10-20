@@ -1,0 +1,26 @@
+; Shared Flow vocabulary used by its ordinary Signal, privileged Signal,
+; and durable Memory.
+
+Library [] [
+  FlowId.String
+  Topic.String
+  Blake3.String
+  Layer.[ Primary Secondary Tertiary Quaternary ]
+  Subaspect.[ Vision Intent Knowledge Operation Trial Compensation ]
+  SourceRepository.String
+  SourcePath.String
+  SourceHash.String
+  Source.{ Repository SourceRepository Hash SourceHash Path SourcePath }
+  Key.{ Subaspect Topic }
+  Said.{ Context.String Verbatim.String }
+  Request.[ Notice.String Result.String Order.String Question.String Psyche.Said Psyches.Vector<Said> ]
+  Aspect.[ Psyche Mind Field ]
+  Address.{ Aspect Topic Layer }
+  Recipient.[ Address Up ]
+  MetaflowState.[ Awake.FlowId Asleep Ended ]
+  Metaflow.{ Address MetaflowState Past.Vector<FlowId> Queue.Vector<Request> }
+  Sender.Address
+  Lock.{ Sender Address Until.Integer }
+  Process.{ Pid.Integer Started.Integer }
+  Start.{ OrdinarySocketPath.String MetaSocketPath.String }
+] [] []
