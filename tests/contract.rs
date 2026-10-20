@@ -561,7 +561,7 @@ fn metaflows_query_and_listed_metaflow_roundtrip() {
         .unwrap();
     assert_eq!(query, Query::Metaflows);
 
-    let text = "Listed.[ { { Psyche flow Primary } Awake.f1c841 [ past-1 ] [ { Sender.{ Mind flow Tertiary } Order.continue } { Unknown Notice.kept } ] } ]";
+    let text = "Listed.[ { { Psyche flow Primary } Awake.f1c841 [ past-1 ] [ { Sender.{ Mind flow Tertiary } Order.continue } { Unknown Notice.kept } { Flow Result.landed } ] } ]";
     let restored = Potential::<Response>::from(text)
         .actualize(&mut budget())
         .unwrap();
@@ -587,6 +587,10 @@ fn metaflows_query_and_listed_metaflow_roundtrip() {
             flow_ethos::QueuedRequest {
                 sent_by: flow_ethos::SentBy::Unknown,
                 request: flow_ethos::Request::Notice("kept".into()),
+            },
+            flow_ethos::QueuedRequest {
+                sent_by: flow_ethos::SentBy::Flow,
+                request: flow_ethos::Request::Result("landed".into()),
             },
         ]
     );

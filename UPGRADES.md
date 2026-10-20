@@ -2,6 +2,17 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 25.0.0: a request Flow raised itself is sent by Flow
+
+- flow-ethos (flow dc2cba6) appends `Flow` to `SentBy.[ Sender Unknown
+  Flow ]`: a queued request Flow raised itself, such as a landing's orders
+  and results or a compaction's investigation, reads `{ Flow Order.«…» }`.
+- The variant is appended, so a 24.0.0 peer reads every earlier queued
+  request unchanged; a 24.0.0 peer reading a `Flow` sender refuses that
+  value. Every peer that reads `Listed` or a queued request repins, and a
+  store keeping archived `QueuedRequest`s gives it a new identity. The
+  contract digest is unchanged: this contract's own source did not change.
+
 ## 24.0.0: a flow sends, launches and binds through Flow itself
 
 - `Query` appends `Send.{ Recipient Message }`, `Launch.{ Address
