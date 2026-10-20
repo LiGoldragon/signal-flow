@@ -2,6 +2,15 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 26.0.0: the sender chooses whether delivery wakes
+
+- `Send` is now `Send.{ Recipient Delivery Message }`, where
+  `Delivery.[ Queue Wake ]` makes waking an explicit sender choice rather
+  than a consequence of the message kind.
+- `Query` appends `DeliverAll.Address`; an empty queue is a successful no-op.
+  Every ordinary-socket producer and consumer repins before using either
+  changed query.
+
 ## 25.0.0: a request Flow raised itself is sent by Flow
 
 - flow-ethos (flow dc2cba6) appends `Flow` to `SentBy.[ Sender Unknown

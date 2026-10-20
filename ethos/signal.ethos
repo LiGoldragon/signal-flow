@@ -8,14 +8,13 @@
 ; app-server named in the environment of the command it started. The
 ; sender's metaflow must be Awake as that flow. The recipient is resolved
 ; (Up is the layer above the sender, in its aspect and topic) and must be a
-; metaflow Flow holds. A Send leaving the routes between aspects is refused
-; OffRoute: within one aspect every metaflow reaches every other; across
-; aspects only the same topic at the same layer, and Field reaches Psyche
-; only in answer to a request Psyche queued for it. A Soft message, and any
-; message for a metaflow that is Asleep or whose flow is not live, is queued
-; and wakes the metaflow by its kind (Queued). A HardAbrupt or MiddleAbrupt
-; message for an Awake live flow is typed into its pane by Flow under its
-; lease (Delivered); when its pane refuses it, it is queued instead.
+; metaflow Flow holds. Delivery.Queue leaves the message queued for the
+; recipient's next wake. Delivery.Wake asks Flow to wake the recipient after
+; enqueueing; the message kind never decides whether to wake. A HardAbrupt or
+; MiddleAbrupt message for an Awake live flow is typed into its pane by Flow
+; under its lease (Delivered); when its pane refuses it, it is queued instead.
+; DeliverAll asks Flow to deliver every queued message for an Address and does
+; not insert a prompt when that queue is empty.
 ;
 ; Launch starts the metaflow at Address from its declaration in Flow's
 ; configuration (the meta Metaflows family): its system and user modules,
@@ -201,7 +200,8 @@ Signal
   Current.Address
   Metaflows
   IdentifyThread.{ Process NativeSessionId }
-  Send.{ Recipient Message }
+  Send.{ Recipient Delivery Message }
+  DeliverAll.Address
   Launch.{ Address InstructionPrompt }
   BindSeat.Address ]
 [ Started.Launched
@@ -462,6 +462,7 @@ Signal
   Message.[ HardAbrupt.Request
             MiddleAbrupt.Request
             Soft.Request ]
+  Delivery.[ Queue Wake ]
   Event.[ Started
           ToolUsed.String
           Stopped.NativeStop

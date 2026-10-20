@@ -283,7 +283,7 @@ fn agent_observation_carries_the_flow_and_its_herdr_state() {
 }
 
 #[test]
-fn a_send_names_a_metaflow_and_a_prioritized_request_never_a_flow() {
+fn a_send_names_delivery_and_deliver_all_names_a_metaflow() {
     // The recipient is a metaflow Address or Up, never a FlowId, and the
     // request carries no sender: Flow reads the caller from its socket.
     assert!(
@@ -292,9 +292,10 @@ fn a_send_names_a_metaflow_and_a_prioritized_request_never_a_flow() {
             .is_err()
     );
     for text in [
-        "Send.{ Address.{ Mind core Secondary } Soft.Order.«Review the drain fix» }",
-        "Send.{ Up HardAbrupt.Question.«Which store?» }",
-        "Send.{ Address.{ Psyche core Secondary } MiddleAbrupt.Result.done }",
+        "Send.{ Address.{ Mind core Secondary } Queue Soft.Order.«Review the drain fix» }",
+        "Send.{ Up Wake HardAbrupt.Question.«Which store?» }",
+        "Send.{ Address.{ Psyche core Secondary } Wake MiddleAbrupt.Result.done }",
+        "DeliverAll.{ Psyche core Secondary }",
         "Launch.{ { Mind core Secondary } «Review the drain fix» }",
         "BindSeat.{ Field core Secondary }",
     ] {
