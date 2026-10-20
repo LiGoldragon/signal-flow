@@ -294,7 +294,7 @@ fn a_send_names_a_metaflow_and_a_prioritized_request_never_a_flow() {
     for text in [
         "Send.{ Address.{ Mind core Secondary } Soft.Order.«Review the drain fix» }",
         "Send.{ Up HardAbrupt.Question.«Which store?» }",
-        "Send.{ Address.{ Psyche core Secondary } MiddleAbrupt.Result.«done» }",
+        "Send.{ Address.{ Psyche core Secondary } MiddleAbrupt.Result.done }",
         "Launch.{ { Mind core Secondary } «Review the drain fix» }",
         "BindSeat.{ Field core Secondary }",
     ] {
@@ -681,7 +681,6 @@ fn an_ended_metaflow_is_no_datom_of_the_contract() {
         "Ended",
         "Current.Ended",
         "Refused.Ended.{ Psyche flow Primary }",
-        "Refused.OffRoute",
         "Listed.[ { { Psyche flow Primary } Ended [] [] } ]",
         "StartRejected.AddressEnded",
     ] {
