@@ -283,13 +283,32 @@ fn agent_observation_carries_the_flow_and_its_herdr_state() {
 }
 
 #[test]
-fn the_ordinary_socket_carries_no_pane_write() {
-    // Send was the ordinary socket's pane write; it is not in the vocabulary.
+fn a_send_names_a_metaflow_and_a_prioritized_request_never_a_flow() {
+    // The recipient is a metaflow Address or Up, never a FlowId, and the
+    // request carries no sender: Flow reads the caller from its socket.
     assert!(
         Potential::<Query>::from("Send.{ 7d41e0 «hello» }")
             .actualize(&mut budget())
             .is_err()
     );
+    for text in [
+        "Send.{ Address.{ Mind core Secondary } Soft.Order.«Review the drain fix» }",
+        "Send.{ Up HardAbrupt.Question.«Which store?» }",
+        "Send.{ Address.{ Psyche core Secondary } MiddleAbrupt.Result.«done» }",
+        "Launch.{ { Mind core Secondary } «Review the drain fix» }",
+        "BindSeat.{ Field core Secondary }",
+    ] {
+        let query = Potential::<Query>::from(text)
+            .actualize(&mut budget())
+            .unwrap_or_else(|error| panic!("{text}: {error:?}"));
+        assert_eq!(query.datomize(Vec::new()).protosize().compact(), text);
+    }
+    for text in ["Refused.OffRoute", "StartRejected.Undeclared"] {
+        let response = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap_or_else(|error| panic!("{text}: {error:?}"));
+        assert_eq!(response.datomize(Vec::new()).protosize().compact(), text);
+    }
 }
 
 #[test]

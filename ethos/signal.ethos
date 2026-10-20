@@ -1,6 +1,37 @@
 ; Presentation names the living-directed output's book; it carries no body
 ; or sender. Transcript content ownership is deliberately not declared.
 ;
+; Send is how a flow sends a request to a metaflow, through Flow itself.
+; It carries no sender: the Nexus reads the calling process from its own
+; socket and names the flow it runs in, by the Herdr pane it or its nearest
+; marked ancestor runs in, or, for a Codex flow, by the thread the Codex
+; app-server named in the environment of the command it started. The
+; sender's metaflow must be Awake as that flow. The recipient is resolved
+; (Up is the layer above the sender, in its aspect and topic) and must be a
+; metaflow Flow holds. A Send leaving the routes between aspects is refused
+; OffRoute: within one aspect every metaflow reaches every other; across
+; aspects only the same topic at the same layer, and Field reaches Psyche
+; only in answer to a request Psyche queued for it. A Soft message, and any
+; message for a metaflow that is Asleep or whose flow is not live, is queued
+; and wakes the metaflow by its kind (Queued). A HardAbrupt or MiddleAbrupt
+; message for an Awake live flow is typed into its pane by Flow under its
+; lease (Delivered); when its pane refuses it, it is queued instead.
+;
+; Launch starts the metaflow at Address from its declaration in Flow's
+; configuration (the meta Metaflows family): its system and user modules,
+; the model configured for its layer and aspect, the effort its layer runs
+; at, and its default leave-outs. The InstructionPrompt is the brief, the
+; one string given that flow alone. A Launch from the flow the Address is
+; Awake as replaces it; any other Launch is a Start. An Address with no
+; declaration is refused, StartRejected.Undeclared.
+;
+; BindSeat binds the seat the calling process runs in to Address. The seat
+; is read from the caller's Herdr pane: its harness and native session.
+; Its FlowId is the claim for that native session, the one Flow itself
+; makes when it launches a flow, so a seat Flow did not start still has
+; its real id. The seat is recorded live in its pane and the metaflow Awake
+; as it; a metaflow Awake as another live flow is refused Taken.
+;
 ; Flow ordinary Signal.
 ;
 ; Start and Replace carry a LaunchProfile; a Replace's profile names the
@@ -169,7 +200,10 @@ Signal
   Release.Lock
   Current.Address
   Metaflows
-  IdentifyThread.{ Process NativeSessionId } ]
+  IdentifyThread.{ Process NativeSessionId }
+  Send.{ Recipient Message }
+  Launch.{ Address InstructionPrompt }
+  BindSeat.Address ]
 [ Started.Launched
   LaunchPending.LaunchAttempt
   StartAmbiguous.PromptDeliveryIntent
@@ -383,7 +417,7 @@ Signal
   ; NoSecondary: the profile's Address is a Primary and no metaflow is
   ; recorded, Awake or Asleep, at the Secondary of its aspect and topic; the
   ; Start is refused before anything launches or is written.
-  StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal NoSecondary ]
+  StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal NoSecondary Undeclared ]
   RestartRejection.[ ProvenanceMismatch UnknownFlow ResumeRefused ]
   RecipientResolutionRejection.[ UnknownFlow FlowUnavailable ]
   StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused PersistenceRefused ]
@@ -417,10 +451,17 @@ Signal
             Taken.Address
             Unidentified.Process
             Store.String
-            NotSendServer.Process ]
+            NotSendServer.Process
+            OffRoute ]
   PromptId.String
   NativeStop.{ Option<NativeSessionId> Option<TranscriptPath> }
   NativePrompt.{ Option<NativeSessionId> Option<PromptId> PromptSha256 }
+  ; A message is its Request under a Priority head: HardAbrupt interrupts
+  ; the recipient's turn, MiddleAbrupt reaches it at its next tool
+  ; boundary, Soft waits for the recipient to finish.
+  Message.[ HardAbrupt.Request
+            MiddleAbrupt.Request
+            Soft.Request ]
   Event.[ Started
           ToolUsed.String
           Stopped.NativeStop

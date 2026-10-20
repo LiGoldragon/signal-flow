@@ -2,6 +2,18 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 24.0.0: a flow sends, launches and binds through Flow itself
+
+- `Query` appends `Send.{ Recipient Message }`, `Launch.{ Address
+  InstructionPrompt }` and `BindSeat.Address`; `Message.[ HardAbrupt.Request
+  MiddleAbrupt.Request Soft.Request ]` is the request under its Priority
+  head. `Refusal` appends `OffRoute`; `StartRejection` appends
+  `Undeclared`.
+- Every change is an appended variant: no earlier discriminant moves and no
+  earlier type changes shape, so a peer built against 23.0.0 that sends
+  none of the new queries keeps reading and writing the same bytes. Rust
+  dependents that link signal-flow beside meta-signal-flow repin both.
+
 ## 23.0.0: a metaflow is Awake or Asleep; a Primary starts after its Secondary
 
 - A topic never dies: it goes idle. `Query.End`, `Response.Ended`,

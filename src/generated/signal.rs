@@ -605,6 +605,7 @@ pub enum StartRejection {
     HarnessSpawnRefused(HarnessSpawnRefusal),
     ModelRefused(ModelRefusal),
     NoSecondary,
+    Undeclared,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -735,6 +736,7 @@ pub enum Refusal {
     Unidentified(flow_ethos::Process),
     Store(String),
     NotSendServer(flow_ethos::Process),
+    OffRoute,
 }
 #[rustfmt::skip]
 pub type PromptId = String;
@@ -752,6 +754,14 @@ pub struct NativePrompt {
     pub native_session_id_option: std::option::Option<NativeSessionId>,
     pub prompt_id_option: std::option::Option<PromptId>,
     pub prompt_sha256: PromptSha256,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum Message {
+    HardAbrupt(flow_ethos::Request),
+    MiddleAbrupt(flow_ethos::Request),
+    Soft(flow_ethos::Request),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -800,6 +810,20 @@ pub struct IdentifyThread_Data {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Send_Data {
+    pub recipient: flow_ethos::Recipient,
+    pub message: Message,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Launch_Data {
+    pub address: flow_ethos::Address,
+    pub instruction_prompt: InstructionPrompt,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Query {
     Start(LaunchProfile),
     Restart(flow_ethos::FlowId),
@@ -818,6 +842,9 @@ pub enum Query {
     Current(flow_ethos::Address),
     Metaflows,
     IdentifyThread(IdentifyThread_Data),
+    Send(Send_Data),
+    Launch(Launch_Data),
+    BindSeat(flow_ethos::Address),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
