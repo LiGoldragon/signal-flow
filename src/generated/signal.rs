@@ -778,6 +778,13 @@ pub enum Message {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum Delivery {
+    Queue,
+    Wake,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Event {
     Started,
     ToolUsed(String),
@@ -824,6 +831,7 @@ pub struct IdentifyThread_Data {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct Send_Data {
     pub recipient: flow_ethos::Recipient,
+    pub delivery: Delivery,
     pub message: Message,
 }
 #[rustfmt::skip]
@@ -855,6 +863,7 @@ pub enum Query {
     Metaflows,
     IdentifyThread(IdentifyThread_Data),
     Send(Send_Data),
+    DeliverAll(flow_ethos::Address),
     Launch(Launch_Data),
     BindSeat(flow_ethos::Address),
 }
