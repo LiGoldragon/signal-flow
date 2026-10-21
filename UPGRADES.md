@@ -2,6 +2,13 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 26.0.0: oversized Send requests have a typed refusal
+
+- `Refusal` appends `Oversized.SendPayloadSize`, carrying the rendered
+  native-prompt byte length and Flow's maximum. A peer can distinguish a
+  Send rejected before delivery or queueing from other refusals.
+- The variant is appended; earlier values retain their discriminants.
+
 ## 25.0.0: a request Flow raised itself is sent by Flow
 
 - flow-ethos (flow dc2cba6) appends `Flow` to `SentBy.[ Sender Unknown

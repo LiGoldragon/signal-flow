@@ -737,6 +737,14 @@ pub enum Refusal {
     Store(String),
     NotSendServer(flow_ethos::Process),
     OffRoute,
+    Oversized(SendPayloadSize),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct SendPayloadSize {
+    pub actual_bytes: i64,
+    pub maximum_bytes: i64,
 }
 #[rustfmt::skip]
 pub type PromptId = String;

@@ -452,7 +452,11 @@ Signal
             Unidentified.Process
             Store.String
             NotSendServer.Process
-            OffRoute ]
+            OffRoute
+            Oversized.SendPayloadSize ]
+  ActualBytes.Integer
+  MaximumBytes.Integer
+  SendPayloadSize.{ ActualBytes MaximumBytes }
   PromptId.String
   NativeStop.{ Option<NativeSessionId> Option<TranscriptPath> }
   NativePrompt.{ Option<NativeSessionId> Option<PromptId> PromptSha256 }
