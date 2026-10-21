@@ -740,11 +740,15 @@ pub enum Refusal {
     Oversized(SendPayloadSize),
 }
 #[rustfmt::skip]
+pub type ActualBytes = i64;
+#[rustfmt::skip]
+pub type MaximumBytes = i64;
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct SendPayloadSize {
-    pub actual_bytes: i64,
-    pub maximum_bytes: i64,
+    pub actual_bytes: ActualBytes,
+    pub maximum_bytes: MaximumBytes,
 }
 #[rustfmt::skip]
 pub type PromptId = String;
