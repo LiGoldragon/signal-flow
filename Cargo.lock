@@ -150,7 +150,7 @@ checksum = "aedcfb3409746eddb02b9e19ebda1c3394f759a152e48ee875a0844d1b955484"
 [[package]]
 name = "flow-ethos"
 version = "0.38.1"
-source = "git+https://github.com/LiGoldragon/flow?rev=528133360085a26ab5be97d53b5656c3db9c0e77#528133360085a26ab5be97d53b5656c3db9c0e77"
+source = "git+https://github.com/LiGoldragon/flow?rev=be9aaa73a75d186b0b674c6f9f1c743ca9d715a1#be9aaa73a75d186b0b674c6f9f1c743ca9d715a1"
 dependencies = [
  "datom-codec",
  "ethos-zero 17.0.0",
