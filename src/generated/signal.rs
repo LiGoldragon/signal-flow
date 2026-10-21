@@ -793,6 +793,7 @@ pub struct NativeReceipt {
 pub enum RetryCause {
     HistoryAbsent,
     HandOverRefused,
+    OwnerResolvedAbsent,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]

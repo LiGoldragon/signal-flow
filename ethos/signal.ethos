@@ -470,7 +470,7 @@ Signal
   SendRequest.{ Recipient Delivery Message }
   DeliveryCursor.Integer
   NativeReceipt.{ HarnessKind NativeSessionId NativePromptId.String }
-  RetryCause.[ HistoryAbsent HandOverRefused ]
+  RetryCause.[ HistoryAbsent HandOverRefused OwnerResolvedAbsent ]
   DeliveryState.[ Queued
                   Attempting
                   Retryable.RetryCause
