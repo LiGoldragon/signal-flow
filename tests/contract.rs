@@ -562,7 +562,7 @@ fn metaflows_query_and_listed_metaflow_roundtrip() {
         .unwrap();
     assert_eq!(query, Query::Metaflows);
 
-    let text = "Listed.[ { { Psyche flow Primary } Awake.f1c841 [ past-1 ] [ { Sender.{ Mind flow Tertiary } Order.continue } { Unknown Notice.kept } { Flow Result.landed } ] } ]";
+    let text = "Listed.[ { { Psyche flow Primary } Awake.f1c841 [ past-1 ] [ { logical-1 Sender.{ Mind flow Tertiary } Wake Soft.Order.continue } { logical-2 Unknown Queue Soft.Notice.kept } { logical-3 Flow Queue Soft.Result.landed } ] } ]";
     let restored = Potential::<Response>::from(text)
         .actualize(&mut budget())
         .unwrap();
@@ -577,21 +577,27 @@ fn metaflows_query_and_listed_metaflow_roundtrip() {
     assert_eq!(
         rows[0].queue,
         vec![
-            flow_ethos::QueuedRequest {
+            flow_ethos::QueueEntry {
+                logical_delivery_id: "logical-1".into(),
+                delivery: flow_ethos::Delivery::Wake,
                 sent_by: flow_ethos::SentBy::Sender(flow_ethos::Address {
                     aspect: Aspect::Mind,
                     topic: "flow".into(),
                     layer: flow_ethos::Layer::Tertiary,
                 }),
-                request: flow_ethos::Request::Order("continue".into()),
+                message: flow_ethos::Message::Soft(flow_ethos::Request::Order("continue".into())),
             },
-            flow_ethos::QueuedRequest {
+            flow_ethos::QueueEntry {
+                logical_delivery_id: "logical-2".into(),
+                delivery: flow_ethos::Delivery::Queue,
                 sent_by: flow_ethos::SentBy::Unknown,
-                request: flow_ethos::Request::Notice("kept".into()),
+                message: flow_ethos::Message::Soft(flow_ethos::Request::Notice("kept".into())),
             },
-            flow_ethos::QueuedRequest {
+            flow_ethos::QueueEntry {
+                logical_delivery_id: "logical-3".into(),
+                delivery: flow_ethos::Delivery::Queue,
                 sent_by: flow_ethos::SentBy::Flow,
-                request: flow_ethos::Request::Result("landed".into()),
+                message: flow_ethos::Message::Soft(flow_ethos::Request::Result("landed".into())),
             },
         ]
     );
@@ -751,5 +757,35 @@ fn identify_thread_and_its_refusal_have_concrete_datoms() {
             .actualize(&mut budget())
             .unwrap();
         assert_eq!(response.datomize(vec![]).protosize().compact(), text);
+    }
+}
+
+#[test]
+fn durable_admission_and_resumable_sender_outcomes_round_trip() {
+    for text in [
+        "Send.{ Address.{ Mind flow Secondary } Wake MiddleAbrupt.Notice.ready }",
+        "ObserveSends.None",
+        "ObserveSender.{ { 17 99 } None Some.4 }",
+    ] {
+        let value = Potential::<Query>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        assert_eq!(value.datomize(vec![]).protosize().compact(), text);
+    }
+    for text in [
+        "SendAccepted.{ logical-1 1 Queued }",
+        "SendsObserved.{ 2 [ { 2 logical-1 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Attempting } ] }",
+        "SendChanged.{ 3 logical-1 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Delivered.{ Claude session-1 prompt-1 } }",
+        "Drained.{ { Psyche flow Secondary } Held.[ logical-1 ] }",
+    ] {
+        let value = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&value).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            value
+        );
+        assert_eq!(value.datomize(vec![]).protosize().compact(), text);
     }
 }

@@ -770,17 +770,79 @@ pub struct NativePrompt {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum Message {
-    HardAbrupt(flow_ethos::Request),
-    MiddleAbrupt(flow_ethos::Request),
-    Soft(flow_ethos::Request),
+pub struct SendRequest {
+    pub recipient: flow_ethos::Recipient,
+    pub delivery: flow_ethos::Delivery,
+    pub message: flow_ethos::Message,
+}
+#[rustfmt::skip]
+pub type DeliveryCursor = i64;
+#[rustfmt::skip]
+pub type NativePromptId = String;
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct NativeReceipt {
+    pub harness_kind: flow_ethos::HarnessKind,
+    pub native_session_id: NativeSessionId,
+    pub native_prompt_id: NativePromptId,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum Delivery {
-    Queue,
-    Wake,
+pub enum RetryCause {
+    HistoryAbsent,
+    HandOverRefused,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum DeliveryState {
+    Queued,
+    Attempting,
+    Retryable(RetryCause),
+    Uncertain,
+    Delivered(NativeReceipt),
+    Failed(Refusal),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct SendAcceptance {
+    pub logical_delivery_id: flow_ethos::LogicalDeliveryId,
+    pub delivery_cursor: DeliveryCursor,
+    pub delivery_state: DeliveryState,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct DeliverySnapshot {
+    pub delivery_cursor: DeliveryCursor,
+    pub logical_delivery_id: flow_ethos::LogicalDeliveryId,
+    pub sent_by: flow_ethos::SentBy,
+    pub address: flow_ethos::Address,
+    pub delivery_state: DeliveryState,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct SendObservation {
+    pub delivery_cursor: DeliveryCursor,
+    pub delivery_snapshot_vector: std::vec::Vec<DeliverySnapshot>,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum DrainState {
+    Delivered,
+    Held(std::vec::Vec<flow_ethos::LogicalDeliveryId>),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct DrainOutcome {
+    pub address: flow_ethos::Address,
+    pub drain_state: DrainState,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -817,7 +879,8 @@ pub struct Bind_Data {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct Deliver_Data {
     pub lock: flow_ethos::Lock,
-    pub request: flow_ethos::Request,
+    pub delivery: flow_ethos::Delivery,
+    pub message: flow_ethos::Message,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -829,10 +892,10 @@ pub struct IdentifyThread_Data {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct Send_Data {
-    pub recipient: flow_ethos::Recipient,
-    pub delivery: Delivery,
-    pub message: Message,
+pub struct ObserveSender_Data {
+    pub process: flow_ethos::Process,
+    pub native_session_id_option: std::option::Option<NativeSessionId>,
+    pub delivery_cursor_option: std::option::Option<DeliveryCursor>,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -862,7 +925,9 @@ pub enum Query {
     Current(flow_ethos::Address),
     Metaflows,
     IdentifyThread(IdentifyThread_Data),
-    Send(Send_Data),
+    Send(SendRequest),
+    ObserveSends(std::option::Option<DeliveryCursor>),
+    ObserveSender(ObserveSender_Data),
     DeliverAll(flow_ethos::Address),
     Launch(Launch_Data),
     BindSeat(flow_ethos::Address),
@@ -901,8 +966,10 @@ pub enum Response {
     Locked(flow_ethos::Lock),
     Bound(flow_ethos::FlowId),
     Identified(flow_ethos::Address),
-    Delivered,
-    Queued,
+    SendAccepted(SendAcceptance),
+    SendsObserved(SendObservation),
+    SendChanged(DeliverySnapshot),
+    Drained(DrainOutcome),
     Woken(flow_ethos::FlowId),
     Released,
     Current(Current_Data),

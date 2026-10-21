@@ -182,7 +182,7 @@
 
 Signal
 [
-  flow_ethos:[ Aspect Address FlowId Request SentBy QueuedRequest Lock Sender Process Metaflow Key Recipient Layer Topic Subaspect OrdinarySocketPath MetaSocketPath Start ModelName HarnessKind ] ]
+  flow_ethos:[ Aspect Address FlowId Request SentBy QueueEntry NativeInput LogicalDeliveryId Delivery Message Lock Sender Process Metaflow Key Recipient Layer Topic Subaspect OrdinarySocketPath MetaSocketPath Start ModelName HarnessKind ] ]
 [ Start.LaunchProfile
   Restart.FlowId
   ResolveRecipient.RecipientResolutionRequest
@@ -195,12 +195,14 @@ Signal
   Lock.{ Sender Recipient }
   Bind.{ Address Process }
   Identify.Process
-  Deliver.{ Lock Request }
+  Deliver.{ Lock Delivery Message }
   Release.Lock
   Current.Address
   Metaflows
   IdentifyThread.{ Process NativeSessionId }
-  Send.{ Recipient Delivery Message }
+  Send.SendRequest
+  ObserveSends.Option<DeliveryCursor>
+  ObserveSender.{ Process Option<NativeSessionId> Option<DeliveryCursor> }
   DeliverAll.Address
   Launch.{ Address InstructionPrompt }
   BindSeat.Address ]
@@ -226,8 +228,10 @@ Signal
   Locked.Lock
   Bound.FlowId
   Identified.Address
-  Delivered
-  Queued
+  SendAccepted.SendAcceptance
+  SendsObserved.SendObservation
+  SendChanged.DeliverySnapshot
+  Drained.DrainOutcome
   Woken.FlowId
   Released
   Current.[ Awake.FlowId Asleep Unknown ]
@@ -463,10 +467,20 @@ Signal
   ; A message is its Request under a Priority head: HardAbrupt interrupts
   ; the recipient's turn, MiddleAbrupt reaches it at its next tool
   ; boundary, Soft waits for the recipient to finish.
-  Message.[ HardAbrupt.Request
-            MiddleAbrupt.Request
-            Soft.Request ]
-  Delivery.[ Queue Wake ]
+  SendRequest.{ Recipient Delivery Message }
+  DeliveryCursor.Integer
+  NativeReceipt.{ HarnessKind NativeSessionId NativePromptId.String }
+  RetryCause.[ HistoryAbsent HandOverRefused ]
+  DeliveryState.[ Queued
+                  Attempting
+                  Retryable.RetryCause
+                  Uncertain
+                  Delivered.NativeReceipt
+                  Failed.Refusal ]
+  SendAcceptance.{ LogicalDeliveryId DeliveryCursor DeliveryState }
+  DeliverySnapshot.{ DeliveryCursor LogicalDeliveryId SentBy Address DeliveryState }
+  SendObservation.{ DeliveryCursor Vector<DeliverySnapshot> }
+  DrainOutcome.{ Address DrainState.[ Delivered Held.Vector<LogicalDeliveryId> ] }
   Event.[ Started
           ToolUsed.String
           Stopped.NativeStop
