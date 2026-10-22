@@ -274,17 +274,19 @@ Signal
   ; A leave-out names one part of a harness's start that a flow goes
   ; without: a tool or tool group, an instruction block, or a harness
   ; feature. Each turns into the harness's own flag, environment variable
-  ; or setting. ToolSearch and BashTool are named so that leaving them out
-  ; is refused: without ToolSearch every deferred tool's schema loads, and
-  ; without Bash the flow cannot message, commit or build. SkillTool and
-  ; BundledSkills are refused unless WorkflowTool is left out too, since
-  ; Workflow then inlines its authoring reference. A Claude leave-out is
-  ; refused for a Codex start, and a Codex one for a Claude start.
+  ; or setting. UserSettings is indispensable because Herdr's SessionStart
+  ; hook binds the flow. SkillTool and BundledSkills are refused unless
+  ; WorkflowTool is left out too, since Workflow then inlines its authoring
+  ; reference. A Claude leave-out is refused for Codex and vice versa.
   LeaveOut.[ ClaudeAiConnectors ConfiguredMcpServers AgentTool ExplorePlanAgents FileTools WorkflowTool ScheduleWakeupTool ReportFindingsTool ListAgentsTool CronTools WebTools DeferredTools SkillTool BundledSkills ClaudeMd GitInstructions AttributionReminder UserSettings ToolSearch BashTool CodexSkillListing CodexAgentsMd CodexCollaborationMode CodexEnvironmentContext CodexPermissions CodexDeveloperInstructions ]
   LeaveOuts.Vector<LeaveOut>
+  ; The tool surface a metaflow declares for every launch.
+  FlowKind.[ Regular Simplified ]
+  ToolSet.[ Default Explicit.Vector<String> ]
+  ArtifactToolsAllowed.Boolean
   ; A Start's leave-outs, when it names them, replace the default its
   ; metaflow's configuration names; None takes that default.
-  LaunchProfile.{ LaunchRequestId SystemModules UserModules Address ModelName Effort Option<FlowId> Vector<RememberedFlow> HerdrSessionName Option<LeaveOuts> InstructionPrompt }
+  LaunchProfile.{ LaunchRequestId SystemModules UserModules Address ModelName Effort Option<FlowId> Vector<RememberedFlow> HerdrSessionName Option<LeaveOuts> FlowKind ToolSet InstructionPrompt }
   TargetReceiptRequest.{ LaunchRequestId PromptSha256 }
   PromptPart.{ PromptPartText PromptSha256 }
   FirstPromptPayload.{ FirstPromptBody PromptSha256 Vector<PromptPart> }
@@ -462,7 +464,8 @@ Signal
   MaximumBytes.Integer
   SendPayloadSize.{ ActualBytes MaximumBytes }
   PromptId.String
-  NativeStop.{ Option<NativeSessionId> Option<TranscriptPath> }
+  LastAssistantMessageOption.Option<String>
+  NativeStop.{ Option<NativeSessionId> Option<TranscriptPath> LastAssistantMessageOption }
   NativePrompt.{ Option<NativeSessionId> Option<PromptId> PromptSha256 }
   ; A message is its Request under a Priority head: HardAbrupt interrupts
   ; the recipient's turn, MiddleAbrupt reaches it at its next tool

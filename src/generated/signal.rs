@@ -115,6 +115,22 @@ pub type LeaveOuts = std::vec::Vec<LeaveOut>;
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum FlowKind {
+    Regular,
+    Simplified,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum ToolSet {
+    Default,
+    Explicit(std::vec::Vec<String>),
+}
+#[rustfmt::skip]
+pub type ArtifactToolsAllowed = bool;
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct LaunchProfile {
     pub launch_request_id: LaunchRequestId,
     pub system_modules: SystemModules,
@@ -126,6 +142,8 @@ pub struct LaunchProfile {
     pub remembered_flow_vector: std::vec::Vec<RememberedFlow>,
     pub herdr_session_name: HerdrSessionName,
     pub leave_outs_option: std::option::Option<LeaveOuts>,
+    pub flow_kind: FlowKind,
+    pub tool_set: ToolSet,
     pub instruction_prompt: InstructionPrompt,
 }
 #[rustfmt::skip]
@@ -753,11 +771,14 @@ pub struct SendPayloadSize {
 #[rustfmt::skip]
 pub type PromptId = String;
 #[rustfmt::skip]
+pub type LastAssistantMessageOption = std::option::Option<String>;
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct NativeStop {
     pub native_session_id_option: std::option::Option<NativeSessionId>,
     pub transcript_path_option: std::option::Option<TranscriptPath>,
+    pub last_assistant_message_option: LastAssistantMessageOption,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
