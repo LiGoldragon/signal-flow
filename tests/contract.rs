@@ -790,3 +790,40 @@ fn durable_admission_and_resumable_sender_outcomes_round_trip() {
         assert_eq!(value.datomize(vec![]).protosize().compact(), text);
     }
 }
+
+#[test]
+fn direct_send_replies_carry_receipt_or_failure_never_queue_state() {
+    use signal_flow::{SendFailure, SendFailureReason, SendReceipt};
+    let replies = [
+        Response::Sent(SendReceipt {
+            logical_delivery_id: "logical-direct-1".into(),
+            native_receipt: signal_flow::NativeReceipt {
+                harness_kind: signal_flow::HarnessKind::Codex,
+                native_session_id: "native-direct-1".into(),
+                native_prompt_id: "prompt-direct-1".into(),
+            },
+        }),
+        Response::Failed(SendFailure {
+            logical_delivery_id_option: None,
+            send_failure_reason: SendFailureReason::QueueNotPermitted,
+        }),
+        Response::Failed(SendFailure {
+            logical_delivery_id_option: Some("logical-direct-2".into()),
+            send_failure_reason: SendFailureReason::ReceiptUncertain,
+        }),
+    ];
+    for reply in replies {
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&reply).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            reply
+        );
+        let text = reply.datomize(vec![]).protosize().compact();
+        assert_eq!(
+            Potential::<Response>::from(text)
+                .actualize(&mut budget())
+                .unwrap(),
+            reply
+        );
+    }
+}

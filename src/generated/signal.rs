@@ -756,6 +756,7 @@ pub enum Refusal {
     NotSendServer(flow_ethos::Process),
     OffRoute,
     Oversized(SendPayloadSize),
+    Direct(String),
 }
 #[rustfmt::skip]
 pub type ActualBytes = i64;
@@ -826,6 +827,31 @@ pub enum DeliveryState {
     Uncertain,
     Delivered(NativeReceipt),
     Failed(Refusal),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct SendReceipt {
+    pub logical_delivery_id: flow_ethos::LogicalDeliveryId,
+    pub native_receipt: NativeReceipt,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct SendFailure {
+    pub logical_delivery_id_option: std::option::Option<flow_ethos::LogicalDeliveryId>,
+    pub send_failure_reason: SendFailureReason,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum SendFailureReason {
+    RecipientUnavailable(flow_ethos::Address),
+    QueueNotPermitted,
+    RecipientBusy(flow_ethos::Address),
+    Refused(Refusal),
+    ReceiptUncertain,
+    NotSent(String),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -996,4 +1022,6 @@ pub enum Response {
     Released,
     Current(Current_Data),
     Refused(Refusal),
+    Sent(SendReceipt),
+    Failed(SendFailure),
 }

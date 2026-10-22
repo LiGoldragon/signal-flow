@@ -235,7 +235,9 @@ Signal
   Woken.FlowId
   Released
   Current.[ Awake.FlowId Asleep Unknown ]
-  Refused.Refusal ]
+  Refused.Refusal
+  Sent.SendReceipt
+  Failed.SendFailure ]
 [
   SessionId.String
   FlowType.String
@@ -459,7 +461,8 @@ Signal
             Store.String
             NotSendServer.Process
             OffRoute
-            Oversized.SendPayloadSize ]
+            Oversized.SendPayloadSize
+            Direct.String ]
   ActualBytes.Integer
   MaximumBytes.Integer
   SendPayloadSize.{ ActualBytes MaximumBytes }
@@ -480,6 +483,14 @@ Signal
                   Uncertain
                   Delivered.NativeReceipt
                   Failed.Refusal ]
+  SendReceipt.{ LogicalDeliveryId NativeReceipt }
+  SendFailure.{ Option<LogicalDeliveryId> SendFailureReason }
+  SendFailureReason.[ RecipientUnavailable.Address
+                      QueueNotPermitted
+                      RecipientBusy.Address
+                      Refused.Refusal
+                      ReceiptUncertain
+                      NotSent.String ]
   SendAcceptance.{ LogicalDeliveryId DeliveryCursor DeliveryState }
   DeliverySnapshot.{ DeliveryCursor LogicalDeliveryId SentBy Address DeliveryState }
   SendObservation.{ DeliveryCursor Vector<DeliverySnapshot> }
