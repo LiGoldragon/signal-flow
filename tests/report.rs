@@ -12,10 +12,12 @@ fn reports() -> Vec<Query> {
         Event::Stopped(NativeStop {
             native_session_id_option: Some("s1".into()),
             transcript_path_option: Some("/p/s1.jsonl".into()),
+            last_assistant_message_option: None,
         }),
         Event::Stopped(NativeStop {
             native_session_id_option: None,
             transcript_path_option: None,
+            last_assistant_message_option: None,
         }),
         Event::PromptSubmitted(NativePrompt {
             native_session_id_option: Some("s1".into()),
