@@ -89,6 +89,8 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
             signal_flow::LeaveOut::SkillTool,
             signal_flow::LeaveOut::WorkflowTool,
         ]),
+        flow_kind: signal_flow::FlowKind::Regular,
+        tool_set: signal_flow::ToolSet::Default,
         instruction_prompt: "Carry this bounded launch request.".into(),
     };
     let receipt_request = signal_flow::TargetReceiptRequest {
@@ -180,6 +182,8 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
             remembered_flow_vector: Vec::new(),
             herdr_session_name: "messaging-build".into(),
             leave_outs_option: None,
+            flow_kind: signal_flow::FlowKind::Regular,
+            tool_set: signal_flow::ToolSet::Default,
             instruction_prompt: "Carry this bounded launch request.".into(),
         },
         prompt_sha256: intent.prompt_sha256.clone(),
