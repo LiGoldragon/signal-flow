@@ -625,6 +625,7 @@ pub enum StartRejection {
     ModelRefused(ModelRefusal),
     NoSecondary,
     Undeclared,
+    TopicRefused(flow_ethos::Topic),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]

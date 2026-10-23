@@ -424,10 +424,13 @@ Signal
   ; ModelRefused: the profile's model is not the model configured for its
   ; Address's layer and aspect; the Start is refused before anything
   ; launches or is written.
-  ; NoSecondary: the profile's Address is a Primary and no metaflow is
-  ; recorded, Awake or Asleep, at the Secondary of its aspect and topic; the
-  ; Start is refused before anything launches or is written.
-  StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal NoSecondary Undeclared ]
+  ; NoSecondary: the profile's Address is a Primary and the Secondary of its
+  ; aspect and topic is not Awake as a live flow; the Start is refused
+  ; before anything launches or is written.
+  ; TopicRefused: the Address's topic is not an uncapitalized camelCase
+  ; identifier (an ASCII lowercase letter, then ASCII letters and digits);
+  ; it carries the topic as written. Flow never lowers its capitals.
+  StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal NoSecondary Undeclared TopicRefused.Topic ]
   RestartRejection.[ ProvenanceMismatch UnknownFlow ResumeRefused ]
   RecipientResolutionRejection.[ UnknownFlow FlowUnavailable ]
   StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused PersistenceRefused ]

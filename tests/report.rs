@@ -80,8 +80,8 @@ mod datom {
         for (query, expected) in super::reports().into_iter().zip([
             "Report.{ f1c841 Started }",
             "Report.{ f1c841 ToolUsed.Bash }",
-            "Report.{ f1c841 Stopped.{ Some.s1 Some./p/s1.jsonl } }",
-            "Report.{ f1c841 Stopped.{ None None } }",
+            "Report.{ f1c841 Stopped.{ Some.s1 Some./p/s1.jsonl None } }",
+            "Report.{ f1c841 Stopped.{ None None None } }",
             "Report.{ f1c841 PromptSubmitted.{ Some.s1 Some.p1 ab12 } }",
         ]) {
             let text = query.datomize(vec![]).protosize().compact();

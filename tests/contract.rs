@@ -317,7 +317,7 @@ fn a_send_names_delivery_and_deliver_all_names_a_metaflow() {
 #[test]
 fn replace_and_launch_status_queries_have_concrete_datoms() {
     for text in [
-        "Replace.{ request-8 [ spirit:core ] [ compensation:main-flow ] { [ fac697 ] [ flow ] } None { Field flow Secondary } opus-5-5 high Some.fac697 [] messaging-build None Regular Default «Carry on from fac697.» }",
+        "Replace.{ request-8 [ spirit:core ] [ compensation:main-flow ] Predecessors.1 { Field flow Secondary } opus-5-5 high Some.fac697 messaging-build None Regular Default «Carry on from fac697.» }",
         "LaunchStatus.request-8",
         "Observe.Launch.request-8",
     ] {
@@ -335,7 +335,7 @@ fn replace_and_launch_status_queries_have_concrete_datoms() {
 
 #[test]
 fn replace_carries_the_predecessor_in_its_launch_profile() {
-    let text = "Replace.{ request-8 [ spirit:core ] [] { [ fac697 ] [ flow ] } None { Field flow Secondary } opus-5-5 high Some.fac697 [] messaging-build None Regular Default «Carry on from fac697.» }";
+    let text = "Replace.{ request-8 [ spirit:core ] [] Predecessors.1 { Field flow Secondary } opus-5-5 high Some.fac697 messaging-build None Regular Default «Carry on from fac697.» }";
     let Query::Replace(profile) = Potential::<Query>::from(text)
         .actualize(&mut budget())
         .unwrap()
@@ -647,7 +647,7 @@ fn listed_asleep_metaflow_roundtrips_without_a_current_flow() {
 
 #[test]
 fn start_names_the_address_of_the_seat_it_launches() {
-    let text = "Start.{ field-flow-quaternary-1 [ spirit:core ] [ compensation:main-flow ] { [] [ flow ] } None { Field flow Quaternary } haiku medium None [] fieldFlow None Regular Default «Send the Order through Message.» }";
+    let text = "Start.{ field-flow-quaternary-1 [ spirit:core ] [ compensation:main-flow ] Custom.[ fac697 ] { Field flow Quaternary } haiku medium None fieldFlow None Regular Default «Send the Order through Message.» }";
     let Query::Start(profile) = Potential::<Query>::from(text)
         .actualize(&mut budget())
         .unwrap()
@@ -667,6 +667,7 @@ fn start_names_the_address_of_the_seat_it_launches() {
     for text in [
         "StartRejected.AddressAwake",
         "StartRejected.NoSecondary",
+        "StartRejected.TopicRefused.FlowRepair",
         "StartRejected.ContextRefused.MetaflowMismatch",
         "StartRejected.ContextRefused.ModuleTooLarge",
         "StartRejected.LeaveOutRefused.Indispensable.ToolSearch",
@@ -828,4 +829,26 @@ fn direct_send_replies_carry_receipt_or_failure_never_queue_state() {
             reply
         );
     }
+}
+
+/// A Start whose topic is not an uncapitalized camelCase identifier is
+/// refused with TopicRefused, carrying the topic as written.
+#[test]
+fn topic_refused_start_rejection_round_trips() {
+    let text = "StartRejected.TopicRefused.PrimaryCommitting";
+    let response = Potential::<Response>::from(text)
+        .actualize(&mut budget())
+        .unwrap();
+    assert_eq!(
+        response,
+        Response::StartRejected(signal_flow::StartRejection::TopicRefused(
+            "PrimaryCommitting".into()
+        ))
+    );
+    assert_eq!(response.datomize(vec![]).protosize().compact(), text);
+    let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
+    assert_eq!(
+        rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+        response
+    );
 }

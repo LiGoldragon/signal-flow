@@ -2,6 +2,17 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 31.0.0: a topic that is not camelCase is refused by type
+
+- `StartRejection` appends `TopicRefused.Topic`: a Start, Replace or
+  Launch whose Address's topic is not an uncapitalized camelCase
+  identifier is refused before anything launches or is written, carrying
+  the topic as written: `StartRejected.TopicRefused.Primary_Committing`.
+- `NoSecondary` now means the Secondary of the Primary's aspect and topic
+  is not Awake as a live flow; a recorded but Asleep Secondary no longer
+  admits its Primary.
+- The variant is appended; earlier values keep their discriminants.
+
 ## 27.0.0: oversized Send requests have a typed refusal
 
 - `Refusal` appends `Oversized.SendPayloadSize`, carrying the rendered
