@@ -16,8 +16,8 @@ fn budget() -> Budget {
 #[test]
 fn every_ordinary_request_has_a_concrete_datom() {
     for text in [
-        "Start.{ request-7 [ spirit-core ] [ operation-main-flow knowledge-flow ] { Field flow Primary } gpt-6-astra medium Some.836818 [ { 1b8ac0 1 } ] messaging-build Some.[ SkillTool WorkflowTool ] «Carry this bounded launch request.» }",
-        "Start.{ field-flow-quaternary-1 [ spirit-core ] [ operation-main-flow ] { Field flow Quaternary } haiku medium None [] fieldFlow None «Send the Order through Message.» }",
+        "Start.{ request-7 [ spirit-core ] [ operation-main-flow knowledge-flow ] { Field flow Primary } gpt-6-astra medium Some.836818 [ { 1b8ac0 1 } ] messaging-build Some.[ SkillTool WorkflowTool ] Regular Default «Carry this bounded launch request.» }",
+        "Start.{ field-flow-quaternary-1 [ spirit-core ] [ operation-main-flow ] { Field flow Quaternary } haiku medium None [] fieldFlow None Regular Default «Send the Order through Message.» }",
         "Restart.fac697",
         "ResolveRecipient.fac697",
     ] {
@@ -319,7 +319,7 @@ fn a_send_names_delivery_and_deliver_all_names_a_metaflow() {
 #[test]
 fn replace_and_launch_status_queries_have_concrete_datoms() {
     for text in [
-        "Replace.{ request-8 [ spirit-core ] [ operation-main-flow ] { Field flow Secondary } opus-5-5 high Some.fac697 [] messaging-build None «Carry on from fac697.» }",
+        "Replace.{ request-8 [ spirit-core ] [ operation-main-flow ] { Field flow Secondary } opus-5-5 high Some.fac697 [] messaging-build None Regular Default «Carry on from fac697.» }",
         "LaunchStatus.request-8",
         "Observe.Launch.request-8",
     ] {
@@ -337,7 +337,7 @@ fn replace_and_launch_status_queries_have_concrete_datoms() {
 
 #[test]
 fn replace_carries_the_predecessor_in_its_launch_profile() {
-    let text = "Replace.{ request-8 [ spirit-core ] [] { Field flow Secondary } opus-5-5 high Some.fac697 [] messaging-build None «Carry on from fac697.» }";
+    let text = "Replace.{ request-8 [ spirit-core ] [] { Field flow Secondary } opus-5-5 high Some.fac697 [] messaging-build None Regular Default «Carry on from fac697.» }";
     let Query::Replace(profile) = Potential::<Query>::from(text)
         .actualize(&mut budget())
         .unwrap()
@@ -649,7 +649,7 @@ fn listed_asleep_metaflow_roundtrips_without_a_current_flow() {
 
 #[test]
 fn start_names_the_address_of_the_seat_it_launches() {
-    let text = "Start.{ field-flow-quaternary-1 [ spirit-core ] [ operation-main-flow ] { Field flow Quaternary } haiku medium None [] fieldFlow None «Send the Order through Message.» }";
+    let text = "Start.{ field-flow-quaternary-1 [ spirit-core ] [ operation-main-flow ] { Field flow Quaternary } haiku medium None [] fieldFlow None Regular Default «Send the Order through Message.» }";
     let Query::Start(profile) = Potential::<Query>::from(text)
         .actualize(&mut budget())
         .unwrap()
