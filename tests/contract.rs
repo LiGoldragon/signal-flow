@@ -16,8 +16,8 @@ fn budget() -> Budget {
 #[test]
 fn every_ordinary_request_has_a_concrete_datom() {
     for text in [
-        "Start.{ request-7 [ spirit:core ] [ operation:main-flow knowledge:flow ] Custom.[ 4e1d2a ] { Field flow Primary } gpt-6-astra medium Some.836818 messaging-build Some.[ SkillTool WorkflowTool ] Regular Default «Carry this bounded launch request.» }",
-        "Start.{ field-flow-quaternary-1 [ spirit:core ] [ operation:main-flow ] Predecessors.0 { Field flow Quaternary } haiku medium None fieldFlow None Regular Default «Send the Order through Message.» }",
+        "Start.{ request-7 [ spirit:core ] [ compensation:main-flow knowledge:flow ] Custom.[ 4e1d2a ] { Field flow Primary } gpt-6-astra medium Some.836818 messaging-build Some.[ SkillTool WorkflowTool ] Regular Default «Carry this bounded launch request.» }",
+        "Start.{ field-flow-quaternary-1 [ spirit:core ] [ compensation:main-flow ] Predecessors.0 { Field flow Quaternary } haiku medium None fieldFlow None Regular Default «Send the Order through Message.» }",
         "Restart.fac697",
         "ResolveRecipient.fac697",
     ] {
@@ -71,7 +71,7 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
     let profile = signal_flow::LaunchProfile {
         launch_request_id: "request-7".into(),
         system_modules: vec!["spirit:core".into()],
-        user_modules: vec!["operation:main-flow".into(), "knowledge:flow".into()],
+        user_modules: vec!["compensation:main-flow".into(), "knowledge:flow".into()],
         remembering: signal_flow::Remembering::Custom(vec!["4e1d2a".into()]),
         address: signal_flow::Address {
             aspect: signal_flow::Aspect::Field,
@@ -167,7 +167,7 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
         launch_profile: signal_flow::LaunchProfile {
             launch_request_id: intent.launch_request_id.clone(),
             system_modules: vec!["spirit:core".into()],
-            user_modules: vec!["operation:main-flow".into()],
+            user_modules: vec!["compensation:main-flow".into()],
             remembering: signal_flow::Remembering::Predecessors(0),
             address: signal_flow::Address {
                 aspect: signal_flow::Aspect::Field,
@@ -317,7 +317,7 @@ fn a_send_names_delivery_and_deliver_all_names_a_metaflow() {
 #[test]
 fn replace_and_launch_status_queries_have_concrete_datoms() {
     for text in [
-        "Replace.{ request-8 [ spirit:core ] [ operation:main-flow ] { [ fac697 ] [ flow ] } None { Field flow Secondary } opus-5-5 high Some.fac697 [] messaging-build None Regular Default «Carry on from fac697.» }",
+        "Replace.{ request-8 [ spirit:core ] [ compensation:main-flow ] { [ fac697 ] [ flow ] } None { Field flow Secondary } opus-5-5 high Some.fac697 [] messaging-build None Regular Default «Carry on from fac697.» }",
         "LaunchStatus.request-8",
         "Observe.Launch.request-8",
     ] {
@@ -647,7 +647,7 @@ fn listed_asleep_metaflow_roundtrips_without_a_current_flow() {
 
 #[test]
 fn start_names_the_address_of_the_seat_it_launches() {
-    let text = "Start.{ field-flow-quaternary-1 [ spirit:core ] [ operation:main-flow ] { [] [ flow ] } None { Field flow Quaternary } haiku medium None [] fieldFlow None Regular Default «Send the Order through Message.» }";
+    let text = "Start.{ field-flow-quaternary-1 [ spirit:core ] [ compensation:main-flow ] { [] [ flow ] } None { Field flow Quaternary } haiku medium None [] fieldFlow None Regular Default «Send the Order through Message.» }";
     let Query::Start(profile) = Potential::<Query>::from(text)
         .actualize(&mut budget())
         .unwrap()
