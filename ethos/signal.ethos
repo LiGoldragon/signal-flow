@@ -204,7 +204,7 @@ Signal
   ObserveSends.Option<DeliveryCursor>
   ObserveSender.{ Process Option<NativeSessionId> Option<DeliveryCursor> }
   DeliverAll.Address
-  Launch.{ Address InstructionPrompt }
+  Launch.{ Address Remembering InstructionPrompt }
   BindSeat.Address ]
 [ Started.Launched
   LaunchPending.LaunchAttempt
@@ -256,6 +256,7 @@ Signal
   UserModules.Vector<ModuleIdentity>
   Effort.String
   RememberingDepth.Integer
+  Remembering.[ Predecessors.RememberingDepth Custom.Vector<FlowId> ]
   SystemPromptText.String
   SystemPromptSha256.String
   InstructionPrompt.String
@@ -274,7 +275,6 @@ Signal
   PartsSubmitted.Integer
   StopsReported.Integer
   PowerLevel.[ High Medium Low UltraLow ]
-  RememberedFlow.{ FlowId RememberingDepth }
   ; A leave-out names one part of a harness's start that a flow goes
   ; without: a tool or tool group, an instruction block, or a harness
   ; feature. Each turns into the harness's own flag, environment variable
@@ -288,20 +288,9 @@ Signal
   FlowKind.[ Regular Simplified ]
   ToolSet.[ Default Explicit.Vector<String> ]
   ArtifactToolsAllowed.Boolean
-  ; The raw psyche record topics a metaflow selects. A launch carries the
-  ; selected topics together with the ordered lineage whose records precede
-  ; them in the first USER message.
-  RecordTopic.String
-  RecordTopics.Vector<RecordTopic>
-  RecordSelection.{ Lineage.Vector<FlowId> RecordTopics }
-  ; A configured lineage is used only when Flow has no stored lineage. None
-  ; says the lineage is unknown; Some.[] says this metaflow is explicitly a
-  ; root.
-  ConfiguredLineage.Vector<FlowId>
-  PredecessorSummary.String
   ; A Start's leave-outs, when it names them, replace the default its
   ; metaflow's configuration names; None takes that default.
-  LaunchProfile.{ LaunchRequestId SystemModules UserModules RecordSelection Option<PredecessorSummary> Address ModelName Effort Option<FlowId> Vector<RememberedFlow> HerdrSessionName Option<LeaveOuts> FlowKind ToolSet InstructionPrompt }
+  LaunchProfile.{ LaunchRequestId SystemModules UserModules Remembering Address ModelName Effort Option<FlowId> HerdrSessionName Option<LeaveOuts> FlowKind ToolSet InstructionPrompt }
   TargetReceiptRequest.{ LaunchRequestId PromptSha256 }
   PromptPart.{ PromptPartText PromptSha256 }
   FirstPromptPayload.{ FirstPromptBody PromptSha256 Vector<PromptPart> }
