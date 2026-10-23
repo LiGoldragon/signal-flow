@@ -249,6 +249,8 @@ Signal
   HerdrPaneId.String
   HerdrTerminalId.String
   LaunchRequestId.String
+  ; A module identity is the exact lowercase `type:subject` string. The
+  ; colon is anatomical; a hyphenated legacy name is not an identity.
   ModuleIdentity.String
   SystemModules.Vector<ModuleIdentity>
   UserModules.Vector<ModuleIdentity>
@@ -286,9 +288,20 @@ Signal
   FlowKind.[ Regular Simplified ]
   ToolSet.[ Default Explicit.Vector<String> ]
   ArtifactToolsAllowed.Boolean
+  ; The raw psyche record topics a metaflow selects. A launch carries the
+  ; selected topics together with the ordered lineage whose records precede
+  ; them in the first USER message.
+  RecordTopic.String
+  RecordTopics.Vector<RecordTopic>
+  RecordSelection.{ Lineage.Vector<FlowId> RecordTopics }
+  ; A configured lineage is used only when Flow has no stored lineage. None
+  ; says the lineage is unknown; Some.[] says this metaflow is explicitly a
+  ; root.
+  ConfiguredLineage.Vector<FlowId>
+  PredecessorSummary.String
   ; A Start's leave-outs, when it names them, replace the default its
   ; metaflow's configuration names; None takes that default.
-  LaunchProfile.{ LaunchRequestId SystemModules UserModules Address ModelName Effort Option<FlowId> Vector<RememberedFlow> HerdrSessionName Option<LeaveOuts> FlowKind ToolSet InstructionPrompt }
+  LaunchProfile.{ LaunchRequestId SystemModules UserModules RecordSelection Option<PredecessorSummary> Address ModelName Effort Option<FlowId> Vector<RememberedFlow> HerdrSessionName Option<LeaveOuts> FlowKind ToolSet InstructionPrompt }
   TargetReceiptRequest.{ LaunchRequestId PromptSha256 }
   PromptPart.{ PromptPartText PromptSha256 }
   FirstPromptPayload.{ FirstPromptBody PromptSha256 Vector<PromptPart> }
@@ -357,7 +370,7 @@ Signal
   ; which it carries, is another one. Models are compared exactly, name for
   ; name.
   ModelRefusal.[ Unconfigured Differs.ModelName ]
-  ContextRefusal.[ ComposerUnavailable ComposerRejected MetaflowMismatch PayloadMismatch ModuleMissing SystemTooLarge ModuleTooLarge ]
+  ContextRefusal.[ ComposerUnavailable ComposerRejected MetaflowMismatch PayloadMismatch ModuleMissing RecordMissing SystemTooLarge ModuleTooLarge ]
   ; HerdrRefusal is Herdr's own answer to a refused agent start, kept whole:
   ; the error code and message of its JSON error body, or no code and the
   ; whole text Herdr printed when it printed no such body.

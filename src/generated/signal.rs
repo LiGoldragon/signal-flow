@@ -129,12 +129,31 @@ pub enum ToolSet {
 #[rustfmt::skip]
 pub type ArtifactToolsAllowed = bool;
 #[rustfmt::skip]
+pub type RecordTopic = String;
+#[rustfmt::skip]
+pub type RecordTopics = std::vec::Vec<RecordTopic>;
+#[rustfmt::skip]
+pub type Lineage = std::vec::Vec<flow_ethos::FlowId>;
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct RecordSelection {
+    pub lineage: Lineage,
+    pub record_topics: RecordTopics,
+}
+#[rustfmt::skip]
+pub type ConfiguredLineage = std::vec::Vec<flow_ethos::FlowId>;
+#[rustfmt::skip]
+pub type PredecessorSummary = String;
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct LaunchProfile {
     pub launch_request_id: LaunchRequestId,
     pub system_modules: SystemModules,
     pub user_modules: UserModules,
+    pub record_selection: RecordSelection,
+    pub predecessor_summary_option: std::option::Option<PredecessorSummary>,
     pub address: flow_ethos::Address,
     pub model_name: flow_ethos::ModelName,
     pub effort: Effort,
@@ -480,6 +499,7 @@ pub enum ContextRefusal {
     MetaflowMismatch,
     PayloadMismatch,
     ModuleMissing,
+    RecordMissing,
     SystemTooLarge,
     ModuleTooLarge,
 }
