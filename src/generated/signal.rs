@@ -30,6 +30,13 @@ pub type Effort = String;
 #[rustfmt::skip]
 pub type RememberingDepth = i64;
 #[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum Remembering {
+    Predecessors(RememberingDepth),
+    Custom(std::vec::Vec<flow_ethos::FlowId>),
+}
+#[rustfmt::skip]
 pub type SystemPromptText = String;
 #[rustfmt::skip]
 pub type SystemPromptSha256 = String;
@@ -71,13 +78,6 @@ pub enum PowerLevel {
     Medium,
     Low,
     UltraLow,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct RememberedFlow {
-    pub flow_id: flow_ethos::FlowId,
-    pub remembering_depth: RememberingDepth,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -129,36 +129,17 @@ pub enum ToolSet {
 #[rustfmt::skip]
 pub type ArtifactToolsAllowed = bool;
 #[rustfmt::skip]
-pub type RecordTopic = String;
-#[rustfmt::skip]
-pub type RecordTopics = std::vec::Vec<RecordTopic>;
-#[rustfmt::skip]
-pub type Lineage = std::vec::Vec<flow_ethos::FlowId>;
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct RecordSelection {
-    pub lineage: Lineage,
-    pub record_topics: RecordTopics,
-}
-#[rustfmt::skip]
-pub type ConfiguredLineage = std::vec::Vec<flow_ethos::FlowId>;
-#[rustfmt::skip]
-pub type PredecessorSummary = String;
-#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct LaunchProfile {
     pub launch_request_id: LaunchRequestId,
     pub system_modules: SystemModules,
     pub user_modules: UserModules,
-    pub record_selection: RecordSelection,
-    pub predecessor_summary_option: std::option::Option<PredecessorSummary>,
+    pub remembering: Remembering,
     pub address: flow_ethos::Address,
     pub model_name: flow_ethos::ModelName,
     pub effort: Effort,
     pub flow_id_option: std::option::Option<flow_ethos::FlowId>,
-    pub remembered_flow_vector: std::vec::Vec<RememberedFlow>,
     pub herdr_session_name: HerdrSessionName,
     pub leave_outs_option: std::option::Option<LeaveOuts>,
     pub flow_kind: FlowKind,
@@ -970,6 +951,7 @@ pub struct ObserveSender_Data {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct Launch_Data {
     pub address: flow_ethos::Address,
+    pub remembering: Remembering,
     pub instruction_prompt: InstructionPrompt,
 }
 #[rustfmt::skip]

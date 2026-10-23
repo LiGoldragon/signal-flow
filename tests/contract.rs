@@ -16,8 +16,8 @@ fn budget() -> Budget {
 #[test]
 fn every_ordinary_request_has_a_concrete_datom() {
     for text in [
-        "Start.{ request-7 [ spirit:core ] [ operation:main-flow knowledge:flow ] { [ 4e1d2a ] [ flow ] } Some.«Continue the predecessor's result.» { Field flow Primary } gpt-6-astra medium Some.836818 [ { 1b8ac0 1 } ] messaging-build Some.[ SkillTool WorkflowTool ] Regular Default «Carry this bounded launch request.» }",
-        "Start.{ field-flow-quaternary-1 [ spirit:core ] [ operation:main-flow ] { [] [ flow ] } None { Field flow Quaternary } haiku medium None [] fieldFlow None Regular Default «Send the Order through Message.» }",
+        "Start.{ request-7 [ spirit:core ] [ operation:main-flow knowledge:flow ] Custom.[ 4e1d2a ] { Field flow Primary } gpt-6-astra medium Some.836818 messaging-build Some.[ SkillTool WorkflowTool ] Regular Default «Carry this bounded launch request.» }",
+        "Start.{ field-flow-quaternary-1 [ spirit:core ] [ operation:main-flow ] Predecessors.0 { Field flow Quaternary } haiku medium None fieldFlow None Regular Default «Send the Order through Message.» }",
         "Restart.fac697",
         "ResolveRecipient.fac697",
     ] {
@@ -72,11 +72,7 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
         launch_request_id: "request-7".into(),
         system_modules: vec!["spirit:core".into()],
         user_modules: vec!["operation:main-flow".into(), "knowledge:flow".into()],
-        record_selection: signal_flow::RecordSelection {
-            lineage: vec!["4e1d2a".into()],
-            record_topics: vec!["flow".into()],
-        },
-        predecessor_summary_option: Some("Continue the predecessor's result.".into()),
+        remembering: signal_flow::Remembering::Custom(vec!["4e1d2a".into()]),
         address: signal_flow::Address {
             aspect: signal_flow::Aspect::Field,
             topic: "flow".into(),
@@ -85,10 +81,6 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
         model_name: "gpt-6-astra".into(),
         effort: "medium".into(),
         flow_id_option: Some("836818".into()),
-        remembered_flow_vector: vec![signal_flow::RememberedFlow {
-            flow_id: "1b8ac0".into(),
-            remembering_depth: 1,
-        }],
         herdr_session_name: "messaging-build".into(),
         leave_outs_option: Some(vec![
             signal_flow::LeaveOut::SkillTool,
@@ -176,11 +168,7 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
             launch_request_id: intent.launch_request_id.clone(),
             system_modules: vec!["spirit:core".into()],
             user_modules: vec!["operation:main-flow".into()],
-            record_selection: signal_flow::RecordSelection {
-                lineage: Vec::new(),
-                record_topics: vec!["flow".into()],
-            },
-            predecessor_summary_option: None,
+            remembering: signal_flow::Remembering::Predecessors(0),
             address: signal_flow::Address {
                 aspect: signal_flow::Aspect::Field,
                 topic: "flow".into(),
@@ -189,7 +177,6 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
             model_name: intent.model_name.clone(),
             effort: intent.effort.clone(),
             flow_id_option: None,
-            remembered_flow_vector: Vec::new(),
             herdr_session_name: "messaging-build".into(),
             leave_outs_option: None,
             flow_kind: signal_flow::FlowKind::Regular,
@@ -310,7 +297,8 @@ fn a_send_names_delivery_and_deliver_all_names_a_metaflow() {
         "Send.{ Up Wake HardAbrupt.Question.«Which store?» }",
         "Send.{ Address.{ Psyche core Secondary } Wake MiddleAbrupt.Result.done }",
         "DeliverAll.{ Psyche core Secondary }",
-        "Launch.{ { Mind core Secondary } «Review the drain fix» }",
+        "Launch.{ { Mind core Primary } Predecessors.2 brief }",
+        "Launch.{ { Mind core Primary } Custom.[ 36b71b e3c8c1 ] brief }",
         "BindSeat.{ Field core Secondary }",
     ] {
         let query = Potential::<Query>::from(text)
