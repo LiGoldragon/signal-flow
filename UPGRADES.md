@@ -2,6 +2,12 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 32.0.0: a harness session's end is an event
+
+- `Event` appends `Ended.Option<NativeSessionId>`: Claude's SessionEnd
+  hook reports `Report.{ FlowId Ended.Some.«session» }`, so a flow's exit is
+  known without anything looking at its pane. The variant is appended.
+
 ## 31.0.0: a topic that is not camelCase is refused by type
 
 - `StartRejection` appends `TopicRefused.Topic`: a Start, Replace or

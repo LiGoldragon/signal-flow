@@ -500,7 +500,11 @@ Signal
   DeliverySnapshot.{ DeliveryCursor LogicalDeliveryId SentBy Address DeliveryState }
   SendObservation.{ DeliveryCursor Vector<DeliverySnapshot> }
   DrainOutcome.{ Address DrainState.[ Delivered Held.Vector<LogicalDeliveryId> ] }
+  ; Ended: the harness's session ended (Claude's SessionEnd), naming the
+  ; native session Claude Code gave the hook; Flow records the flow Exited
+  ; when it is the flow's own session.
   Event.[ Started
           ToolUsed.String
           Stopped.NativeStop
-          PromptSubmitted.NativePrompt ] ]
+          PromptSubmitted.NativePrompt
+          Ended.Option<NativeSessionId> ] ]

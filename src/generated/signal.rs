@@ -902,6 +902,7 @@ pub enum Event {
     ToolUsed(String),
     Stopped(NativeStop),
     PromptSubmitted(NativePrompt),
+    Ended(std::option::Option<NativeSessionId>),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]

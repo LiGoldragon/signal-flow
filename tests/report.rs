@@ -24,6 +24,8 @@ fn reports() -> Vec<Query> {
             prompt_id_option: Some("p1".into()),
             prompt_sha256: "ab12".into(),
         }),
+        Event::Ended(Some("s1".into())),
+        Event::Ended(None),
     ]
     .into_iter()
     .map(|event| {
@@ -83,6 +85,8 @@ mod datom {
             "Report.{ f1c841 Stopped.{ Some.s1 Some./p/s1.jsonl None } }",
             "Report.{ f1c841 Stopped.{ None None None } }",
             "Report.{ f1c841 PromptSubmitted.{ Some.s1 Some.p1 ab12 } }",
+            "Report.{ f1c841 Ended.Some.s1 }",
+            "Report.{ f1c841 Ended.None }",
         ]) {
             let text = query.datomize(vec![]).protosize().compact();
             assert_eq!(text, expected);
