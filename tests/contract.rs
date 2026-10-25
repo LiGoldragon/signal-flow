@@ -377,7 +377,9 @@ fn refresh_answers_have_concrete_datoms() {
         "Refreshed.{ { Psyche core Primary } 74e4d1 }",
         "RefreshRejected.NotAwake",
         "RefreshRejected.Locked",
-        "RefreshRejected.RouteRefused",
+        "RefreshRejected.CloseRefused",
+        "RefreshRejected.PersistenceRefused",
+        "RefreshRejected.HerdrUnavailable",
     ] {
         let response = Potential::<Response>::from(text)
             .actualize(&mut budget())

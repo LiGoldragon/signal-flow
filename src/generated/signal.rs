@@ -630,7 +630,9 @@ pub enum StartRejection {
 pub enum RefreshRejection {
     NotAwake,
     Locked,
-    RouteRefused,
+    CloseRefused,
+    PersistenceRefused,
+    HerdrUnavailable,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]

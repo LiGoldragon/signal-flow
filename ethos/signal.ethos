@@ -20,8 +20,12 @@
 ; configuration (the meta Metaflows family): its system and user modules,
 ; the model configured for its layer and aspect, the effort its layer runs
 ; at, and its default leave-outs. The InstructionPrompt is the brief, the
-; one string given that flow alone. A Launch from the flow the Address is
-; Awake as replaces it; any other Launch is a Start. An Address with no
+; one string given that flow alone. A Launch addressed to a metaflow Awake
+; as a live flow, whoever sends it, is a Refresh of that metaflow whose
+; successor is the Launch's: under the metaflow's lock the successor is
+; started with the Launch's brief and confirmed, then the flow it replaces
+; ends, given no turn, and the queue goes to the successor, oldest first;
+; it answers Replaced. Any other Launch is a Start. An Address with no
 ; declaration is refused, StartRejected.Undeclared.
 ;
 ; BindSeat binds the seat the calling process runs in to Address. The seat
@@ -31,15 +35,18 @@
 ; its real id. The seat is recorded live in its pane and the metaflow Awake
 ; as it; a metaflow Awake as another live flow is refused Taken.
 ;
-; Refresh ends the flow the metaflow at Address is Awake as, without waking
-; its successor. Flow takes the metaflow's lock: from then nothing is
-; delivered to it and what arrives queues. The flow's harness is closed
-; without a turn, the flow is recorded ended and joins Past, the metaflow
-; is left Asleep and the lock is released; Refreshed names the Address and
-; the flow that ended. The successor starts on the next waking request,
-; as any Asleep metaflow wakes, with the whole queue, oldest first. A
-; metaflow not Awake is refused NotAwake; one whose lock a refresh or a
-; waking already holds, Locked.
+; Refresh ends the flow the metaflow at Address is Awake as. Anybody may
+; refresh a metaflow. Flow takes the metaflow's lock: from then nothing is
+; delivered to it, and a Send that arrives queues on the metaflow. A
+; metaflow whose declaration is Required, or whose queue holds a request
+; that asks for a wake, has its successor started in the same event: the
+; successor is started and its receipt confirmed before the flow it
+; replaces is reaped, and the queue goes to it, oldest first. Any other is
+; left Asleep, and its successor starts on the next waking request, as any
+; Asleep metaflow wakes, with the whole queue, oldest first. Either way
+; the ending flow's harness is closed without a turn, the flow is recorded
+; ended and joins Past, and the lock is released; Refreshed names the
+; Address and the flow that ended.
 ;
 ; Flow ordinary Signal.
 ;
@@ -441,7 +448,15 @@ Signal
   ; identifier (an ASCII lowercase letter, then ASCII letters and digits);
   ; it carries the topic as written. Flow never lowers its capitals.
   StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal NoSecondary Undeclared TopicRefused.Topic ]
-  RefreshRejection.[ NotAwake Locked RouteRefused ]
+  ; RefreshRejection names why a refresh ended no flow: the metaflow is not
+  ; Awake; a refresh, a waking or an unconfirmed launch holds its lock;
+  ; Herdr refused to close the ending flow's pane; the flow's end was not
+  ; recorded; or Herdr could not be read to see the pane.
+  RefreshRejection.[ NotAwake
+                     Locked
+                     CloseRefused
+                     PersistenceRefused
+                     HerdrUnavailable ]
   RecipientResolutionRejection.[ UnknownFlow FlowUnavailable ]
   StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused PersistenceRefused ]
   Replaced.{ FlowId Launched }
