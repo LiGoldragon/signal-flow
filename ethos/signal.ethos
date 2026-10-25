@@ -31,6 +31,16 @@
 ; its real id. The seat is recorded live in its pane and the metaflow Awake
 ; as it; a metaflow Awake as another live flow is refused Taken.
 ;
+; Refresh ends the flow the metaflow at Address is Awake as, without waking
+; its successor. Flow takes the metaflow's lock: from then nothing is
+; delivered to it and what arrives queues. The flow's harness is closed
+; without a turn, the flow is recorded ended and joins Past, the metaflow
+; is left Asleep and the lock is released; Refreshed names the Address and
+; the flow that ended. The successor starts on the next waking request,
+; as any Asleep metaflow wakes, with the whole queue, oldest first. A
+; metaflow not Awake is refused NotAwake; one whose lock a refresh or a
+; waking already holds, Locked.
+;
 ; Flow ordinary Signal.
 ;
 ; Start and Replace carry a LaunchProfile; a Replace's profile names the
@@ -184,7 +194,7 @@ Signal
 [
   flow_ethos:[ Aspect Address FlowId Request SentBy QueueEntry NativeInput LogicalDeliveryId Delivery Message Lock Sender Process Metaflow Key Recipient Layer Topic Subaspect OrdinarySocketPath MetaSocketPath Start ModelName HarnessKind ] ]
 [ Start.LaunchProfile
-  Restart.FlowId
+  Refresh.Address
   ResolveRecipient.RecipientResolutionRequest
   Stop.FlowId
   Replace.LaunchProfile
@@ -209,12 +219,12 @@ Signal
 [ Started.Launched
   LaunchPending.LaunchAttempt
   StartAmbiguous.PromptDeliveryIntent
-  Restarted.Restarted
+  Refreshed.Refreshed
   RecipientResolved.FlowNode
   Stopped.FlowId
   Listed.Vector<Metaflow>
   StartRejected.StartRejection
-  RestartRejected.RestartRejection
+  RefreshRejected.RefreshRejection
   RecipientResolutionRejected.RecipientResolutionRejection
   StopRejected.StopRejection
   Replaced.Replaced
@@ -241,7 +251,6 @@ Signal
 [
   SessionId.String
   FlowType.String
-  Generation.Integer
   EndpointPath.String
   HerdrSessionName.String
   HerdrAgentName.String
@@ -332,7 +341,8 @@ Signal
   FlowLifecycle.[ Pending Active Stopped Retired Exited ]
   FlowNode.{ FlowId SessionId HarnessKind EndpointSelection HerdrRouteSelection Origin FlowLifecycle }
   Launched.{ FlowId SessionId HerdrRouteSelection Origin }
-  Restarted.{ FlowId SessionId Generation }
+  ; Refreshed names the metaflow refreshed and the flow that ended.
+  Refreshed.{ Address FlowId }
   ; BindingRefusal names one checked native-binding failure without raw adapter text.
   ; PaneMismatch covers the agent name, workspace, or pane check.
   ; TerminalMismatch covers the terminal check.
@@ -431,7 +441,7 @@ Signal
   ; identifier (an ASCII lowercase letter, then ASCII letters and digits);
   ; it carries the topic as written. Flow never lowers its capitals.
   StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal NoSecondary Undeclared TopicRefused.Topic ]
-  RestartRejection.[ ProvenanceMismatch UnknownFlow ResumeRefused ]
+  RefreshRejection.[ NotAwake Locked RouteRefused ]
   RecipientResolutionRejection.[ UnknownFlow FlowUnavailable ]
   StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused PersistenceRefused ]
   Replaced.{ FlowId Launched }

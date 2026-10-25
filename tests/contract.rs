@@ -18,7 +18,7 @@ fn every_ordinary_request_has_a_concrete_datom() {
     for text in [
         "Start.{ request-7 [ spirit:core ] [ compensation:main-flow knowledge:flow ] Custom.[ 4e1d2a ] { Field flow Primary } gpt-6-astra medium Some.836818 messaging-build Some.[ SkillTool WorkflowTool ] Regular Default «Carry this bounded launch request.» }",
         "Start.{ field-flow-quaternary-1 [ spirit:core ] [ compensation:main-flow ] Predecessors.0 { Field flow Quaternary } haiku medium None fieldFlow None Regular Default «Send the Order through Message.» }",
-        "Restart.fac697",
+        "Refresh.{ Psyche core Primary }",
         "ResolveRecipient.fac697",
     ] {
         let query = Potential::<Query>::from(text)
@@ -358,6 +358,26 @@ fn replace_and_launch_status_responses_have_concrete_datoms() {
         "ReplaceRejected.ReapRefused.CloseRefused",
         "LaunchStatusRejected.UnknownLaunchRequest",
         "LaunchStatusRejected.PersistenceRefused",
+    ] {
+        let response = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            response
+        );
+        assert_eq!(response.datomize(vec![]).protosize().compact(), text);
+    }
+}
+
+#[test]
+fn refresh_answers_have_concrete_datoms() {
+    for text in [
+        "Refreshed.{ { Psyche core Primary } 74e4d1 }",
+        "RefreshRejected.NotAwake",
+        "RefreshRejected.Locked",
+        "RefreshRejected.RouteRefused",
     ] {
         let response = Potential::<Response>::from(text)
             .actualize(&mut budget())

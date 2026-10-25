@@ -4,8 +4,6 @@ pub type SessionId = String;
 #[rustfmt::skip]
 pub type FlowType = String;
 #[rustfmt::skip]
-pub type Generation = i64;
-#[rustfmt::skip]
 pub type EndpointPath = String;
 #[rustfmt::skip]
 pub type HerdrSessionName = String;
@@ -437,10 +435,9 @@ pub struct Launched {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct Restarted {
+pub struct Refreshed {
+    pub address: flow_ethos::Address,
     pub flow_id: flow_ethos::FlowId,
-    pub session_id: SessionId,
-    pub generation: Generation,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -630,10 +627,10 @@ pub enum StartRejection {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum RestartRejection {
-    ProvenanceMismatch,
-    UnknownFlow,
-    ResumeRefused,
+pub enum RefreshRejection {
+    NotAwake,
+    Locked,
+    RouteRefused,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -961,7 +958,7 @@ pub struct Launch_Data {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Query {
     Start(LaunchProfile),
-    Restart(flow_ethos::FlowId),
+    Refresh(flow_ethos::Address),
     ResolveRecipient(RecipientResolutionRequest),
     Stop(flow_ethos::FlowId),
     Replace(LaunchProfile),
@@ -999,12 +996,12 @@ pub enum Response {
     Started(Launched),
     LaunchPending(LaunchAttempt),
     StartAmbiguous(PromptDeliveryIntent),
-    Restarted(Restarted),
+    Refreshed(Refreshed),
     RecipientResolved(FlowNode),
     Stopped(flow_ethos::FlowId),
     Listed(std::vec::Vec<flow_ethos::Metaflow>),
     StartRejected(StartRejection),
-    RestartRejected(RestartRejection),
+    RefreshRejected(RefreshRejection),
     RecipientResolutionRejected(RecipientResolutionRejection),
     StopRejected(StopRejection),
     Replaced(Replaced),
