@@ -7,7 +7,8 @@ use signal_flow::{
 
 fn reports() -> Vec<Query> {
     [
-        Event::Started,
+        Event::Started(Some("s2".into())),
+        Event::Started(None),
         Event::ToolUsed("Bash".into()),
         Event::Stopped(NativeStop {
             native_session_id_option: Some("s1".into()),
@@ -26,6 +27,8 @@ fn reports() -> Vec<Query> {
         }),
         Event::Ended(Some("s1".into())),
         Event::Ended(None),
+        Event::Cleared(Some("s1".into())),
+        Event::Cleared(None),
     ]
     .into_iter()
     .map(|event| {
@@ -80,13 +83,16 @@ mod datom {
     #[test]
     fn report_has_exact_inline_datoms() {
         for (query, expected) in super::reports().into_iter().zip([
-            "Report.{ f1c841 Started }",
+            "Report.{ f1c841 Started.Some.s2 }",
+            "Report.{ f1c841 Started.None }",
             "Report.{ f1c841 ToolUsed.Bash }",
             "Report.{ f1c841 Stopped.{ Some.s1 Some./p/s1.jsonl None } }",
             "Report.{ f1c841 Stopped.{ None None None } }",
             "Report.{ f1c841 PromptSubmitted.{ Some.s1 Some.p1 ab12 } }",
             "Report.{ f1c841 Ended.Some.s1 }",
             "Report.{ f1c841 Ended.None }",
+            "Report.{ f1c841 Cleared.Some.s1 }",
+            "Report.{ f1c841 Cleared.None }",
         ]) {
             let text = query.datomize(vec![]).protosize().compact();
             assert_eq!(text, expected);
@@ -99,7 +105,8 @@ mod datom {
         }
         for refused in [
             "Report.{ f1c841 }",
-            "Report.{ f1c841 Started extra }",
+            "Report.{ f1c841 Started }",
+            "Report.{ f1c841 Started.Some.s2 extra }",
             "Report.{ f1c841 Paused }",
             "Report.{ f1c841 Stopped }",
             "Report.{ f1c841 Stopped.{ Some.s1 } }",

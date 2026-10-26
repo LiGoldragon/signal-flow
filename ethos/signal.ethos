@@ -545,11 +545,18 @@ Signal
   DeliverySnapshot.{ DeliveryCursor LogicalDeliveryId SentBy Address DeliveryState }
   SendObservation.{ DeliveryCursor Vector<DeliverySnapshot> }
   DrainOutcome.{ Address DrainState.[ Delivered Held.Vector<LogicalDeliveryId> ] }
+  ; Started: the harness's session started (Claude's SessionStart), naming
+  ; the native session Claude Code gave the hook. One that follows the
+  ; flow's own Cleared rebinds the flow to that session; the FlowId stays.
   ; Ended: the harness's session ended (Claude's SessionEnd), naming the
   ; native session Claude Code gave the hook; Flow records the flow Exited
   ; when it is the flow's own session.
-  Event.[ Started
+  ; Cleared: the session was cleared (Claude's SessionEnd with reason
+  ; clear), naming the session that ended. The harness goes on in a new
+  ; session: the flow has not exited and its pane stays.
+  Event.[ Started.Option<NativeSessionId>
           ToolUsed.String
           Stopped.NativeStop
           PromptSubmitted.NativePrompt
-          Ended.Option<NativeSessionId> ] ]
+          Ended.Option<NativeSessionId>
+          Cleared.Option<NativeSessionId> ] ]

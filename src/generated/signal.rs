@@ -903,11 +903,12 @@ pub struct DrainOutcome {
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Event {
-    Started,
+    Started(std::option::Option<NativeSessionId>),
     ToolUsed(String),
     Stopped(NativeStop),
     PromptSubmitted(NativePrompt),
     Ended(std::option::Option<NativeSessionId>),
+    Cleared(std::option::Option<NativeSessionId>),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
