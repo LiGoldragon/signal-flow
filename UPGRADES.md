@@ -39,6 +39,11 @@ How to deploy each breaking change of signal-flow.
 - `DeliveryState` appends `Withdrawn`: a queued request the owner withdraws
   from its metaflow's queue (meta `Withdraw`) before it reached the seat
   ends `Withdrawn`, so its sender sees its delivery end.
+- `RetryCause` appends `WakeRefused.StartRejection`: a queued request whose
+  waking start was refused stays queued, its delivery
+  `Retryable.WakeRefused.<rejection>`, e.g.
+  `Retryable.WakeRefused.ContextRefused.RecordMissing`, so the sender's
+  `ObserveSends` shows why; the next waking request retries the start.
 - `Refusal` appends `TopicRefused.Topic`: a Send whose recipient Address's
   topic is not an uncapitalized camelCase identifier is refused,
   `Refused.TopicRefused.Primary_Committing`.

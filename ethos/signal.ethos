@@ -539,7 +539,9 @@ Signal
   SendRequest.{ Recipient Delivery Message }
   DeliveryCursor.Integer
   NativeReceipt.{ HarnessKind NativeSessionId NativePromptId.String }
-  RetryCause.[ HistoryAbsent HandOverRefused OwnerResolvedAbsent ]
+  ; WakeRefused: the start that would wake the recipient was refused, for
+  ; that reason; the request stays queued and the next waking request retries.
+  RetryCause.[ HistoryAbsent HandOverRefused OwnerResolvedAbsent WakeRefused.StartRejection ]
   DeliveryState.[ Queued
                   Attempting
                   Retryable.RetryCause

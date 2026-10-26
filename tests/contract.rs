@@ -812,6 +812,8 @@ fn durable_admission_and_resumable_sender_outcomes_round_trip() {
         "SendsObserved.{ 2 [ { 2 logical-1 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Attempting } ] }",
         "SendChanged.{ 3 logical-1 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Delivered.{ Claude session-1 prompt-1 } }",
         "SendChanged.{ 4 logical-2 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Withdrawn }",
+        "SendChanged.{ 5 logical-3 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Retryable.WakeRefused.ContextRefused.RecordMissing }",
+        "SendsObserved.{ 6 [ { 6 logical-4 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Retryable.WakeRefused.NoSecondary } ] }",
         "Drained.{ { Psyche flow Secondary } Held.[ logical-1 ] }",
     ] {
         let value = Potential::<Response>::from(text)

@@ -839,6 +839,7 @@ pub enum RetryCause {
     HistoryAbsent,
     HandOverRefused,
     OwnerResolvedAbsent,
+    WakeRefused(StartRejection),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
