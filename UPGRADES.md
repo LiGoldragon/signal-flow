@@ -24,6 +24,14 @@ How to deploy each breaking change of signal-flow.
   a Refresh whose owed successor's launch is still pending or ambiguous
   when the confirmation wait ends, and the successor stays owed:
   `RefreshRejected.SuccessorRefused.Locked`.
+- `StartRejection.CompositionRefused` carries its reason,
+  `CompositionRefusal.[ InvalidLaunchRequestId InvalidModelName
+  InvalidEffort InvalidToolSet InvalidHerdrSessionName InvalidSystemModules
+  InvalidUserModules InvalidRemembering InexactModel Unconfigured
+  PresentationUnavailable Unrecorded ]`: a Launch remembering `Custom.[]`
+  answers `StartRejected.CompositionRefused.InvalidRemembering`.
+  `Unrecorded` answers an outcome archived before the reason was kept. A
+  bare `StartRejected.CompositionRefused` no longer reads.
 - `ReplaceRejection` appends `Locked`: a Replace whose metaflow a refresh
   or a waking holds is refused `ReplaceRejected.Locked`. A refresh's or a
   replace's successor is owed in Flow's memory until it is confirmed, and a

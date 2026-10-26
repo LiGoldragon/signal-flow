@@ -461,7 +461,21 @@ Signal
   ; TopicRefused: the Address's topic is not an uncapitalized camelCase
   ; identifier (an ASCII lowercase letter, then ASCII letters and digits);
   ; it carries the topic as written. Flow never lowers its capitals.
-  StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal NoSecondary Undeclared TopicRefused.Topic ]
+  ; CompositionRefused: the launch could not be composed, for its reason.
+  ; An Invalid variant names the profile field that is not well formed:
+  ; InvalidSystemModules and InvalidUserModules, a module list empty (the
+  ; system's), repeated, sharing a module or not of identities;
+  ; InvalidRemembering, a Remembering of no flows (Custom.[]), naming an
+  ; empty FlowId or of a negative depth; InvalidLaunchRequestId,
+  ; InvalidModelName, InvalidEffort and InvalidHerdrSessionName, a value
+  ; empty or holding a character it may not; InvalidToolSet, a Simplified
+  ; seat whose tool set is not Explicit.[]. InexactModel: no harness
+  ; launches the profile's model exactly. Unconfigured: no model is
+  ; configured for the layer and aspect of the seat a wake starts.
+  ; PresentationUnavailable: the Psyche core presentation prompt could not
+  ; be read. Unrecorded: an outcome Flow archived before it kept the reason.
+  CompositionRefusal.[ InvalidLaunchRequestId InvalidModelName InvalidEffort InvalidToolSet InvalidHerdrSessionName InvalidSystemModules InvalidUserModules InvalidRemembering InexactModel Unconfigured PresentationUnavailable Unrecorded ]
+  StartRejection.[ CompositionRefused.CompositionRefusal LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal NoSecondary Undeclared TopicRefused.Topic ]
   ; RefreshRejection names why a refresh ended no flow: the metaflow is not
   ; Awake; a refresh, a waking or an unconfirmed launch holds its lock;
   ; Herdr refused to close the ending flow's pane; the flow's end was not

@@ -884,3 +884,57 @@ fn topic_refused_start_rejection_round_trips() {
         response
     );
 }
+
+/// A launch that could not be composed names why: an empty Custom
+/// Remembering is InvalidRemembering, and every other reason is a variant
+/// of its own.
+#[test]
+fn composition_refused_carries_its_reason() {
+    use signal_flow::{CompositionRefusal, StartRejection};
+    for (text, refusal) in [
+        (
+            "StartRejected.CompositionRefused.InvalidRemembering",
+            CompositionRefusal::InvalidRemembering,
+        ),
+        (
+            "StartRejected.CompositionRefused.InvalidSystemModules",
+            CompositionRefusal::InvalidSystemModules,
+        ),
+        (
+            "StartRejected.CompositionRefused.InexactModel",
+            CompositionRefusal::InexactModel,
+        ),
+        (
+            "StartRejected.CompositionRefused.Unconfigured",
+            CompositionRefusal::Unconfigured,
+        ),
+        (
+            "StartRejected.CompositionRefused.PresentationUnavailable",
+            CompositionRefusal::PresentationUnavailable,
+        ),
+        (
+            "StartRejected.CompositionRefused.Unrecorded",
+            CompositionRefusal::Unrecorded,
+        ),
+    ] {
+        let response = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        assert_eq!(
+            response,
+            Response::StartRejected(StartRejection::CompositionRefused(refusal))
+        );
+        assert_eq!(response.datomize(vec![]).protosize().compact(), text);
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            response
+        );
+    }
+    // The reason is not optional: a bare CompositionRefused no longer reads.
+    assert!(
+        Potential::<Response>::from("StartRejected.CompositionRefused")
+            .actualize(&mut budget())
+            .is_err()
+    );
+}

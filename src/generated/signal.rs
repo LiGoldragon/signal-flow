@@ -606,8 +606,25 @@ pub struct NativeLaunchRefusal {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum CompositionRefusal {
+    InvalidLaunchRequestId,
+    InvalidModelName,
+    InvalidEffort,
+    InvalidToolSet,
+    InvalidHerdrSessionName,
+    InvalidSystemModules,
+    InvalidUserModules,
+    InvalidRemembering,
+    InexactModel,
+    Unconfigured,
+    PresentationUnavailable,
+    Unrecorded,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum StartRejection {
-    CompositionRefused,
+    CompositionRefused(CompositionRefusal),
     LaunchRequestConflict,
     LaunchPersistenceRefused,
     NativeLaunchRefused(NativeLaunchRefusal),
