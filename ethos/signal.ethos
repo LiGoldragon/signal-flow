@@ -8,7 +8,9 @@
 ; app-server named in the environment of the command it started. The
 ; sender's metaflow must be Awake as that flow. The recipient is resolved
 ; (Up is the layer above the sender, in its aspect and topic) and must be a
-; metaflow Flow holds. Delivery.Queue leaves the message queued for the
+; metaflow Flow holds; a recipient Address whose topic is not an
+; uncapitalized camelCase identifier is refused TopicRefused, carrying the
+; topic as written. Delivery.Queue leaves the message queued for the
 ; recipient's next wake. Delivery.Wake asks Flow to wake the recipient after
 ; enqueueing; the message kind never decides whether to wake. A HardAbrupt or
 ; MiddleAbrupt message for an Awake live flow is typed into its pane by Flow
@@ -38,7 +40,7 @@
 ; Refresh ends the flow the metaflow at Address is Awake as. Anybody may
 ; refresh a metaflow. Flow takes the metaflow's lock: from then nothing is
 ; delivered to it, and a Send that arrives queues on the metaflow. A
-; metaflow whose declaration is Required, or whose queue holds a request
+; metaflow whose declaration is Maintained, or whose queue holds a request
 ; that asks for a wake, has its successor started in the same event: the
 ; successor is started and its receipt confirmed before the flow it
 ; replaces is reaped, and the queue goes to it, oldest first. Any other is
@@ -51,7 +53,9 @@
 ; starts with one still owed starts it, whatever the context of the flow
 ; it follows. A successor whose Replace is refused answers
 ; SuccessorRefused with that rejection; one no declaration or configured
-; model names answers Undeclared.
+; model names answers Undeclared; one whose launch is still pending or
+; ambiguous when the confirmation wait ends answers SuccessorUnconfirmed,
+; and stays owed.
 ;
 ; Flow ordinary Signal.
 ;
@@ -110,14 +114,16 @@
 ; live; Active is one that has been.
 ;
 ; The three ways a flow stops being live are distinct, and each names
-; who ended it. Stopped is Flow's own act: Stop, or a replacement's
-; reap, closed a pane Flow was holding. Exited is the seat's own act or
-; its accident: its pane is gone from Herdr and Flow never closed it, so
+; who ended it. Stopped is Flow's own act: Stop, a refresh, a sleep, or a
+; replacement's reap, closed a pane Flow was holding. Exited is the seat's
+; own act or its accident: its harness is gone and Flow never ended it, so
 ; nothing can be sent to it. Retired is an owner's act: the flow is
 ; taken out of Flow's receiving deliberately, through the privileged
-; Retire, whatever its pane is doing. A pane going away never makes a
-; flow Retired — an exit retains the flow's record and says only that it
-; Exited; retirement comes from authority, never from an observation.
+; Retire. A pane going away never makes a flow Retired — an exit retains
+; the flow's record and says only that it Exited; retirement comes from
+; authority, never from an observation. No pane outlives its flow: in the
+; event that ends a flow, whichever of the three, Flow closes the flow's
+; harness and its Herdr pane where they are still there.
 ;
 ; None of the three is a deletion: every one of them keeps the flow's
 ; row, its origin and its history, and none is ever reported with an
@@ -457,17 +463,17 @@ Signal
   ; it carries the topic as written. Flow never lowers its capitals.
   StartRejection.[ CompositionRefused LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal NoSecondary Undeclared TopicRefused.Topic ]
   ; RefreshRejection names why a refresh ended no flow: the metaflow is not
-  ; Awake; a refresh, a waking or an unconfirmed launch holds its lock,
-  ; the owed successor's own unconfirmed launch among them; Herdr refused
-  ; to close the ending flow's pane; the flow's end was not recorded; or
-  ; Herdr could not be read to see the pane.
+  ; Awake; a refresh, a waking or an unconfirmed launch holds its lock;
+  ; Herdr refused to close the ending flow's pane; the flow's end was not
+  ; recorded; or Herdr could not be read to see the pane.
   RefreshRejection.[ NotAwake
                      Locked
                      CloseRefused
                      PersistenceRefused
                      HerdrUnavailable
                      SuccessorRefused.ReplaceRejection ; the Replace that starts the successor owed was refused
-                     Undeclared ]                      ; no declaration or model names a successor
+                     Undeclared                        ; no declaration or model names a successor
+                     SuccessorUnconfirmed ]            ; the successor's launch is pending or ambiguous past the confirmation wait
   RecipientResolutionRejection.[ UnknownFlow FlowUnavailable ]
   StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused PersistenceRefused ]
   Replaced.{ FlowId Launched }
@@ -504,7 +510,8 @@ Signal
             NotSendServer.Process
             OffRoute
             Oversized.SendPayloadSize
-            Direct.String ]
+            Direct.String
+            TopicRefused.Topic ]
   ActualBytes.Integer
   MaximumBytes.Integer
   SendPayloadSize.{ ActualBytes MaximumBytes }

@@ -306,7 +306,11 @@ fn a_send_names_delivery_and_deliver_all_names_a_metaflow() {
             .unwrap_or_else(|error| panic!("{text}: {error:?}"));
         assert_eq!(query.datomize(Vec::new()).protosize().compact(), text);
     }
-    for text in ["Refused.OffRoute", "StartRejected.Undeclared"] {
+    for text in [
+        "Refused.OffRoute",
+        "StartRejected.Undeclared",
+        "Refused.TopicRefused.Primary_Committing",
+    ] {
         let response = Potential::<Response>::from(text)
             .actualize(&mut budget())
             .unwrap_or_else(|error| panic!("{text}: {error:?}"));
@@ -384,6 +388,7 @@ fn refresh_answers_have_concrete_datoms() {
         "RefreshRejected.SuccessorRefused.LaunchRefused.Undeclared",
         "RefreshRejected.SuccessorRefused.ReapRefused.CloseRefused",
         "RefreshRejected.Undeclared",
+        "RefreshRejected.SuccessorUnconfirmed",
     ] {
         let response = Potential::<Response>::from(text)
             .actualize(&mut budget())

@@ -635,6 +635,7 @@ pub enum RefreshRejection {
     HerdrUnavailable,
     SuccessorRefused(ReplaceRejection),
     Undeclared,
+    SuccessorUnconfirmed,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -761,6 +762,7 @@ pub enum Refusal {
     OffRoute,
     Oversized(SendPayloadSize),
     Direct(String),
+    TopicRefused(flow_ethos::Topic),
 }
 #[rustfmt::skip]
 pub type ActualBytes = i64;

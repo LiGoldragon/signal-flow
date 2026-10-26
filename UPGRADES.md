@@ -7,6 +7,12 @@ How to deploy each breaking change of signal-flow.
 - `Event` appends `Ended.Option<NativeSessionId>`: Claude's SessionEnd
   hook reports `Report.{ FlowId Ended.Some.«session» }`, so a flow's exit is
   known without anything looking at its pane. The variant is appended.
+- `RefreshRejection` appends `SuccessorUnconfirmed`: a Refresh whose owed
+  successor's launch is still pending or ambiguous when the confirmation
+  wait ends answers `RefreshRejected.SuccessorUnconfirmed`, not `Locked`.
+- `Refusal` appends `TopicRefused.Topic`: a Send whose recipient Address's
+  topic is not an uncapitalized camelCase identifier is refused,
+  `Refused.TopicRefused.Primary_Committing`.
 
 ## 31.0.0: a topic that is not camelCase is refused by type
 
