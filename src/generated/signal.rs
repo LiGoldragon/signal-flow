@@ -633,6 +633,8 @@ pub enum RefreshRejection {
     CloseRefused,
     PersistenceRefused,
     HerdrUnavailable,
+    SuccessorRefused(ReplaceRejection),
+    Undeclared,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -667,6 +669,7 @@ pub enum ReplaceRejection {
     PredecessorStopped,
     LaunchRefused(StartRejection),
     ReapRefused(StopRejection),
+    Locked,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]

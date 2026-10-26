@@ -356,6 +356,7 @@ fn replace_and_launch_status_responses_have_concrete_datoms() {
         "ReplaceRejected.LaunchRefused.NativeLaunchRefused.{ Naming PaneLabelRefused }",
         "ReplaceRejected.LaunchRefused.NativeLaunchRefused.{ Naming WorkspaceLabelRefused }",
         "ReplaceRejected.ReapRefused.CloseRefused",
+        "ReplaceRejected.Locked",
         "LaunchStatusRejected.UnknownLaunchRequest",
         "LaunchStatusRejected.PersistenceRefused",
     ] {
@@ -380,6 +381,9 @@ fn refresh_answers_have_concrete_datoms() {
         "RefreshRejected.CloseRefused",
         "RefreshRejected.PersistenceRefused",
         "RefreshRejected.HerdrUnavailable",
+        "RefreshRejected.SuccessorRefused.LaunchRefused.Undeclared",
+        "RefreshRejected.SuccessorRefused.ReapRefused.CloseRefused",
+        "RefreshRejected.Undeclared",
     ] {
         let response = Potential::<Response>::from(text)
             .actualize(&mut budget())
