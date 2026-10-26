@@ -523,8 +523,9 @@ Signal
                   Attempting
                   Retryable.RetryCause
                   Uncertain
-                  Delivered.NativeReceipt
-                  Failed.Refusal ]
+                  Delivered.NativeReceipt ; the seat's own receipt of the request
+                  Failed.Refusal          ; refused, never to be sent
+                  Withdrawn ]             ; withdrawn from the queue by the owner, never having reached the seat
   SendReceipt.{ LogicalDeliveryId NativeReceipt }
   SendFailure.{ Option<LogicalDeliveryId> SendFailureReason }
   SendFailureReason.[ RecipientUnavailable.Address

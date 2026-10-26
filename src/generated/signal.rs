@@ -831,6 +831,7 @@ pub enum DeliveryState {
     Uncertain,
     Delivered(NativeReceipt),
     Failed(Refusal),
+    Withdrawn,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
