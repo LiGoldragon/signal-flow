@@ -2,6 +2,15 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 33.0.0: a Send is never refused for the seat's state or its route
+
+- `SendFailureReason` loses `RecipientBusy.Address`: no path produces it.
+  A Send to a seat with a queue, an outstanding delivery, a hold or a
+  passed context threshold is queued and answers
+  `SendAccepted.{ ... Queued }`. `RecipientUnavailable` stays.
+- `Refusal` loses `OffRoute`: a Send is not refused for its sender's aspect,
+  topic or layer. Consumers drop both variants; no compatibility path.
+
 ## 32.0.0: Refresh replaces Restart; a harness session's end is an event
 
 - `Query` loses `Restart.FlowId` and gains `Refresh.Address`:

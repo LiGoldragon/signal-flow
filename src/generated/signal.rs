@@ -776,7 +776,6 @@ pub enum Refusal {
     Unidentified(flow_ethos::Process),
     Store(String),
     NotSendServer(flow_ethos::Process),
-    OffRoute,
     Oversized(SendPayloadSize),
     Direct(String),
     TopicRefused(flow_ethos::Topic),
@@ -873,7 +872,6 @@ pub struct SendFailure {
 pub enum SendFailureReason {
     RecipientUnavailable(flow_ethos::Address),
     QueueNotPermitted,
-    RecipientBusy(flow_ethos::Address),
     Refused(Refusal),
     ReceiptUncertain,
     NotSent(String),

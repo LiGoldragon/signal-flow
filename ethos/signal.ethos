@@ -522,7 +522,6 @@ Signal
             Unidentified.Process
             Store.String
             NotSendServer.Process
-            OffRoute
             Oversized.SendPayloadSize
             Direct.String
             TopicRefused.Topic ]
@@ -553,7 +552,6 @@ Signal
   SendFailure.{ Option<LogicalDeliveryId> SendFailureReason }
   SendFailureReason.[ RecipientUnavailable.Address
                       QueueNotPermitted
-                      RecipientBusy.Address
                       Refused.Refusal
                       ReceiptUncertain
                       NotSent.String ]

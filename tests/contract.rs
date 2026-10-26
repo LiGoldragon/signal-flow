@@ -307,7 +307,6 @@ fn a_send_names_delivery_and_deliver_all_names_a_metaflow() {
         assert_eq!(query.datomize(Vec::new()).protosize().compact(), text);
     }
     for text in [
-        "Refused.OffRoute",
         "StartRejected.Undeclared",
         "Refused.TopicRefused.Primary_Committing",
     ] {
