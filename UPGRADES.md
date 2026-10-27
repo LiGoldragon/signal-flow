@@ -1,5 +1,10 @@
 # Upgrades
 
+## 36.0.0: a caller carries its layer
+
+- `Caller` carries `Layer` directly. `PowerLevel` is removed; a caller no
+  longer encodes its layer a second way.
+
 ## 35.0.0: declarations name required metaflows
 
 - `StartRejection.NoSecondary` is replaced by `RequirementUnmet.Address`.
@@ -463,8 +468,3 @@ To deploy, in each consumer (meta-signal-flow, flow):
 3. Rebuild and run the tests. The rkyv archive of every value is unchanged,
    so a Nexus and its clients need no store migration; rebuild and restart
    the Nexus and both CLIs together.
-
-## 35.0.0
-
-`Caller` carries `Layer` directly. `PowerLevel` is removed; a caller no longer
-encodes its layer a second way.
