@@ -551,7 +551,6 @@ Signal
   SendReceipt.{ LogicalDeliveryId NativeReceipt }
   SendFailure.{ Option<LogicalDeliveryId> SendFailureReason }
   SendFailureReason.[ RecipientUnavailable.Address
-                      QueueNotPermitted
                       Refused.Refusal
                       ReceiptUncertain
                       NotSent.String ]

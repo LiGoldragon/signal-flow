@@ -871,7 +871,6 @@ pub struct SendFailure {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum SendFailureReason {
     RecipientUnavailable(flow_ethos::Address),
-    QueueNotPermitted,
     Refused(Refusal),
     ReceiptUncertain,
     NotSent(String),

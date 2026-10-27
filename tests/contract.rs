@@ -841,7 +841,7 @@ fn direct_send_replies_carry_receipt_or_failure_never_queue_state() {
         }),
         Response::Failed(SendFailure {
             logical_delivery_id_option: None,
-            send_failure_reason: SendFailureReason::QueueNotPermitted,
+            send_failure_reason: SendFailureReason::NotSent("queue not permitted".into()),
         }),
         Response::Failed(SendFailure {
             logical_delivery_id_option: Some("logical-direct-2".into()),

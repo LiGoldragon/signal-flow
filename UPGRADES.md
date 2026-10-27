@@ -2,6 +2,12 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 34.0.0: an abrupt request may be queued
+
+- `SendFailureReason` loses `QueueNotPermitted`: `Delivery.Queue` admits
+  every priority to the recipient's durable queue. Consumers upgrade a
+  stored failure of that variant to `NotSent.«queue not permitted»`.
+
 ## 33.0.0: a Send is never refused for the seat's state or its route
 
 - `SendFailureReason` loses `RecipientBusy.Address`: no path produces it.
