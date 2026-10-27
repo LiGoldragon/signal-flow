@@ -378,7 +378,7 @@ dependencies = [
 
 [[package]]
 name = "signal-flow"
-version = "36.0.0"
+version = "37.0.0"
 dependencies = [
  "datom-codec",
  "ethos-zero 17.0.0",

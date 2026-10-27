@@ -1,5 +1,10 @@
 # Upgrades
 
+## 37.0.0: harness events name their reporting session
+
+- `Report` identifies its reporter as either a Flow session or a native
+  harness session. `Event` includes harness notifications.
+
 ## 36.0.0: a caller carries its layer
 
 - `Caller` carries `Layer` directly. `PowerLevel` is removed; a caller no

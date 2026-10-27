@@ -49,6 +49,13 @@ pub type PromptSha256 = String;
 #[rustfmt::skip]
 pub type NativeSessionId = String;
 #[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum Reporter {
+    Flow(flow_ethos::FlowId),
+    Session(NativeSessionId),
+}
+#[rustfmt::skip]
 pub type NativeTurnId = String;
 #[rustfmt::skip]
 pub type ReceiptSha256 = String;
@@ -913,6 +920,7 @@ pub struct DrainOutcome {
 pub enum Event {
     Started(std::option::Option<NativeSessionId>),
     ToolUsed(String),
+    Notified(String),
     Stopped(NativeStop),
     PromptSubmitted(NativePrompt),
     Ended(std::option::Option<NativeSessionId>),
@@ -922,7 +930,7 @@ pub enum Event {
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct Report_Data {
-    pub flow_id: flow_ethos::FlowId,
+    pub reporter: Reporter,
     pub event: Event,
 }
 #[rustfmt::skip]
