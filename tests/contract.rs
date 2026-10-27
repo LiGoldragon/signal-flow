@@ -16,7 +16,7 @@ fn budget() -> Budget {
 #[test]
 fn every_ordinary_request_has_a_concrete_datom() {
     for text in [
-        "Start.{ request-7 [ spirit:core ] [ compensation:main-flow knowledge:flow ] Custom.[ 4e1d2a ] { Field flow Primary } gpt-6-astra medium Some.836818 messaging-build Some.[ SkillTool WorkflowTool ] Default «Carry this bounded launch request.» }",
+        "Start.{ request-7 [ spirit:core ] [ compensation:main-flow knowledge:flow ] Custom.[ 4e1d2a ] { Field flow Primary } gpt-6-astra medium Some.836818 messaging-build Some.[ Skill Workflow ] Default «Carry this bounded launch request.» }",
         "Start.{ field-flow-quaternary-1 [ spirit:core ] [ compensation:main-flow ] Predecessors.0 { Field flow Quaternary } haiku medium None fieldFlow None Default «Send the Order through Message.» }",
         "Refresh.{ Psyche core Primary }",
         "ResolveRecipient.fac697",
@@ -93,10 +93,7 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
         effort: "medium".into(),
         flow_id_option: Some("836818".into()),
         herdr_session_name: "messaging-build".into(),
-        leave_outs_option: Some(vec![
-            signal_flow::LeaveOut::SkillTool,
-            signal_flow::LeaveOut::WorkflowTool,
-        ]),
+        left_out_option: Some(vec!["Skill".into(), "Workflow".into()]),
         tool_set: signal_flow::ToolSet::Default,
         instruction_prompt: "Carry this bounded launch request.".into(),
     };
@@ -121,10 +118,7 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
             }],
         },
         target_receipt_request: receipt_request,
-        leave_outs: vec![
-            signal_flow::LeaveOut::SkillTool,
-            signal_flow::LeaveOut::WorkflowTool,
-        ],
+        left_out: vec!["Skill".into(), "Workflow".into()],
     };
 
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&composed).unwrap();
@@ -158,7 +152,7 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
         ],
         parts_submitted: 1,
         stops_reported: 0,
-        leave_outs: Vec::new(),
+        left_out: Vec::new(),
         herdr_pane_binding: binding,
         native_transcript_boundary: signal_flow::NativeTranscriptBoundary::Existing(
             signal_flow::NativeTranscriptCursor {
@@ -188,7 +182,7 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
             effort: intent.effort.clone(),
             flow_id_option: None,
             herdr_session_name: "messaging-build".into(),
-            leave_outs_option: None,
+            left_out_option: None,
             tool_set: signal_flow::ToolSet::Default,
             instruction_prompt: "Carry this bounded launch request.".into(),
         },
@@ -296,9 +290,11 @@ fn agent_observation_carries_the_flow_and_its_herdr_state() {
 fn a_send_names_delivery_and_deliver_all_names_a_metaflow() {
     // The recipient is a metaflow Address or Up, never a FlowId, and the
     // request carries no sender: Flow reads the caller from its socket.
-    assert!(Potential::<Query>::from("Send.{ 7d41e0 «hello» }")
-        .actualize(&mut budget())
-        .is_err());
+    assert!(
+        Potential::<Query>::from("Send.{ 7d41e0 «hello» }")
+            .actualize(&mut budget())
+            .is_err()
+    );
     for text in [
         "Send.{ Address.{ Mind core Secondary } Queue Soft.Order.«Review the drain fix» }",
         "Send.{ Up Wake HardAbrupt.Question.«Which store?» }",
@@ -731,8 +727,6 @@ fn start_names_the_address_of_the_seat_it_launches() {
         "StartRejected.TopicRefused.FlowRepair",
         "StartRejected.ContextRefused.MetaflowMismatch",
         "StartRejected.ContextRefused.ModuleTooLarge",
-        "StartRejected.LeaveOutRefused.Indispensable.ToolSearch",
-        "StartRejected.LeaveOutRefused.NeedsWorkflowLeftOut.SkillTool",
     ] {
         let response = Potential::<Response>::from(text)
             .actualize(&mut budget())

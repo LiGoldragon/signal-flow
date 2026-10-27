@@ -213,7 +213,7 @@
 
 Signal
 [
-  flow_ethos:[ Aspect Address FlowId Request SentBy QueueEntry NativeInput LogicalDeliveryId Delivery Message Lock Sender Process Metaflow Key Recipient Layer Topic Subaspect OrdinarySocketPath MetaSocketPath Start ModelName HarnessKind ] ]
+  flow_ethos:[ HarnessModuleName LeftOut Aspect Address FlowId Request SentBy QueueEntry NativeInput LogicalDeliveryId Delivery Message Lock Sender Process Metaflow Key Recipient Layer Topic Subaspect OrdinarySocketPath MetaSocketPath Start ModelName HarnessKind ] ]
 [ Start.LaunchProfile
   Refresh.Address
   ResolveRecipient.RecipientResolutionRequest
@@ -315,21 +315,19 @@ Signal
   ; hook binds the flow. SkillTool and BundledSkills are refused unless
   ; WorkflowTool is left out too, since Workflow then inlines its authoring
   ; reference. A Claude leave-out is refused for Codex and vice versa.
-  LeaveOut.[ ClaudeAiConnectors ConfiguredMcpServers AgentTool ExplorePlanAgents FileTools WorkflowTool ScheduleWakeupTool ReportFindingsTool ListAgentsTool CronTools WebTools DeferredTools SkillTool BundledSkills ClaudeMd GitInstructions AttributionReminder UserSettings ToolSearch BashTool CodexSkillListing CodexAgentsMd CodexCollaborationMode CodexEnvironmentContext CodexPermissions CodexDeveloperInstructions ]
-  LeaveOuts.Vector<LeaveOut>
   ; The tool surface a metaflow declares for every launch.
   ToolSet.[ Default Explicit.Vector<String> ]
   ArtifactToolsAllowed.Boolean
   ; A Start's leave-outs, when it names them, replace the default its
   ; metaflow's configuration names; None takes that default.
-  LaunchProfile.{ LaunchRequestId SystemModules UserModules Remembering Address ModelName Effort Option<FlowId> HerdrSessionName Option<LeaveOuts> ToolSet InstructionPrompt }
+  LaunchProfile.{ LaunchRequestId SystemModules UserModules Remembering Address ModelName Effort Option<FlowId> HerdrSessionName Option<LeftOut> ToolSet InstructionPrompt }
   TargetReceiptRequest.{ LaunchRequestId PromptSha256 }
   PromptPart.{ PromptPartText PromptSha256 }
   FirstPromptPayload.{ FirstPromptBody PromptSha256 Vector<PromptPart> }
   SystemPrompt.{ SystemPromptText SystemPromptSha256 }
   ; The harness the Nexus derived for the launch's model, and the effective
   ; leave-outs: the Start's, else its metaflow's default.
-  ComposedLaunch.{ LaunchProfile HarnessKind SystemPrompt FirstPromptPayload TargetReceiptRequest LeaveOuts }
+  ComposedLaunch.{ LaunchProfile HarnessKind SystemPrompt FirstPromptPayload TargetReceiptRequest LeftOut }
   HerdrPaneBinding.{ LaunchRequestId HerdrSessionName HerdrAgentName HerdrWorkspaceId HerdrPaneId HerdrTerminalId }
   NativeLaunchIntent.{ LaunchRequestId PromptSha256 SystemPromptSha256 HarnessKind ModelName Effort Vector<PromptSha256> }
   NativeLaunchBinding.{ LaunchRequestId FlowId NativeSessionId HarnessKind HerdrPaneBinding }
@@ -338,7 +336,7 @@ Signal
   NativeTranscriptAbsence.{ NativeSessionId HarnessKind TranscriptRootDevice TranscriptRootInode }
   NativeTranscriptBoundary.[ Existing.NativeTranscriptCursor
                              Absent.NativeTranscriptAbsence ]
-  PromptDeliveryIntent.{ LaunchRequestId PromptSha256 FlowId NativeSessionId HarnessKind ModelName Effort Vector<PromptSha256> PartsSubmitted StopsReported LeaveOuts HerdrPaneBinding NativeTranscriptBoundary }
+  PromptDeliveryIntent.{ LaunchRequestId PromptSha256 FlowId NativeSessionId HarnessKind ModelName Effort Vector<PromptSha256> PartsSubmitted StopsReported LeftOut HerdrPaneBinding NativeTranscriptBoundary }
   NativeTargetReceipt.{ LaunchRequestId PromptSha256 FlowId NativeSessionId NativeTurnId ReceiptSha256 ModelName Effort Vector<PromptSha256> }
   PromptDeliveryResult.[ Observed.NativeTargetReceipt
                          Ambiguous.PromptDeliveryIntent ]
@@ -383,10 +381,6 @@ Signal
   ; SHA-256; a requested module is missing from the composed provenance;
   ; the system text exceeds one argument; or one module with its part
   ; header does not fit one message.
-  ; LeaveOutRefusal names why a Start's effective leave-outs were refused:
-  ; a part a flow cannot go without, a skill leave-out with Workflow kept,
-  ; or a leave-out of the other harness.
-  LeaveOutRefusal.[ Indispensable.LeaveOut NeedsWorkflowLeftOut.LeaveOut NotForHarness.LeaveOut ]
   ; ModelRefusal names why a Start's model was refused: no model is
   ; configured for its Address's layer and aspect, or the configured model,
   ; which it carries, is another one. Models are compared exactly, name for
@@ -476,7 +470,7 @@ Signal
   ; Unrecorded: an outcome Flow archived before it kept the reason.
   CompositionRefusal.[ InvalidLaunchRequestId InvalidModelName InvalidEffort InvalidHerdrSessionName InvalidSystemModules InvalidUserModules InvalidRemembering InexactModel Unconfigured Unrecorded ]
   RequirementUnmet.Address
-  StartRejection.[ CompositionRefused.CompositionRefusal LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal RequirementUnmet Undeclared TopicRefused.Topic ]
+  StartRejection.[ CompositionRefused.CompositionRefusal LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal RequirementUnmet Undeclared TopicRefused.Topic ]
   ; Closing a pane either completes or carries the exact failure from the
   ; retained process identity through the required Herdr pane close.
   PaneCloseFailure.[ IdentityUnavailable IdentityMismatch StopTimedOut HerdrCloseFailed ]
