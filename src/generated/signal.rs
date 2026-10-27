@@ -71,15 +71,6 @@ pub type StopsReported = i64;
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum PowerLevel {
-    High,
-    Medium,
-    Low,
-    UltraLow,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum LeaveOut {
     ClaudeAiConnectors,
     ConfiguredMcpServers,
@@ -729,7 +720,7 @@ pub enum LaunchStatusRejection {
 pub struct Caller {
     pub flow_id: flow_ethos::FlowId,
     pub aspect: flow_ethos::Aspect,
-    pub power_level: PowerLevel,
+    pub layer: flow_ethos::Layer,
     pub model_name: flow_ethos::ModelName,
 }
 #[rustfmt::skip]
