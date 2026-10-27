@@ -304,7 +304,6 @@ Signal
   TranscriptRootInode.String
   PartsSubmitted.Integer
   StopsReported.Integer
-  PowerLevel.[ High Medium Low UltraLow ]
   ; A leave-out names one part of a harness's start that a flow goes
   ; without: a tool or tool group, an instruction block, or a harness
   ; feature. Each turns into the harness's own flag, environment variable
@@ -503,7 +502,7 @@ Signal
   AgentState.[ Idle Working Blocked Done Unknown Gone ]
   AgentObservation.{ FlowId AgentState }
   LaunchStatusRejection.[ UnknownLaunchRequest PersistenceRefused ReadViewChanged InconsistentRecords ]
-  Caller.{ FlowId Aspect PowerLevel ModelName }
+  Caller.{ FlowId Aspect Layer ModelName }
   CallerResolutionRejection.[ CallerUnknown
                               CallerMismatch.Caller ]
   Title.String
