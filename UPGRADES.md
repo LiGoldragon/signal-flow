@@ -462,3 +462,7 @@ To deploy, in each consumer (meta-signal-flow, flow):
 
 `Caller` carries `Layer` directly. `PowerLevel` is removed; a caller no longer
 encodes its layer a second way.
+
+## 36.0.0
+
+`Report` identifies its reporter as either a Flow session or a native harness session. `Event` includes harness notifications.

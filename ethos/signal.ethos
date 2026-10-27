@@ -222,7 +222,7 @@ Signal
   LaunchStatus.LaunchRequestId
   Observe.ObserveSelection
   ResolveCaller.Option<FlowId>
-  Report.{ FlowId Event }
+  Report.{ Reporter Event }
   Lock.{ Sender Recipient }
   Bind.{ Address Process }
   Identify.Process
@@ -294,6 +294,7 @@ Signal
   PromptPartText.String
   PromptSha256.String
   NativeSessionId.String
+  Reporter.[ Flow.FlowId Session.NativeSessionId ]
   NativeTurnId.String
   ReceiptSha256.String
   TranscriptDevice.String
@@ -568,6 +569,7 @@ Signal
   ; session: the flow has not exited and its pane stays.
   Event.[ Started.Option<NativeSessionId>
           ToolUsed.String
+          Notified.String
           Stopped.NativeStop
           PromptSubmitted.NativePrompt
           Ended.Option<NativeSessionId>
