@@ -463,3 +463,7 @@ To deploy, in each consumer (meta-signal-flow, flow):
 3. Rebuild and run the tests. The rkyv archive of every value is unchanged,
    so a Nexus and its clients need no store migration; rebuild and restart
    the Nexus and both CLIs together.
+
+## 35.0.0
+
+FlowKind and the Simplified launch shape are removed. LaunchProfile no longer carries FlowKind, and CompositionRefusal no longer carries InvalidToolSet or PresentationUnavailable. Consumers must use the single regular launch path and provide presentation instructions through context modules.

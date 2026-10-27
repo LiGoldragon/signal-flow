@@ -315,12 +315,11 @@ Signal
   LeaveOut.[ ClaudeAiConnectors ConfiguredMcpServers AgentTool ExplorePlanAgents FileTools WorkflowTool ScheduleWakeupTool ReportFindingsTool ListAgentsTool CronTools WebTools DeferredTools SkillTool BundledSkills ClaudeMd GitInstructions AttributionReminder UserSettings ToolSearch BashTool CodexSkillListing CodexAgentsMd CodexCollaborationMode CodexEnvironmentContext CodexPermissions CodexDeveloperInstructions ]
   LeaveOuts.Vector<LeaveOut>
   ; The tool surface a metaflow declares for every launch.
-  FlowKind.[ Regular Simplified ]
   ToolSet.[ Default Explicit.Vector<String> ]
   ArtifactToolsAllowed.Boolean
   ; A Start's leave-outs, when it names them, replace the default its
   ; metaflow's configuration names; None takes that default.
-  LaunchProfile.{ LaunchRequestId SystemModules UserModules Remembering Address ModelName Effort Option<FlowId> HerdrSessionName Option<LeaveOuts> FlowKind ToolSet InstructionPrompt }
+  LaunchProfile.{ LaunchRequestId SystemModules UserModules Remembering Address ModelName Effort Option<FlowId> HerdrSessionName Option<LeaveOuts> ToolSet InstructionPrompt }
   TargetReceiptRequest.{ LaunchRequestId PromptSha256 }
   PromptPart.{ PromptPartText PromptSha256 }
   FirstPromptPayload.{ FirstPromptBody PromptSha256 Vector<PromptPart> }
@@ -468,13 +467,11 @@ Signal
   ; InvalidRemembering, a Remembering of no flows (Custom.[]), naming an
   ; empty FlowId or of a negative depth; InvalidLaunchRequestId,
   ; InvalidModelName, InvalidEffort and InvalidHerdrSessionName, a value
-  ; empty or holding a character it may not; InvalidToolSet, a Simplified
-  ; seat whose tool set is not Explicit.[]. InexactModel: no harness
+  ; empty or holding a character it may not. InexactModel: no harness
   ; launches the profile's model exactly. Unconfigured: no model is
   ; configured for the layer and aspect of the seat a wake starts.
-  ; PresentationUnavailable: the Psyche core presentation prompt could not
-  ; be read. Unrecorded: an outcome Flow archived before it kept the reason.
-  CompositionRefusal.[ InvalidLaunchRequestId InvalidModelName InvalidEffort InvalidToolSet InvalidHerdrSessionName InvalidSystemModules InvalidUserModules InvalidRemembering InexactModel Unconfigured PresentationUnavailable Unrecorded ]
+  ; Unrecorded: an outcome Flow archived before it kept the reason.
+  CompositionRefusal.[ InvalidLaunchRequestId InvalidModelName InvalidEffort InvalidHerdrSessionName InvalidSystemModules InvalidUserModules InvalidRemembering InexactModel Unconfigured Unrecorded ]
   RequirementUnmet.Address
   StartRejection.[ CompositionRefused.CompositionRefusal LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal RequirementUnmet Undeclared TopicRefused.Topic ]
   ; RefreshRejection names why a refresh ended no flow: the metaflow is not
