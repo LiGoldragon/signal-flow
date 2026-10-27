@@ -621,6 +621,8 @@ pub enum CompositionRefusal {
     Unrecorded,
 }
 #[rustfmt::skip]
+pub type RequirementUnmet = flow_ethos::Address;
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum StartRejection {
@@ -637,7 +639,7 @@ pub enum StartRejection {
     LeaveOutRefused(LeaveOutRefusal),
     HarnessSpawnRefused(HarnessSpawnRefusal),
     ModelRefused(ModelRefusal),
-    NoSecondary,
+    RequirementUnmet(RequirementUnmet),
     Undeclared,
     TopicRefused(flow_ethos::Topic),
 }
