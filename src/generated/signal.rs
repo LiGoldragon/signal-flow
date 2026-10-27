@@ -111,13 +111,6 @@ pub type LeaveOuts = std::vec::Vec<LeaveOut>;
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum FlowKind {
-    Regular,
-    Simplified,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum ToolSet {
     Default,
     Explicit(std::vec::Vec<String>),
@@ -138,7 +131,6 @@ pub struct LaunchProfile {
     pub flow_id_option: std::option::Option<flow_ethos::FlowId>,
     pub herdr_session_name: HerdrSessionName,
     pub leave_outs_option: std::option::Option<LeaveOuts>,
-    pub flow_kind: FlowKind,
     pub tool_set: ToolSet,
     pub instruction_prompt: InstructionPrompt,
 }
@@ -608,14 +600,12 @@ pub enum CompositionRefusal {
     InvalidLaunchRequestId,
     InvalidModelName,
     InvalidEffort,
-    InvalidToolSet,
     InvalidHerdrSessionName,
     InvalidSystemModules,
     InvalidUserModules,
     InvalidRemembering,
     InexactModel,
     Unconfigured,
-    PresentationUnavailable,
     Unrecorded,
 }
 #[rustfmt::skip]

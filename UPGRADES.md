@@ -1,5 +1,12 @@
 # Upgrades
 
+## 38.0.0: every launch uses the regular path
+
+- `FlowKind` and the Simplified launch shape are removed. `LaunchProfile`
+  no longer carries `FlowKind`, and `CompositionRefusal` no longer carries
+  `InvalidToolSet` or `PresentationUnavailable`. Consumers provide
+  presentation instructions through context modules.
+
 ## 37.0.0: harness events name their reporting session
 
 - `Report` identifies its reporter as either a Flow session or a native
