@@ -482,3 +482,7 @@ To deploy, in each consumer (meta-signal-flow, flow):
 ## 35.0.0
 
 FlowKind and the Simplified launch shape are removed. LaunchProfile no longer carries FlowKind, and CompositionRefusal no longer carries InvalidToolSet or PresentationUnavailable. Consumers must use the single regular launch path and provide presentation instructions through context modules.
+
+## 40.0.0
+
+`LeaveOuts` is replaced by the configured `LeftOut` set of `HarnessModuleName`; launch records carry that set directly and leave-out combination refusals are removed.
