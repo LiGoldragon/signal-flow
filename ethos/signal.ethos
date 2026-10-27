@@ -455,7 +455,7 @@ Signal
   ; ModelRefused: the profile's model is not the model configured for its
   ; Address's layer and aspect; the Start is refused before anything
   ; launches or is written.
-  ; NoSecondary: the profile's Address is a Primary and the Secondary of its
+  ;: the profile's Address is a Primary and the Secondary of its
   ; aspect and topic is not Awake as a live flow; the Start is refused
   ; before anything launches or is written.
   ; TopicRefused: the Address's topic is not an uncapitalized camelCase
@@ -475,7 +475,8 @@ Signal
   ; PresentationUnavailable: the Psyche core presentation prompt could not
   ; be read. Unrecorded: an outcome Flow archived before it kept the reason.
   CompositionRefusal.[ InvalidLaunchRequestId InvalidModelName InvalidEffort InvalidToolSet InvalidHerdrSessionName InvalidSystemModules InvalidUserModules InvalidRemembering InexactModel Unconfigured PresentationUnavailable Unrecorded ]
-  StartRejection.[ CompositionRefused.CompositionRefusal LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal NoSecondary Undeclared TopicRefused.Topic ]
+  RequirementUnmet.Address
+  StartRejection.[ CompositionRefused.CompositionRefusal LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal RequirementUnmet Undeclared TopicRefused.Topic ]
   ; RefreshRejection names why a refresh ended no flow: the metaflow is not
   ; Awake; a refresh, a waking or an unconfirmed launch holds its lock;
   ; Herdr refused to close the ending flow's pane; the flow's end was not

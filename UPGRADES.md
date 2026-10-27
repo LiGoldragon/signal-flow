@@ -1,5 +1,11 @@
 # Upgrades
 
+## 35.0.0: declarations name required metaflows
+
+- `StartRejection.NoSecondary` is replaced by `RequirementUnmet.Address`.
+  Flow starts each Address in a declaration’s `Requires` before that
+  metaflow and names the requirement when it cannot be started.
+
 How to deploy each breaking change of signal-flow.
 
 ## 34.0.0: an abrupt request may be queued

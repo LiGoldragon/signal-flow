@@ -696,7 +696,7 @@ fn start_names_the_address_of_the_seat_it_launches() {
     assert_eq!(profile.effort, "medium");
     for text in [
         "StartRejected.AddressAwake",
-        "StartRejected.NoSecondary",
+        "StartRejected.RequirementUnmet.{ Mind flow Secondary }",
         "StartRejected.TopicRefused.FlowRepair",
         "StartRejected.ContextRefused.MetaflowMismatch",
         "StartRejected.ContextRefused.ModuleTooLarge",
@@ -743,16 +743,22 @@ fn an_ended_metaflow_is_no_datom_of_the_contract() {
     }
 }
 
-/// A Start of a Primary whose Secondary metaflow is not recorded is refused
-/// with NoSecondary.
+/// A Start whose required metaflow could not start names that Address.
 #[test]
-fn no_secondary_start_rejection_round_trips() {
-    let response = Potential::<Response>::from("StartRejected.NoSecondary")
-        .actualize(&mut budget())
-        .unwrap();
+fn requirement_unmet_start_rejection_round_trips() {
+    let response =
+        Potential::<Response>::from("StartRejected.RequirementUnmet.{ Field helper Tertiary }")
+            .actualize(&mut budget())
+            .unwrap();
     assert_eq!(
         response,
-        Response::StartRejected(signal_flow::StartRejection::NoSecondary)
+        Response::StartRejected(signal_flow::StartRejection::RequirementUnmet(
+            signal_flow::Address {
+                aspect: signal_flow::Aspect::Field,
+                topic: "helper".into(),
+                layer: signal_flow::Layer::Tertiary,
+            },
+        ))
     );
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
     assert_eq!(
@@ -812,7 +818,7 @@ fn durable_admission_and_resumable_sender_outcomes_round_trip() {
         "SendChanged.{ 3 logical-1 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Delivered.{ Claude session-1 prompt-1 } }",
         "SendChanged.{ 4 logical-2 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Withdrawn }",
         "SendChanged.{ 5 logical-3 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Retryable.WakeRefused.ContextRefused.RecordMissing }",
-        "SendsObserved.{ 6 [ { 6 logical-4 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Retryable.WakeRefused.NoSecondary } ] }",
+        "SendsObserved.{ 6 [ { 6 logical-4 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Retryable.WakeRefused.RequirementUnmet.{ Mind flow Secondary } } ] }",
         "Drained.{ { Psyche flow Secondary } Held.[ logical-1 ] }",
     ] {
         let value = Potential::<Response>::from(text)
