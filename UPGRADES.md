@@ -1,5 +1,14 @@
 # Upgrades
 
+## 39.0.0: a pane close carries its exact outcome
+
+- `PaneCloseOutcome` is `Closed` or `Refused.PaneCloseFailure`.
+  `PaneCloseFailure` distinguishes `IdentityUnavailable`,
+  `IdentityMismatch`, `StopTimedOut`, and `HerdrCloseFailed`.
+- `RefreshRejection.CloseRefused` and `StopRejection.CloseRefused` carry the
+  same `PaneCloseFailure` end to end. Their successful replies stay
+  unchanged.
+
 ## 38.0.0: Claude readiness is a typed Signal
 
 - `Response` gains the unit `ClaudeReady` variant. The configured Claude

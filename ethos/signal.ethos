@@ -477,20 +477,24 @@ Signal
   CompositionRefusal.[ InvalidLaunchRequestId InvalidModelName InvalidEffort InvalidHerdrSessionName InvalidSystemModules InvalidUserModules InvalidRemembering InexactModel Unconfigured Unrecorded ]
   RequirementUnmet.Address
   StartRejection.[ CompositionRefused.CompositionRefusal LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal RequirementUnmet Undeclared TopicRefused.Topic ]
+  ; Closing a pane either completes or carries the exact failure from the
+  ; retained process identity through the required Herdr pane close.
+  PaneCloseFailure.[ IdentityUnavailable IdentityMismatch StopTimedOut HerdrCloseFailed ]
+  PaneCloseOutcome.[ Closed Refused.PaneCloseFailure ]
   ; RefreshRejection names why a refresh ended no flow: the metaflow is not
   ; Awake; a refresh, a waking or an unconfirmed launch holds its lock;
   ; Herdr refused to close the ending flow's pane; the flow's end was not
   ; recorded; or Herdr could not be read to see the pane.
   RefreshRejection.[ NotAwake
                      Locked
-                     CloseRefused
+                     CloseRefused.PaneCloseFailure
                      PersistenceRefused
                      HerdrUnavailable
                      SuccessorRefused.ReplaceRejection ; the Replace that starts the successor owed was refused
                      Undeclared                        ; no declaration or model names a successor
                      SuccessorUnconfirmed ]            ; the successor's launch is pending or ambiguous past the confirmation wait
   RecipientResolutionRejection.[ UnknownFlow FlowUnavailable ]
-  StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused PersistenceRefused ]
+  StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused.PaneCloseFailure PersistenceRefused ]
   Replaced.{ FlowId Launched }
   ReplaceRejection.[ PredecessorAbsent
                      UnknownPredecessor
