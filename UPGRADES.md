@@ -486,3 +486,9 @@ FlowKind and the Simplified launch shape are removed. LaunchProfile no longer ca
 ## 40.0.0
 
 `LeaveOuts` is replaced by the configured `LeftOut` set of `HarnessModuleName`; launch records carry that set directly and leave-out combination refusals are removed.
+
+## 41.0.0
+
+Launch outcomes that cannot be expressed by the live vocabulary return
+`LaunchArchived` or `LaunchStatusOutcome.Archived`, carrying the durable
+archive's request key, originating family and version, and typed reason.

@@ -365,6 +365,7 @@ fn replace_and_launch_status_responses_have_concrete_datoms() {
         "ReplaceRejected.Locked",
         "LaunchStatusRejected.UnknownLaunchRequest",
         "LaunchStatusRejected.PersistenceRefused",
+        "LaunchArchived.{ request-8 flow-nexus-launch-outcome 10 LegacyLeaveOutRefusal }",
     ] {
         let response = Potential::<Response>::from(text)
             .actualize(&mut budget())

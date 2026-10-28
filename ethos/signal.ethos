@@ -250,6 +250,9 @@ Signal
   StopRejected.StopRejection
   Replaced.Replaced
   ReplaceRejected.ReplaceRejection
+  ; A historical outcome that cannot be represented by the live launch
+  ; vocabulary is returned by reference to its lossless durable archive.
+  LaunchArchived.LaunchOutcomeArchive
   LaunchInspected.LaunchInspection
   LaunchStatusRejected.LaunchStatusRejection
   CallerResolved.Caller
@@ -342,7 +345,13 @@ Signal
                          Ambiguous.PromptDeliveryIntent ]
   LaunchAttemptPhase.[ Reserved NativeLaunchIntentRecorded NativeBound RegistrationAcknowledged PromptIntentRecorded PromptObserved PromptAmbiguous ]
   LaunchAttempt.{ LaunchRequestId LaunchProfile PromptSha256 Origin LaunchAttemptPhase Option<NativeLaunchIntent> Option<NativeLaunchBinding> Option<RegistrationAcknowledgement> Option<PromptDeliveryIntent> Option<PromptDeliveryResult> }
-  LaunchStatusOutcome.[ Started.Launched Replaced.Replaced StartRejected.StartRejection ReplaceRejected.ReplaceRejection ]
+  LaunchArchiveReason.[ HistoricalAttemptMissing HistoricalAttemptAmbiguous LegacyLeaveOutRefusal ]
+  LaunchOutcomeFamily.String
+  LaunchOutcomeVersion.Integer
+  ; Family and version identify the archived schema; the launch request id
+  ; identifies its key. The raw archive stays in Memory, not on Signal.
+  LaunchOutcomeArchive.{ LaunchRequestId LaunchOutcomeFamily LaunchOutcomeVersion LaunchArchiveReason }
+  LaunchStatusOutcome.[ Started.Launched Replaced.Replaced StartRejected.StartRejection ReplaceRejected.ReplaceRejection Archived.LaunchOutcomeArchive ]
   LaunchInspection.{ LaunchAttempt Option<LaunchStatusOutcome> Option<FlowNode> }
   LaunchAttemptReservation.[ Reserved.LaunchAttempt
                              Existing.LaunchAttempt
