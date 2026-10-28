@@ -1026,6 +1026,7 @@ pub enum Response {
     CallerResolved(Caller),
     CallerResolutionRejected(CallerResolutionRejection),
     AgentObserved(AgentObservation),
+    ClaudeReady,
     Reported,
     Locked(flow_ethos::Lock),
     Bound(flow_ethos::FlowId),

@@ -1,5 +1,11 @@
 # Upgrades
 
+## 39.0.0: configured Claude lifecycle is typed
+
+- `Response` gains the unit `ClaudeReady` variant. The configured Claude
+  SessionStart hook sends its rkyv archive under the standard big-endian u32
+  length prefix on Flow's private per-launch readiness transport.
+
 ## 38.0.0: every launch uses the regular path
 
 - `FlowKind` and the Simplified launch shape are removed. `LaunchProfile`

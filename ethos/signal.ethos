@@ -255,6 +255,9 @@ Signal
   CallerResolved.Caller
   CallerResolutionRejected.CallerResolutionRejection
   AgentObserved.AgentObservation
+  ; ClaudeReady is the unit readiness Signal sent by the configured Claude
+  ; SessionStart hook over Flow's private per-launch framed transport.
+  ClaudeReady
   Reported
   Locked.Lock
   Bound.FlowId
