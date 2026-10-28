@@ -524,11 +524,7 @@ Signal
             NotSendServer.Process
             Oversized.SendPayloadSize
             Direct.String
-            TopicRefused.Topic
-            PrimaryRequiresOwnSecondary.PrimaryRouteRefused ]
-  SenderAddress.Address
-  TargetAddress.Address
-  PrimaryRouteRefused.{ SenderAddress TargetAddress }
+            TopicRefused.Topic ]
   ActualBytes.Integer
   MaximumBytes.Integer
   SendPayloadSize.{ ActualBytes MaximumBytes }

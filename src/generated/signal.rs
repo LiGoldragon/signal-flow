@@ -779,18 +779,6 @@ pub enum Refusal {
     Oversized(SendPayloadSize),
     Direct(String),
     TopicRefused(flow_ethos::Topic),
-    PrimaryRequiresOwnSecondary(PrimaryRouteRefused),
-}
-#[rustfmt::skip]
-pub type SenderAddress = flow_ethos::Address;
-#[rustfmt::skip]
-pub type TargetAddress = flow_ethos::Address;
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct PrimaryRouteRefused {
-    pub sender_address: SenderAddress,
-    pub target_address: TargetAddress,
 }
 #[rustfmt::skip]
 pub type ActualBytes = i64;
