@@ -2,7 +2,7 @@
 
 use datom_codec::{Actualizing, Budget, Datomizable, Potential};
 use protos::{Compactable, Protosizable, ReaderBudget};
-use signal_flow::{Aspect, Query, Refusal, Response};
+use signal_flow::{Aspect, PaneCloseOutcome, Query, Refusal, Response};
 
 fn budget() -> Budget {
     Budget {
@@ -367,7 +367,7 @@ fn replace_and_launch_status_responses_have_concrete_datoms() {
         "ReplaceRejected.PredecessorStopped",
         "ReplaceRejected.LaunchRefused.NativeLaunchRefused.{ Naming PaneLabelRefused }",
         "ReplaceRejected.LaunchRefused.NativeLaunchRefused.{ Naming WorkspaceLabelRefused }",
-        "ReplaceRejected.ReapRefused.CloseRefused",
+        "ReplaceRejected.ReapRefused.CloseRefused.IdentityUnavailable",
         "ReplaceRejected.Locked",
         "LaunchStatusRejected.UnknownLaunchRequest",
         "LaunchStatusRejected.PersistenceRefused",
@@ -390,11 +390,14 @@ fn refresh_answers_have_concrete_datoms() {
         "Refreshed.{ { Psyche core Primary } 74e4d1 }",
         "RefreshRejected.NotAwake",
         "RefreshRejected.Locked",
-        "RefreshRejected.CloseRefused",
+        "RefreshRejected.CloseRefused.IdentityUnavailable",
+        "RefreshRejected.CloseRefused.IdentityMismatch",
+        "RefreshRejected.CloseRefused.StopTimedOut",
+        "RefreshRejected.CloseRefused.HerdrCloseFailed",
         "RefreshRejected.PersistenceRefused",
         "RefreshRejected.HerdrUnavailable",
         "RefreshRejected.SuccessorRefused.LaunchRefused.Undeclared",
-        "RefreshRejected.SuccessorRefused.ReapRefused.CloseRefused",
+        "RefreshRejected.SuccessorRefused.ReapRefused.CloseRefused.IdentityMismatch",
         "RefreshRejected.Undeclared",
         "RefreshRejected.SuccessorUnconfirmed",
     ] {
@@ -407,6 +410,27 @@ fn refresh_answers_have_concrete_datoms() {
             response
         );
         assert_eq!(response.datomize(vec![]).protosize().compact(), text);
+    }
+}
+
+#[test]
+fn pane_close_outcomes_carry_the_exact_failure() {
+    for text in [
+        "Closed",
+        "Refused.IdentityUnavailable",
+        "Refused.IdentityMismatch",
+        "Refused.StopTimedOut",
+        "Refused.HerdrCloseFailed",
+    ] {
+        let outcome = Potential::<PaneCloseOutcome>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&outcome).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<PaneCloseOutcome, rkyv::rancor::Error>(&archive).unwrap(),
+            outcome
+        );
+        assert_eq!(outcome.datomize(vec![]).protosize().compact(), text);
     }
 }
 

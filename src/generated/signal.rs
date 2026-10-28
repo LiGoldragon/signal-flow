@@ -634,10 +634,26 @@ pub enum StartRejection {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum PaneCloseFailure {
+    IdentityUnavailable,
+    IdentityMismatch,
+    StopTimedOut,
+    HerdrCloseFailed,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum PaneCloseOutcome {
+    Closed,
+    Refused(PaneCloseFailure),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum RefreshRejection {
     NotAwake,
     Locked,
-    CloseRefused,
+    CloseRefused(PaneCloseFailure),
     PersistenceRefused,
     HerdrUnavailable,
     SuccessorRefused(ReplaceRejection),
@@ -658,7 +674,7 @@ pub enum StopRejection {
     UnknownFlow,
     AlreadyStopped,
     RouteUnavailable,
-    CloseRefused,
+    CloseRefused(PaneCloseFailure),
     PersistenceRefused,
 }
 #[rustfmt::skip]

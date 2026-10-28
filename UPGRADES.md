@@ -5,6 +5,11 @@
 - `Response` gains the unit `ClaudeReady` variant. The configured Claude
   SessionStart hook sends its rkyv archive under the standard big-endian u32
   length prefix on Flow's private per-launch readiness transport.
+- `PaneCloseOutcome` is `Closed` or `Refused.PaneCloseFailure`.
+  `PaneCloseFailure` distinguishes `IdentityUnavailable`,
+  `IdentityMismatch`, `StopTimedOut`, and `HerdrCloseFailed`.
+- `RefreshRejection.CloseRefused` and `StopRejection.CloseRefused` carry the
+  same `PaneCloseFailure` end to end. Their successful replies stay unchanged.
 
 ## 38.0.0: every launch uses the regular path
 
