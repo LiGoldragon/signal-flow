@@ -508,6 +508,9 @@ Signal
   Title.String
   Presentation.{ Title }
   TranscriptPath.String
+  ; A Primary accepts a message only from the Secondary of its own aspect
+  ; and topic. The refusal carries both exact addresses.
+  PrimaryRouteRefusal.{ Address Address }
   Refusal.[ Locked
             Held.Lock
             Awake.FlowId
@@ -524,7 +527,8 @@ Signal
             NotSendServer.Process
             Oversized.SendPayloadSize
             Direct.String
-            TopicRefused.Topic ]
+            TopicRefused.Topic
+            PrimaryRouteRefused.PrimaryRouteRefusal ]
   ActualBytes.Integer
   MaximumBytes.Integer
   SendPayloadSize.{ ActualBytes MaximumBytes }

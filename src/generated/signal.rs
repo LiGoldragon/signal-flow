@@ -752,6 +752,13 @@ pub type TranscriptPath = String;
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct PrimaryRouteRefusal {
+    pub first_address: flow_ethos::Address,
+    pub second_address: flow_ethos::Address,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Unknown_Data {
     Address(flow_ethos::Address),
     Lock(flow_ethos::Lock),
@@ -779,6 +786,7 @@ pub enum Refusal {
     Oversized(SendPayloadSize),
     Direct(String),
     TopicRefused(flow_ethos::Topic),
+    PrimaryRouteRefused(PrimaryRouteRefusal),
 }
 #[rustfmt::skip]
 pub type ActualBytes = i64;

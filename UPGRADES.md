@@ -457,3 +457,8 @@ To deploy, in each consumer (meta-signal-flow, flow):
 3. Rebuild and run the tests. The rkyv archive of every value is unchanged,
    so a Nexus and its clients need no store migration; rebuild and restart
    the Nexus and both CLIs together.
+# 35.0.0: a Primary accepts only its own Secondary's messages
+
+`Refusal` adds `PrimaryRouteRefused.PrimaryRouteRefusal`; its two positions
+are the authenticated sender Address and the refused Primary target Address.
+The ordinary wire changes. Rebuild Flow's Nexus and both clients together.
