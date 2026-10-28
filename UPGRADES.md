@@ -2,6 +2,15 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 34.0.0: a Primary receives messages only from its own Secondary
+
+- `Refusal` gains
+  `PrimaryRequiresOwnSecondary.PrimaryRouteRefused`, carrying the authenticated
+  sender address and requested Primary address. A Primary target accepts only
+  the Secondary at the same aspect and topic.
+- The `flow-ethos` dependency is repinned to the reachable Flow revision that
+  defines the typed pane-message contract used by this release.
+
 ## 33.0.0: a Send is never refused for the seat's state or its route
 
 - `SendFailureReason` loses `RecipientBusy.Address`: no path produces it.
