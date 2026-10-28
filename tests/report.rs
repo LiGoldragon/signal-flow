@@ -2,7 +2,7 @@
 //! it, and a FlowId Flow does not hold is refused as Refused.Unknown.FlowId.
 
 use signal_flow::{
-    Event, NativePrompt, NativeStop, Query, Refusal, Report_Data, Response, Unknown_Data,
+    Event, NativePrompt, NativeStop, Query, Refusal, Report_Data, Reporter, Response, Unknown_Data,
 };
 
 fn reports() -> Vec<Query> {
@@ -33,7 +33,7 @@ fn reports() -> Vec<Query> {
     .into_iter()
     .map(|event| {
         Query::Report(Report_Data {
-            flow_id: "f1c841".into(),
+            reporter: Reporter::Flow("f1c841".into()),
             event,
         })
     })
@@ -112,11 +112,9 @@ mod datom {
             "Report.{ f1c841 Stopped.{ Some.s1 } }",
             "Report.{ f1c841 PromptSubmitted.{ Some.s1 None } }",
         ] {
-            assert!(
-                Potential::<Query>::from(refused)
-                    .actualize(&mut budget())
-                    .is_err()
-            );
+            assert!(Potential::<Query>::from(refused)
+                .actualize(&mut budget())
+                .is_err());
         }
     }
 

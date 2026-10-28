@@ -296,11 +296,9 @@ fn agent_observation_carries_the_flow_and_its_herdr_state() {
 fn a_send_names_delivery_and_deliver_all_names_a_metaflow() {
     // The recipient is a metaflow Address or Up, never a FlowId, and the
     // request carries no sender: Flow reads the caller from its socket.
-    assert!(
-        Potential::<Query>::from("Send.{ 7d41e0 «hello» }")
-            .actualize(&mut budget())
-            .is_err()
-    );
+    assert!(Potential::<Query>::from("Send.{ 7d41e0 «hello» }")
+        .actualize(&mut budget())
+        .is_err());
     for text in [
         "Send.{ Address.{ Mind core Secondary } Queue Soft.Order.«Review the drain fix» }",
         "Send.{ Up Wake HardAbrupt.Question.«Which store?» }",
@@ -588,9 +586,9 @@ fn resolve_caller_queries_and_replies_have_concrete_datoms() {
         assert_eq!(query.datomize(vec![]).protosize().compact(), text);
     }
     for text in [
-        "CallerResolved.{ fac697 Psyche High claude-opus-5-5 }",
+        "CallerResolved.{ fac697 Psyche Primary claude-opus-5-5 }",
         "CallerResolutionRejected.CallerUnknown",
-        "CallerResolutionRejected.CallerMismatch.{ fac697 Mind Medium gpt-6-sol }",
+        "CallerResolutionRejected.CallerMismatch.{ fac697 Mind Secondary gpt-6-sol }",
     ] {
         let response = Potential::<Response>::from(text)
             .actualize(&mut budget())
@@ -605,16 +603,16 @@ fn resolve_caller_queries_and_replies_have_concrete_datoms() {
 }
 
 #[test]
-fn caller_names_the_flow_its_aspect_power_and_model() {
+fn caller_names_the_flow_its_aspect_layer_and_model() {
     let reply = Response::CallerResolved(signal_flow::Caller {
         flow_id: "38de5b".into(),
         aspect: signal_flow::Aspect::Psyche,
-        power_level: signal_flow::PowerLevel::High,
+        layer: flow_ethos::Layer::Primary,
         model_name: "claude-opus-5-5".into(),
     });
     assert_eq!(
         reply.datomize(vec![]).protosize().compact(),
-        "CallerResolved.{ 38de5b Psyche High claude-opus-5-5 }"
+        "CallerResolved.{ 38de5b Psyche Primary claude-opus-5-5 }"
     );
 }
 
