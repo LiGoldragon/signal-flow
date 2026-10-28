@@ -281,11 +281,33 @@ pub struct LaunchAttempt {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum LaunchArchiveReason {
+    HistoricalAttemptMissing,
+    HistoricalAttemptAmbiguous,
+    LegacyLeaveOutRefusal,
+}
+#[rustfmt::skip]
+pub type LaunchOutcomeFamily = String;
+#[rustfmt::skip]
+pub type LaunchOutcomeVersion = i64;
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct LaunchOutcomeArchive {
+    pub launch_request_id: LaunchRequestId,
+    pub launch_outcome_family: LaunchOutcomeFamily,
+    pub launch_outcome_version: LaunchOutcomeVersion,
+    pub launch_archive_reason: LaunchArchiveReason,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum LaunchStatusOutcome {
     Started(Launched),
     Replaced(Replaced),
     StartRejected(StartRejection),
     ReplaceRejected(ReplaceRejection),
+    Archived(LaunchOutcomeArchive),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -995,6 +1017,7 @@ pub enum Response {
     StopRejected(StopRejection),
     Replaced(Replaced),
     ReplaceRejected(ReplaceRejection),
+    LaunchArchived(LaunchOutcomeArchive),
     LaunchInspected(LaunchInspection),
     LaunchStatusRejected(LaunchStatusRejection),
     CallerResolved(Caller),
