@@ -526,7 +526,9 @@ Signal
             Direct.String
             TopicRefused.Topic
             PrimaryRequiresOwnSecondary.PrimaryRouteRefused ]
-  PrimaryRouteRefused.{ Address Address }
+  SenderAddress.Address
+  TargetAddress.Address
+  PrimaryRouteRefused.{ SenderAddress TargetAddress }
   ActualBytes.Integer
   MaximumBytes.Integer
   SendPayloadSize.{ ActualBytes MaximumBytes }
