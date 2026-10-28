@@ -1,5 +1,11 @@
 # Upgrades
 
+## 38.0.0: Claude readiness is a typed Signal
+
+- `Response` gains the unit `ClaudeReady` variant. The configured Claude
+  SessionStart hook sends its rkyv archive under the standard big-endian u32
+  length prefix on Flow’s private per-launch readiness transport.
+
 ## 35.0.0: declarations name required metaflows
 
 - `StartRejection.NoSecondary` is replaced by `RequirementUnmet.Address`.
