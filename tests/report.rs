@@ -83,16 +83,16 @@ mod datom {
     #[test]
     fn report_has_exact_inline_datoms() {
         for (query, expected) in super::reports().into_iter().zip([
-            "Report.{ f1c841 Started.Some.s2 }",
-            "Report.{ f1c841 Started.None }",
-            "Report.{ f1c841 ToolUsed.Bash }",
-            "Report.{ f1c841 Stopped.{ Some.s1 Some./p/s1.jsonl None } }",
-            "Report.{ f1c841 Stopped.{ None None None } }",
-            "Report.{ f1c841 PromptSubmitted.{ Some.s1 Some.p1 ab12 } }",
-            "Report.{ f1c841 Ended.Some.s1 }",
-            "Report.{ f1c841 Ended.None }",
-            "Report.{ f1c841 Cleared.Some.s1 }",
-            "Report.{ f1c841 Cleared.None }",
+            "Report.{ Flow.f1c841 Started.Some.s2 }",
+            "Report.{ Flow.f1c841 Started.None }",
+            "Report.{ Flow.f1c841 ToolUsed.Bash }",
+            "Report.{ Flow.f1c841 Stopped.{ Some.s1 Some./p/s1.jsonl None } }",
+            "Report.{ Flow.f1c841 Stopped.{ None None None } }",
+            "Report.{ Flow.f1c841 PromptSubmitted.{ Some.s1 Some.p1 ab12 } }",
+            "Report.{ Flow.f1c841 Ended.Some.s1 }",
+            "Report.{ Flow.f1c841 Ended.None }",
+            "Report.{ Flow.f1c841 Cleared.Some.s1 }",
+            "Report.{ Flow.f1c841 Cleared.None }",
         ]) {
             let text = query.datomize(vec![]).protosize().compact();
             assert_eq!(text, expected);
@@ -103,6 +103,17 @@ mod datom {
                 query
             );
         }
+
+        let session = "Report.{ Session.s1 ToolUsed.Bash }";
+        assert_eq!(
+            Potential::<Query>::from(session)
+                .actualize(&mut budget())
+                .unwrap()
+                .datomize(vec![])
+                .protosize()
+                .compact(),
+            session
+        );
         for refused in [
             "Report.{ f1c841 }",
             "Report.{ f1c841 Started }",
