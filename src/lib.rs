@@ -2,8 +2,8 @@ pub mod generated;
 pub use generated::signal::*;
 
 pub use flow_ethos::{
-    Address, Answerable, AnswerableTask, Aspect, Delivery, FlowId, HarnessKind, Key, Layer, Lock,
-    DonePayload, LogicalDeliveryId, Message, MetaSocketPath, Metaflow, ModelName, NativeInput,
+    Address, Answerable, AnswerableTask, Aspect, Delivery, DonePayload, FlowId, HarnessKind, Key,
+    Layer, Lock, LogicalDeliveryId, Message, MetaSocketPath, Metaflow, ModelName, NativeInput,
     OrdinarySocketPath, Process, QueueEntry, Recipient, Request, ResultPayload, Said, Sender,
     SentBy, Source, Start, Subaspect, Topic,
 };

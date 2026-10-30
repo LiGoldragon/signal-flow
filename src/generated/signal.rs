@@ -442,195 +442,6 @@ pub struct Refreshed {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum VisibleRemembering {
-    Predecessors,
-    Custom,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct VisibleLaunchProfile {
-    pub launch_request_id: LaunchRequestId,
-    pub system_modules: SystemModules,
-    pub user_modules: UserModules,
-    pub visible_remembering: VisibleRemembering,
-    pub address: flow_ethos::Address,
-    pub model_name: flow_ethos::ModelName,
-    pub effort: Effort,
-    pub herdr_session_name: HerdrSessionName,
-    pub leave_outs_option: std::option::Option<LeaveOuts>,
-    pub flow_kind: FlowKind,
-    pub tool_set: ToolSet,
-    pub instruction_prompt: InstructionPrompt,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct VisibleNativeLaunchBinding {
-    pub launch_request_id: LaunchRequestId,
-    pub native_session_id: NativeSessionId,
-    pub harness_kind: flow_ethos::HarnessKind,
-    pub herdr_pane_binding: HerdrPaneBinding,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct VisibleRegistrationAcknowledgement {
-    pub launch_request_id: LaunchRequestId,
-    pub native_session_id: NativeSessionId,
-    pub herdr_pane_binding: HerdrPaneBinding,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct VisiblePromptDeliveryIntent {
-    pub launch_request_id: LaunchRequestId,
-    pub prompt_sha256: PromptSha256,
-    pub native_session_id: NativeSessionId,
-    pub harness_kind: flow_ethos::HarnessKind,
-    pub model_name: flow_ethos::ModelName,
-    pub effort: Effort,
-    pub prompt_sha256_vector: std::vec::Vec<PromptSha256>,
-    pub parts_submitted: PartsSubmitted,
-    pub stops_reported: StopsReported,
-    pub leave_outs: LeaveOuts,
-    pub herdr_pane_binding: HerdrPaneBinding,
-    pub native_transcript_boundary: NativeTranscriptBoundary,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct VisibleNativeTargetReceipt {
-    pub launch_request_id: LaunchRequestId,
-    pub prompt_sha256: PromptSha256,
-    pub native_session_id: NativeSessionId,
-    pub native_turn_id: NativeTurnId,
-    pub receipt_sha256: ReceiptSha256,
-    pub model_name: flow_ethos::ModelName,
-    pub effort: Effort,
-    pub prompt_sha256_vector: std::vec::Vec<PromptSha256>,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum VisiblePromptDeliveryResult {
-    Observed(VisibleNativeTargetReceipt),
-    Ambiguous(VisiblePromptDeliveryIntent),
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum VisibleOrigin {
-    Flow(SessionId),
-    Unbound,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct VisibleLaunchAttempt {
-    pub launch_request_id: LaunchRequestId,
-    pub visible_launch_profile: VisibleLaunchProfile,
-    pub prompt_sha256: PromptSha256,
-    pub visible_origin: VisibleOrigin,
-    pub launch_attempt_phase: LaunchAttemptPhase,
-    pub native_launch_intent_option: std::option::Option<NativeLaunchIntent>,
-    pub visible_native_launch_binding_option: std::option::Option<
-        VisibleNativeLaunchBinding,
-    >,
-    pub visible_registration_acknowledgement_option: std::option::Option<
-        VisibleRegistrationAcknowledgement,
-    >,
-    pub visible_prompt_delivery_intent_option: std::option::Option<
-        VisiblePromptDeliveryIntent,
-    >,
-    pub visible_prompt_delivery_result_option: std::option::Option<
-        VisiblePromptDeliveryResult,
-    >,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct VisibleFlowNode {
-    pub session_id: SessionId,
-    pub harness_kind: flow_ethos::HarnessKind,
-    pub endpoint_selection: EndpointSelection,
-    pub herdr_route_selection: HerdrRouteSelection,
-    pub visible_origin: VisibleOrigin,
-    pub flow_lifecycle: FlowLifecycle,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct VisibleLaunched {
-    pub session_id: SessionId,
-    pub herdr_route_selection: HerdrRouteSelection,
-    pub visible_origin: VisibleOrigin,
-}
-#[rustfmt::skip]
-pub type VisibleReplaced = VisibleLaunched;
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum VisibleLaunchStatusOutcome {
-    Started(VisibleLaunched),
-    Replaced(VisibleReplaced),
-    StartRejected(StartRejection),
-    ReplaceRejected(ReplaceRejection),
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct VisibleLaunchInspection {
-    pub visible_launch_attempt: VisibleLaunchAttempt,
-    pub visible_launch_status_outcome_option: std::option::Option<
-        VisibleLaunchStatusOutcome,
-    >,
-    pub visible_flow_node_option: std::option::Option<VisibleFlowNode>,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct VisibleCaller {
-    pub aspect: flow_ethos::Aspect,
-    pub power_level: PowerLevel,
-    pub model_name: flow_ethos::ModelName,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum VisibleCallerResolutionRejection {
-    CallerUnknown,
-    CallerMismatch(VisibleCaller),
-}
-#[rustfmt::skip]
-pub type VisibleAgentObservation = AgentState;
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum VisibleState {
-    Awake,
-    Asleep,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct VisibleMetaflow {
-    pub address: flow_ethos::Address,
-    pub visible_state: VisibleState,
-    pub integer: i64,
-    pub visible_native_input_vector: std::vec::Vec<VisibleNativeInput>,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum VisibleCurrent {
-    Awake,
-    Asleep,
-    Unknown,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum BindingRefusal {
     PaneMismatch,
     TerminalMismatch,
@@ -1130,7 +941,6 @@ pub enum VisibleSender {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct VisibleNativeInput {
     pub visible_sender: VisibleSender,
-    pub address: flow_ethos::Address,
     pub visible_message: VisibleMessage,
 }
 #[rustfmt::skip]
@@ -1441,37 +1251,45 @@ pub enum Query {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum Current_Data {
+    Awake(flow_ethos::FlowId),
+    Asleep,
+    Unknown,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Response {
-    Started(VisibleLaunched),
-    LaunchPending(VisibleLaunchAttempt),
-    StartAmbiguous(VisiblePromptDeliveryIntent),
-    Refreshed(flow_ethos::Address),
-    RecipientResolved(VisibleFlowNode),
-    Stopped,
-    Listed(std::vec::Vec<VisibleMetaflow>),
+    Started(Launched),
+    LaunchPending(LaunchAttempt),
+    StartAmbiguous(PromptDeliveryIntent),
+    Refreshed(Refreshed),
+    RecipientResolved(FlowNode),
+    Stopped(flow_ethos::FlowId),
+    Listed(std::vec::Vec<flow_ethos::Metaflow>),
     StartRejected(StartRejection),
     RefreshRejected(RefreshRejection),
     RecipientResolutionRejected(RecipientResolutionRejection),
     StopRejected(StopRejection),
-    Replaced(VisibleReplaced),
+    Replaced(Replaced),
     ReplaceRejected(ReplaceRejection),
-    LaunchInspected(VisibleLaunchInspection),
+    LaunchInspected(LaunchInspection),
     LaunchStatusRejected(LaunchStatusRejection),
-    CallerResolved(VisibleCaller),
-    CallerResolutionRejected(VisibleCallerResolutionRejection),
-    AgentObserved(VisibleAgentObservation),
+    CallerResolved(Caller),
+    CallerResolutionRejected(CallerResolutionRejection),
+    AgentObserved(AgentObservation),
     Reported,
     Locked(flow_ethos::Lock),
-    Bound,
+    Bound(flow_ethos::FlowId),
     Identified(flow_ethos::Address),
     SendAccepted(VisibleSendAcceptance),
     SendsObserved(VisibleSendObservation),
     SendChanged(VisibleDeliverySnapshot),
     Drained(VisibleDrainOutcome),
-    Woken,
+    Woken(flow_ethos::FlowId),
     Released,
-    Current(VisibleCurrent),
-    Refused(VisibleRefusal),
+    Current(Current_Data),
+    Refused(Refusal),
     SendRefused(VisibleRefusal),
     Sent(VisibleSendReceipt),
     Failed(VisibleSendFailure),

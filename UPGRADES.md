@@ -2,19 +2,19 @@
 
 How to deploy each breaking change of signal-flow.
 
-## 37.0.0: lifecycle replies project private run identities away
+## 38.0.0: lifecycle replies retain their run identities
 
-- Ordinary lifecycle replies preserve the seat, launch, route and refusal
-  facts a caller acts on without exposing a `FlowId`. `Started`, launch
-  status and inspection, recipient and caller resolution, replacement,
-  agent observation, binding, waking, current state and listed metaflows use
-  dedicated `Visible*` values; `Stopped`, `Bound` and `Woken` are bare
-  success variants.
-- The complete `FlowNode`, launch attempt, caller, metaflow and outcome types
-  remain unchanged for Flow's private routing and Memory. This is a wire
-  projection only and changes no stored row or schema hash.
-- Major: ordinary `Response` archives change shape. Consumers pin
-  signal-flow 37.0.0 and update every producer and consumer together.
+- Lifecycle replies again carry their useful Flow ids. Version 37 removed
+  them too broadly while projecting message-ledger ids away.
+- A recipient-visible `VisibleNativeInput` carries its sender, priority and
+  request. Its recipient is routing state inside the Nexus, not envelope
+  data repeated to that recipient.
+
+## 37.0.0: lifecycle replies projected run identities away
+
+- This release removed Flow ids from lifecycle replies. Version 38 restores
+  them while retaining the message and delivery projections introduced by
+  version 36.
 
 ## 36.0.0: public replies and messages carry metaflows, not ledger keys
 
