@@ -784,7 +784,7 @@ fn identify_thread_and_its_refusal_have_concrete_datoms() {
     for text in [
         "Identified.{ Mind flow Secondary }",
         "Refused.NotSendServer.{ 4242 987654 }",
-        "Refused.Unidentified.{ 4242 987654 }",
+        "Refused.Unidentified.{ None None None 1761800000 { 4242 987654 } }",
     ] {
         let response = Potential::<Response>::from(text)
             .actualize(&mut budget())
@@ -1013,4 +1013,30 @@ fn task_refusals_round_trip_from_datom_through_rkyv_to_datom() {
         assert_eq!(carried, response, "{text}");
         assert_eq!(carried.datomize(Vec::new()).protosize().compact(), text);
     }
+}
+
+/// A sender nobody could identify stays unidentified: the refusal carries the
+/// raw evidence read at the seat, never an invented identity. Datom to rkyv
+/// to datom returns the same text.
+#[test]
+fn an_unidentified_refusal_carries_its_seat_evidence_round_trip() {
+    for text in [
+        "Refused.Unidentified.{ Some.{ herdr-1 w1-2 } Some.«Claude research» Some.01a0fdcc-c1a1 1761800000 { 4242 987654 } }",
+        "Refused.Unidentified.{ Some.{ herdr-1 w1-2 } None None 1761800000 { 4242 987654 } }",
+        "Refused.Unidentified.{ None None None 1761800000 { 4242 987654 } }",
+    ] {
+        let value = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&value).unwrap();
+        let read = rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap();
+        assert_eq!(read, value);
+        assert_eq!(read.datomize(vec![]).protosize().compact(), text);
+    }
+    let refusal = Potential::<Refusal>::from(
+        "Unidentified.{ Some.{ herdr-1 w1-2 } Some.«Claude research» None 1761800000 { 4242 987654 } }",
+    )
+    .actualize(&mut budget())
+    .unwrap();
+    assert!(matches!(refusal, Refusal::Unidentified(_)));
 }
