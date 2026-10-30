@@ -2,6 +2,12 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 34.0.0: variants leave; the version marks the break
+
+- Variants were removed from the contract; this release carries the
+  version that marks it. Consumers pin signal-flow 34.0.0; no
+  compatibility path.
+
 ## 33.3.0: Remind leaves the ordinary socket; a Task with its Minutes replaces it
 
 - `Query` loses `Remind.{ Instant Body }`, `Response` loses `Reminded`,
