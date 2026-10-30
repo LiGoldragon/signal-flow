@@ -69,9 +69,13 @@
 ; named by the LogicalDeliveryId it answers the send with, and when the
 ; minutes lapse with no Done naming it, sends its sender Soft.Notice with
 ; Wake, then again every Minutes, four reminders in all, the last copied
-; to the sender's Secondary as a failure. Minutes 0 sets no reminder. A
-; Done naming the task closes it; a Done naming no open task is refused
-; NoOpenTask.
+; to the sender's Secondary as a failure. Flow owns the Minutes rule at
+; admission: Minutes of zero is refused MinutesRefused.Zero, below zero
+; MinutesRefused.Negative, and a deadline that overflows the clock, computed
+; with checked arithmetic, MinutesRefused.Unreachable; no policy maximum
+; exists. Text that is no integer, or an integer beyond i64, is the CLI's
+; compose Error and never reaches Flow. A Done naming the task closes it; a
+; Done naming no open task is refused NoOpenTask.
 ;
 ; Flow ordinary Signal.
 ;
@@ -546,7 +550,13 @@ Signal
             Direct.String
             TopicRefused.Topic
             InstantUnreadable.Instant
-            NoOpenTask.LogicalDeliveryId ]
+            NoOpenTask.LogicalDeliveryId
+            MinutesRefused.MinutesRefusal ]
+  ; Why a Task's Minutes was refused at admission: zero, below zero, or a
+  ; deadline the clock cannot hold.
+  MinutesRefusal.[ Zero
+                   Negative
+                   Unreachable ]
   ActualBytes.Integer
   MaximumBytes.Integer
   SendPayloadSize.{ ActualBytes MaximumBytes }

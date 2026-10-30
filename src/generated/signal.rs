@@ -785,6 +785,15 @@ pub enum Refusal {
     TopicRefused(flow_ethos::Topic),
     InstantUnreadable(Instant),
     NoOpenTask(flow_ethos::LogicalDeliveryId),
+    MinutesRefused(MinutesRefusal),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum MinutesRefusal {
+    Zero,
+    Negative,
+    Unreachable,
 }
 #[rustfmt::skip]
 pub type ActualBytes = i64;

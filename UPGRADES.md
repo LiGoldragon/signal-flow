@@ -2,6 +2,18 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 33.2.0: Flow refuses a Task's Minutes at admission; flow-ethos carries the ruled message contract
+
+- `Refusal` gains `MinutesRefused.MinutesRefusal`, appended, with
+  `MinutesRefusal.[ Zero Negative Unreachable ]`: a `Task` (flow-ethos
+  `Request`) whose Minutes is zero, below zero, or gives a deadline the
+  clock cannot hold is refused at admission. Minutes 0 no longer means
+  "no reminder". Existing archives keep their discriminants; a consumer
+  matching `Refusal` exhaustively adds the arm.
+- flow-ethos is pinned at flow 51e01e9, which adds the ruled message
+  contract as `flow_ethos::message`. Every type this contract imports is
+  unchanged.
+
 ## 33.1.0: Remind on the ordinary socket; tasks close by Done
 
 - `Query` gains `Remind.{ Instant Body }`: at `Instant`, an RFC 3339

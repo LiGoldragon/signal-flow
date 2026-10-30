@@ -959,6 +959,9 @@ fn remind_carries_an_instant_and_a_body_and_is_answered_reminded() {
         "Reminded",
         "Refused.InstantUnreadable.tomorrow",
         "Refused.NoOpenTask.logical-delivery-00000000000000009613",
+        "Refused.MinutesRefused.Zero",
+        "Refused.MinutesRefused.Negative",
+        "Refused.MinutesRefused.Unreachable",
     ] {
         let response = Potential::<Response>::from(text)
             .actualize(&mut budget())
