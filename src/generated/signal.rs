@@ -750,6 +750,10 @@ pub struct Presentation {
 #[rustfmt::skip]
 pub type TranscriptPath = String;
 #[rustfmt::skip]
+pub type Instant = String;
+#[rustfmt::skip]
+pub type Body = String;
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Unknown_Data {
@@ -779,6 +783,8 @@ pub enum Refusal {
     Oversized(SendPayloadSize),
     Direct(String),
     TopicRefused(flow_ethos::Topic),
+    InstantUnreadable(Instant),
+    NoOpenTask(flow_ethos::LogicalDeliveryId),
 }
 #[rustfmt::skip]
 pub type ActualBytes = i64;
@@ -981,6 +987,13 @@ pub struct Launch_Data {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Remind_Data {
+    pub instant: Instant,
+    pub body: Body,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Query {
     Start(LaunchProfile),
     Refresh(flow_ethos::Address),
@@ -1005,6 +1018,7 @@ pub enum Query {
     DeliverAll(flow_ethos::Address),
     Launch(Launch_Data),
     BindSeat(flow_ethos::Address),
+    Remind(Remind_Data),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1050,4 +1064,5 @@ pub enum Response {
     Refused(Refusal),
     Sent(SendReceipt),
     Failed(SendFailure),
+    Reminded,
 }

@@ -57,6 +57,22 @@
 ; ambiguous when the confirmation wait ends answers SuccessorUnconfirmed,
 ; and stays owed.
 ;
+; Remind asks Flow to send the caller a reminder: at Instant, an RFC 3339
+; date-time, Flow queues Soft.Notice.Body for the caller's metaflow with
+; Delivery.Wake, as from that metaflow. The reminder is held in Flow's
+; memory until then, so a refresh or a restart of the Nexus keeps it; an
+; Instant already past is sent at once. The caller is read from the socket
+; as a Send's sender is. Reminded answers that the reminder is held; an
+; Instant that is no RFC 3339 date-time is refused InstantUnreadable.
+;
+; A Task (flow_ethos Request) is an order with its Minutes: Flow keeps it,
+; named by the LogicalDeliveryId it answers the send with, and when the
+; minutes lapse with no Done naming it, sends its sender Soft.Notice with
+; Wake, then again every Minutes, four reminders in all, the last copied
+; to the sender's Secondary as a failure. Minutes 0 sets no reminder. A
+; Done naming the task closes it; a Done naming no open task is refused
+; NoOpenTask.
+;
 ; Flow ordinary Signal.
 ;
 ; Start and Replace carry a LaunchProfile; a Replace's profile names the
@@ -236,7 +252,8 @@ Signal
   ObserveSender.{ Process Option<NativeSessionId> Option<DeliveryCursor> }
   DeliverAll.Address
   Launch.{ Address Remembering InstructionPrompt }
-  BindSeat.Address ]
+  BindSeat.Address
+  Remind.{ Instant Body } ]
 [ Started.Launched
   LaunchPending.LaunchAttempt
   StartAmbiguous.PromptDeliveryIntent
@@ -268,7 +285,8 @@ Signal
   Current.[ Awake.FlowId Asleep Unknown ]
   Refused.Refusal
   Sent.SendReceipt
-  Failed.SendFailure ]
+  Failed.SendFailure
+  Reminded ]
 [
   SessionId.String
   FlowType.String
@@ -508,6 +526,8 @@ Signal
   Title.String
   Presentation.{ Title }
   TranscriptPath.String
+  Instant.String
+  Body.String
   Refusal.[ Locked
             Held.Lock
             Awake.FlowId
@@ -524,7 +544,9 @@ Signal
             NotSendServer.Process
             Oversized.SendPayloadSize
             Direct.String
-            TopicRefused.Topic ]
+            TopicRefused.Topic
+            InstantUnreadable.Instant
+            NoOpenTask.LogicalDeliveryId ]
   ActualBytes.Integer
   MaximumBytes.Integer
   SendPayloadSize.{ ActualBytes MaximumBytes }

@@ -939,3 +939,30 @@ fn composition_refused_carries_its_reason() {
             .is_err()
     );
 }
+
+#[test]
+fn remind_carries_an_instant_and_a_body_and_is_answered_reminded() {
+    // The caller is read from the socket: a Remind names no recipient.
+    let text = "Remind.{ 2026-10-29T23:30:00-06:00 «Check the capsule run.» }";
+    let query = Potential::<Query>::from(text)
+        .actualize(&mut budget())
+        .unwrap_or_else(|error| panic!("{text}: {error:?}"));
+    assert_eq!(
+        query,
+        Query::Remind(signal_flow::Remind_Data {
+            instant: "2026-10-29T23:30:00-06:00".into(),
+            body: "Check the capsule run.".into(),
+        })
+    );
+    assert_eq!(query.datomize(Vec::new()).protosize().compact(), text);
+    for text in [
+        "Reminded",
+        "Refused.InstantUnreadable.tomorrow",
+        "Refused.NoOpenTask.logical-delivery-00000000000000009613",
+    ] {
+        let response = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap_or_else(|error| panic!("{text}: {error:?}"));
+        assert_eq!(response.datomize(Vec::new()).protosize().compact(), text);
+    }
+}

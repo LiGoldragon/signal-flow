@@ -2,6 +2,17 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 33.1.0: Remind on the ordinary socket; tasks close by Done
+
+- `Query` gains `Remind.{ Instant Body }`: at `Instant`, an RFC 3339
+  date-time, Flow queues `Soft.Notice.Body` for the caller's metaflow with
+  `Wake`, held in Flow's memory until then. `Response` gains `Reminded`;
+  `Refusal` gains `InstantUnreadable.Instant` and `NoOpenTask.LogicalDeliveryId`,
+  the refusal of a `Done` (flow-ethos `Request`) naming no open task.
+  Every variant is appended,
+  so existing archives keep their discriminants; a consumer matching
+  `Query`, `Response` or `Refusal` exhaustively adds the arms.
+
 ## 33.0.0: a Send is never refused for the seat's state or its route
 
 - `SendFailureReason` loses `RecipientBusy.Address`: no path produces it.
