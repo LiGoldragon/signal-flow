@@ -520,6 +520,18 @@ Signal
   Title.String
   Presentation.{ Title }
   TranscriptPath.String
+  ; SeatPane is the Herdr pane a caller ran in, as Herdr marked it.
+  SeatPane.{ HerdrSessionName HerdrPaneId }
+  PaneLabel.String
+  ; ObservedAt is a time in seconds since the Unix epoch.
+  ObservedAt.Integer
+  ; SeatEvidence is what Flow read when a caller could not be named: the pane
+  ; the caller ran in, the label Herdr shows for that pane, the native session
+  ; the pane's agent runs as far as it was read, when it was read, and the
+  ; caller's process. It is raw evidence; the caller stays unidentified and
+  ; no identity is invented from it. A caller in no pane Flow reads has no
+  ; pane and no label.
+  SeatEvidence.{ Option<SeatPane> Option<PaneLabel> Option<NativeSessionId> ObservedAt Process }
   Refusal.[ Locked
             Held.Lock
             Awake.FlowId
@@ -531,7 +543,7 @@ Signal
             NoneAbove
             NotMessage
             Taken.Address
-            Unidentified.Process
+            Unidentified.SeatEvidence
             Store.String
             NotSendServer.Process
             Oversized.SendPayloadSize

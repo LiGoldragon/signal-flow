@@ -2,6 +2,27 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 35.0.0: Unidentified carries the raw evidence of the seat
+
+- `Refusal.Unidentified` carries `SeatEvidence` where it carried `Process`:
+  `SeatEvidence.{ Option<SeatPane> Option<PaneLabel> Option<NativeSessionId>
+  ObservedAt Process }`, with `SeatPane.{ HerdrSessionName HerdrPaneId }`,
+  `PaneLabel.String` and `ObservedAt.Integer` (seconds since the Unix
+  epoch). A caller Flow cannot name stays unidentified; the refusal reports
+  the pane it ran in, the label Herdr shows for it, the native session read
+  there (if any), when it was read, and its process, and invents no identity.
+  The answer is `Refused.Unidentified.{ Some.{ herdr-1 w1-2 } Some.«Claude
+  research» Some.01a0fdcc-c1a1 1761800000 { 4242 987654 } }`; a caller in no
+  pane Flow reads is `Refused.Unidentified.{ None None None 1761800000 { 4242
+  987654 } }`.
+- Major: the payload changes the shape of every `Refusal`, in its datom and
+  in its rkyv archive, so an archive of a `DeliveryState`, `SendAcceptance`,
+  `SendFailure`, `Response` or any record holding a `Refusal` written by
+  34.0.0 reads differently. A consumer holding such archives reads them as
+  34.0.0 wrote them and upgrades `Unidentified.Process` to a
+  `SeatEvidence` with no pane, no label, no session, observed at 0 and that
+  process. Consumers pin signal-flow 35.0.0; no compatibility path.
+
 ## 34.0.0: variants leave; the version marks the break
 
 - Variants were removed from the contract; this release carries the

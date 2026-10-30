@@ -752,6 +752,27 @@ pub type TranscriptPath = String;
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct SeatPane {
+    pub herdr_session_name: HerdrSessionName,
+    pub herdr_pane_id: HerdrPaneId,
+}
+#[rustfmt::skip]
+pub type PaneLabel = String;
+#[rustfmt::skip]
+pub type ObservedAt = i64;
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct SeatEvidence {
+    pub seat_pane_option: std::option::Option<SeatPane>,
+    pub pane_label_option: std::option::Option<PaneLabel>,
+    pub native_session_id_option: std::option::Option<NativeSessionId>,
+    pub observed_at: ObservedAt,
+    pub process: flow_ethos::Process,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Unknown_Data {
     Address(flow_ethos::Address),
     Lock(flow_ethos::Lock),
@@ -773,7 +794,7 @@ pub enum Refusal {
     NoneAbove,
     NotMessage,
     Taken(flow_ethos::Address),
-    Unidentified(flow_ethos::Process),
+    Unidentified(SeatEvidence),
     Store(String),
     NotSendServer(flow_ethos::Process),
     Oversized(SendPayloadSize),
