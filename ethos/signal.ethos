@@ -249,36 +249,36 @@ Signal
   DeliverAll.Address
   Launch.{ Address Remembering InstructionPrompt }
   BindSeat.Address ]
-[ Started.Launched
-  LaunchPending.LaunchAttempt
-  StartAmbiguous.PromptDeliveryIntent
-  Refreshed.Refreshed
-  RecipientResolved.FlowNode
-  Stopped.FlowId
-  Listed.Vector<Metaflow>
+[ Started.VisibleLaunched
+  LaunchPending.VisibleLaunchAttempt
+  StartAmbiguous.VisiblePromptDeliveryIntent
+  Refreshed.Address
+  RecipientResolved.VisibleFlowNode
+  Stopped
+  Listed.Vector<VisibleMetaflow>
   StartRejected.StartRejection
   RefreshRejected.RefreshRejection
   RecipientResolutionRejected.RecipientResolutionRejection
   StopRejected.StopRejection
-  Replaced.Replaced
+  Replaced.VisibleReplaced
   ReplaceRejected.ReplaceRejection
-  LaunchInspected.LaunchInspection
+  LaunchInspected.VisibleLaunchInspection
   LaunchStatusRejected.LaunchStatusRejection
-  CallerResolved.Caller
-  CallerResolutionRejected.CallerResolutionRejection
-  AgentObserved.AgentObservation
+  CallerResolved.VisibleCaller
+  CallerResolutionRejected.VisibleCallerResolutionRejection
+  AgentObserved.VisibleAgentObservation
   Reported
   Locked.Lock
-  Bound.FlowId
+  Bound
   Identified.Address
   SendAccepted.VisibleSendAcceptance
   SendsObserved.VisibleSendObservation
   SendChanged.VisibleDeliverySnapshot
   Drained.VisibleDrainOutcome
-  Woken.FlowId
+  Woken
   Released
-  Current.[ Awake.FlowId Asleep Unknown ]
-  Refused.Refusal
+  Current.VisibleCurrent
+  Refused.VisibleRefusal
   SendRefused.VisibleRefusal
   Sent.VisibleSendReceipt
   Failed.VisibleSendFailure ]
@@ -377,6 +377,30 @@ Signal
   Launched.{ FlowId SessionId HerdrRouteSelection Origin }
   ; Refreshed names the metaflow refreshed and the flow that ended.
   Refreshed.{ Address FlowId }
+  ; Lifecycle responses project private run identities away. These types
+  ; preserve the useful launch and seat facts while Flow keeps the complete
+  ; values for routing, persistence and explicit meta Debug.
+  VisibleRemembering.[ Predecessors Custom ]
+  VisibleLaunchProfile.{ LaunchRequestId SystemModules UserModules VisibleRemembering Address ModelName Effort HerdrSessionName Option<LeaveOuts> FlowKind ToolSet InstructionPrompt }
+  VisibleNativeLaunchBinding.{ LaunchRequestId NativeSessionId HarnessKind HerdrPaneBinding }
+  VisibleRegistrationAcknowledgement.{ LaunchRequestId NativeSessionId HerdrPaneBinding }
+  VisiblePromptDeliveryIntent.{ LaunchRequestId PromptSha256 NativeSessionId HarnessKind ModelName Effort Vector<PromptSha256> PartsSubmitted StopsReported LeaveOuts HerdrPaneBinding NativeTranscriptBoundary }
+  VisibleNativeTargetReceipt.{ LaunchRequestId PromptSha256 NativeSessionId NativeTurnId ReceiptSha256 ModelName Effort Vector<PromptSha256> }
+  VisiblePromptDeliveryResult.[ Observed.VisibleNativeTargetReceipt
+                                Ambiguous.VisiblePromptDeliveryIntent ]
+  VisibleOrigin.[ Flow.SessionId Unbound ]
+  VisibleLaunchAttempt.{ LaunchRequestId VisibleLaunchProfile PromptSha256 VisibleOrigin LaunchAttemptPhase Option<NativeLaunchIntent> Option<VisibleNativeLaunchBinding> Option<VisibleRegistrationAcknowledgement> Option<VisiblePromptDeliveryIntent> Option<VisiblePromptDeliveryResult> }
+  VisibleFlowNode.{ SessionId HarnessKind EndpointSelection HerdrRouteSelection VisibleOrigin FlowLifecycle }
+  VisibleLaunched.{ SessionId HerdrRouteSelection VisibleOrigin }
+  VisibleReplaced.VisibleLaunched
+  VisibleLaunchStatusOutcome.[ Started.VisibleLaunched Replaced.VisibleReplaced StartRejected.StartRejection ReplaceRejected.ReplaceRejection ]
+  VisibleLaunchInspection.{ VisibleLaunchAttempt Option<VisibleLaunchStatusOutcome> Option<VisibleFlowNode> }
+  VisibleCaller.{ Aspect PowerLevel ModelName }
+  VisibleCallerResolutionRejection.[ CallerUnknown CallerMismatch.VisibleCaller ]
+  VisibleAgentObservation.AgentState
+  VisibleState.[ Awake Asleep ]
+  VisibleMetaflow.{ Address VisibleState Integer Vector<VisibleNativeInput> }
+  VisibleCurrent.[ Awake Asleep Unknown ]
   ; BindingRefusal names one checked native-binding failure without raw adapter text.
   ; PaneMismatch covers the agent name, workspace, or pane check.
   ; TerminalMismatch covers the terminal check.

@@ -30,8 +30,7 @@ fn every_ordinary_request_has_a_concrete_datom() {
 
 #[test]
 fn flow_node_round_trips_over_signal_and_datom() {
-    let reply = Response::RecipientResolved(signal_flow::FlowNode {
-        flow_id: "fac697".into(),
+    let reply = Response::RecipientResolved(signal_flow::VisibleFlowNode {
         session_id: "session-1".into(),
         harness_kind: signal_flow::HarnessKind::Codex,
         endpoint_selection: signal_flow::EndpointSelection::Available(
@@ -48,10 +47,7 @@ fn flow_node_round_trips_over_signal_and_datom() {
                 herdr_terminal_id: "term-fixture".into(),
             },
         ),
-        origin: signal_flow::Origin::Flow(signal_flow::FlowOrigin {
-            flow_id: "parent".into(),
-            session_id: "session-0".into(),
-        }),
+        visible_origin: signal_flow::VisibleOrigin::Flow("session-0".into()),
         flow_lifecycle: signal_flow::FlowLifecycle::Active,
     });
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&reply).unwrap();
@@ -238,35 +234,14 @@ fn agent_observation_carries_the_flow_and_its_herdr_state() {
         query
     );
     for (state, expected) in [
-        (
-            signal_flow::AgentState::Idle,
-            "AgentObserved.{ 7d41e0 Idle }",
-        ),
-        (
-            signal_flow::AgentState::Working,
-            "AgentObserved.{ 7d41e0 Working }",
-        ),
-        (
-            signal_flow::AgentState::Blocked,
-            "AgentObserved.{ 7d41e0 Blocked }",
-        ),
-        (
-            signal_flow::AgentState::Done,
-            "AgentObserved.{ 7d41e0 Done }",
-        ),
-        (
-            signal_flow::AgentState::Unknown,
-            "AgentObserved.{ 7d41e0 Unknown }",
-        ),
-        (
-            signal_flow::AgentState::Gone,
-            "AgentObserved.{ 7d41e0 Gone }",
-        ),
+        (signal_flow::AgentState::Idle, "AgentObserved.Idle"),
+        (signal_flow::AgentState::Working, "AgentObserved.Working"),
+        (signal_flow::AgentState::Blocked, "AgentObserved.Blocked"),
+        (signal_flow::AgentState::Done, "AgentObserved.Done"),
+        (signal_flow::AgentState::Unknown, "AgentObserved.Unknown"),
+        (signal_flow::AgentState::Gone, "AgentObserved.Gone"),
     ] {
-        let response = Response::AgentObserved(signal_flow::AgentObservation {
-            flow_id: "7d41e0".into(),
-            agent_state: state,
-        });
+        let response = Response::AgentObserved(state);
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
         assert_eq!(
             rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
@@ -295,7 +270,6 @@ fn a_send_names_delivery_and_deliver_all_names_a_metaflow() {
     for text in [
         "Send.{ Address.{ Mind core Secondary } Queue Soft.Order.«Review the drain fix» }",
         "Send.{ Up Wake HardAbrupt.Question.«Which store?» }",
-        "Send.{ Address.{ Psyche core Secondary } Wake MiddleAbrupt.Result.done }",
         "DeliverAll.{ Psyche core Secondary }",
         "Launch.{ { Mind core Primary } Predecessors.2 brief }",
         "Launch.{ { Mind core Primary } Custom.[ 36b71b e3c8c1 ] brief }",
@@ -351,8 +325,8 @@ fn replace_carries_the_predecessor_in_its_launch_profile() {
 #[test]
 fn replace_and_launch_status_responses_have_concrete_datoms() {
     for text in [
-        "Replaced.{ fac697 { 908786 session-2 Available.{ default claude-a1 w1:p4 term-4 } Flow.{ fac697 session-1 } } }",
-        "Replaced.{ fac697 { 908786 session-2 Unavailable Unbound } }",
+        "Replaced.{ session-2 Available.{ default claude-a1 w1:p4 term-4 } Flow.session-1 }",
+        "Replaced.{ session-2 Unavailable Unbound }",
         "ReplaceRejected.PredecessorAbsent",
         "ReplaceRejected.UnknownPredecessor",
         "ReplaceRejected.PredecessorStopped",
@@ -378,7 +352,7 @@ fn replace_and_launch_status_responses_have_concrete_datoms() {
 #[test]
 fn refresh_answers_have_concrete_datoms() {
     for text in [
-        "Refreshed.{ { Psyche core Primary } 74e4d1 }",
+        "Refreshed.{ Psyche core Primary }",
         "RefreshRejected.NotAwake",
         "RefreshRejected.Locked",
         "RefreshRejected.CloseRefused",
@@ -515,29 +489,22 @@ fn a_start_whose_model_is_not_the_configured_one_is_refused_with_its_reason() {
 }
 
 #[test]
-fn replaced_names_the_stopped_predecessor_and_the_started_successor() {
-    let reply = Response::Replaced(signal_flow::Replaced {
-        flow_id: "fac697".into(),
-        launched: signal_flow::Launched {
-            flow_id: "908786".into(),
-            session_id: "session-2".into(),
-            herdr_route_selection: signal_flow::HerdrRouteSelection::Available(
-                signal_flow::HerdrRoute {
-                    herdr_session_name: "default".into(),
-                    herdr_agent_name: "claude-a1".into(),
-                    herdr_pane_id: "w1:p4".into(),
-                    herdr_terminal_id: "term-4".into(),
-                },
-            ),
-            origin: signal_flow::Origin::Flow(signal_flow::FlowOrigin {
-                flow_id: "fac697".into(),
-                session_id: "session-1".into(),
-            }),
-        },
+fn replaced_projects_private_run_identities_away() {
+    let reply = Response::Replaced(signal_flow::VisibleLaunched {
+        session_id: "session-2".into(),
+        herdr_route_selection: signal_flow::HerdrRouteSelection::Available(
+            signal_flow::HerdrRoute {
+                herdr_session_name: "default".into(),
+                herdr_agent_name: "claude-a1".into(),
+                herdr_pane_id: "w1:p4".into(),
+                herdr_terminal_id: "term-4".into(),
+            },
+        ),
+        visible_origin: signal_flow::VisibleOrigin::Flow("session-1".into()),
     });
     assert_eq!(
         reply.datomize(vec![]).protosize().compact(),
-        "Replaced.{ fac697 { 908786 session-2 Available.{ default claude-a1 w1:p4 term-4 } Flow.{ fac697 session-1 } } }"
+        "Replaced.{ session-2 Available.{ default claude-a1 w1:p4 term-4 } Flow.session-1 }"
     );
 }
 
@@ -555,9 +522,9 @@ fn resolve_caller_queries_and_replies_have_concrete_datoms() {
         assert_eq!(query.datomize(vec![]).protosize().compact(), text);
     }
     for text in [
-        "CallerResolved.{ fac697 Psyche High claude-opus-5-5 }",
+        "CallerResolved.{ Psyche High claude-opus-5-5 }",
         "CallerResolutionRejected.CallerUnknown",
-        "CallerResolutionRejected.CallerMismatch.{ fac697 Mind Medium gpt-6-sol }",
+        "CallerResolutionRejected.CallerMismatch.{ Mind Medium gpt-6-sol }",
     ] {
         let response = Potential::<Response>::from(text)
             .actualize(&mut budget())
@@ -573,15 +540,14 @@ fn resolve_caller_queries_and_replies_have_concrete_datoms() {
 
 #[test]
 fn caller_names_the_flow_its_aspect_power_and_model() {
-    let reply = Response::CallerResolved(signal_flow::Caller {
-        flow_id: "38de5b".into(),
+    let reply = Response::CallerResolved(signal_flow::VisibleCaller {
         aspect: signal_flow::Aspect::Psyche,
         power_level: signal_flow::PowerLevel::High,
         model_name: "claude-opus-5-5".into(),
     });
     assert_eq!(
         reply.datomize(vec![]).protosize().compact(),
-        "CallerResolved.{ 38de5b Psyche High claude-opus-5-5 }"
+        "CallerResolved.{ Psyche High claude-opus-5-5 }"
     );
 }
 
@@ -594,7 +560,7 @@ fn metaflows_query_and_listed_metaflow_roundtrip() {
         .unwrap();
     assert_eq!(query, Query::Metaflows);
 
-    let text = "Listed.[ { { Psyche flow Primary } Awake.f1c841 [ past-1 ] [ { logical-1 Sender.{ Mind flow Tertiary } Wake Soft.Order.continue } { logical-2 Unknown Queue Soft.Notice.kept } { logical-3 Flow Queue Soft.Result.landed } ] } ]";
+    let text = "Listed.[ { { Psyche flow Primary } Awake 1 [ { Sender.{ Mind flow Tertiary } { Psyche flow Primary } Soft.Order.continue } { Unknown { Psyche flow Primary } Soft.Notice.kept } ] } ]";
     let restored = Potential::<Response>::from(text)
         .actualize(&mut budget())
         .unwrap();
@@ -604,35 +570,9 @@ fn metaflows_query_and_listed_metaflow_roundtrip() {
     assert_eq!(rows.len(), 1);
     assert_eq!(rows[0].address.aspect, Aspect::Psyche);
     assert_eq!(rows[0].address.topic, "flow");
-    assert_eq!(rows[0].state, flow_ethos::State::Awake("f1c841".into()));
-    assert_eq!(rows[0].past, vec!["past-1".to_owned()]);
-    assert_eq!(
-        rows[0].queue,
-        vec![
-            flow_ethos::QueueEntry {
-                logical_delivery_id: "logical-1".into(),
-                delivery: flow_ethos::Delivery::Wake,
-                sent_by: flow_ethos::SentBy::Sender(flow_ethos::Address {
-                    aspect: Aspect::Mind,
-                    topic: "flow".into(),
-                    layer: flow_ethos::Layer::Tertiary,
-                }),
-                message: flow_ethos::Message::Soft(flow_ethos::Request::Order("continue".into())),
-            },
-            flow_ethos::QueueEntry {
-                logical_delivery_id: "logical-2".into(),
-                delivery: flow_ethos::Delivery::Queue,
-                sent_by: flow_ethos::SentBy::Unknown,
-                message: flow_ethos::Message::Soft(flow_ethos::Request::Notice("kept".into())),
-            },
-            flow_ethos::QueueEntry {
-                logical_delivery_id: "logical-3".into(),
-                delivery: flow_ethos::Delivery::Queue,
-                sent_by: flow_ethos::SentBy::Flow,
-                message: flow_ethos::Message::Soft(flow_ethos::Request::Result("landed".into())),
-            },
-        ]
-    );
+    assert_eq!(rows[0].visible_state, signal_flow::VisibleState::Awake);
+    assert_eq!(rows[0].integer, 1);
+    assert_eq!(rows[0].visible_native_input_vector.len(), 2);
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&restored).unwrap();
     assert_eq!(
         rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
@@ -650,7 +590,9 @@ fn store_refusal_roundtrips_with_its_error_text() {
         .unwrap();
     assert_eq!(
         response,
-        Response::Refused(Refusal::Store("database unavailable".into()))
+        Response::Refused(signal_flow::VisibleRefusal::Store(
+            "database unavailable".into()
+        ))
     );
     assert_eq!(response.datomize(vec![]).protosize().compact(), text);
 }
@@ -658,7 +600,7 @@ fn store_refusal_roundtrips_with_its_error_text() {
 /// A sleeping metaflow retains its queue without claiming an awake flow.
 #[test]
 fn listed_asleep_metaflow_roundtrips_without_a_current_flow() {
-    let text = "Listed.[ { { Mind topics Primary } Asleep [] [] } ]";
+    let text = "Listed.[ { { Mind topics Primary } Asleep 0 [] } ]";
     let restored = Potential::<Response>::from(text)
         .actualize(&mut budget())
         .unwrap();
@@ -666,7 +608,7 @@ fn listed_asleep_metaflow_roundtrips_without_a_current_flow() {
         panic!("Metaflows answers with typed metaflow records")
     };
     assert_eq!(rows.len(), 1);
-    assert_eq!(rows[0].state, flow_ethos::State::Asleep);
+    assert_eq!(rows[0].visible_state, signal_flow::VisibleState::Asleep);
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&restored).unwrap();
     assert_eq!(
         rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
@@ -735,7 +677,7 @@ fn an_ended_metaflow_is_no_datom_of_the_contract() {
             "{text} is refused"
         );
     }
-    for text in ["Current.Asleep", "Current.Awake.f1c841", "Current.Unknown"] {
+    for text in ["Current.Asleep", "Current.Awake", "Current.Unknown"] {
         let response = Potential::<Response>::from(text)
             .actualize(&mut budget())
             .unwrap();
@@ -806,14 +748,14 @@ fn durable_admission_and_resumable_sender_outcomes_round_trip() {
         assert_eq!(value.datomize(vec![]).protosize().compact(), text);
     }
     for text in [
-        "SendAccepted.{ logical-1 1 Queued }",
-        "SendAccepted.{ logical-1 4 Retryable.OwnerResolvedAbsent }",
-        "SendsObserved.{ 2 [ { 2 logical-1 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Attempting } ] }",
-        "SendChanged.{ 3 logical-1 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Delivered.{ Claude session-1 prompt-1 } }",
-        "SendChanged.{ 4 logical-2 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Withdrawn }",
-        "SendChanged.{ 5 logical-3 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Retryable.WakeRefused.ContextRefused.RecordMissing }",
-        "SendsObserved.{ 6 [ { 6 logical-4 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Retryable.WakeRefused.NoSecondary } ] }",
-        "Drained.{ { Psyche flow Secondary } Held.[ logical-1 ] }",
+        "SendAccepted.{ 1 Queued }",
+        "SendAccepted.{ 4 Retryable.OwnerResolvedAbsent }",
+        "SendsObserved.{ 2 [ { 2 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Attempting } ] }",
+        "SendChanged.{ 3 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Delivered.{ Claude session-1 prompt-1 } }",
+        "SendChanged.{ 4 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Withdrawn }",
+        "SendChanged.{ 5 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Retryable.WakeRefused.ContextRefused.RecordMissing }",
+        "SendsObserved.{ 6 [ { 6 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Retryable.WakeRefused.NoSecondary } ] }",
+        "Drained.{ { Psyche flow Secondary } Held }",
     ] {
         let value = Potential::<Response>::from(text)
             .actualize(&mut budget())
@@ -829,23 +771,18 @@ fn durable_admission_and_resumable_sender_outcomes_round_trip() {
 
 #[test]
 fn direct_send_replies_carry_receipt_or_failure_never_queue_state() {
-    use signal_flow::{SendFailure, SendFailureReason, SendReceipt};
+    use signal_flow::{VisibleSendFailure, VisibleSendFailureReason};
     let replies = [
-        Response::Sent(SendReceipt {
-            logical_delivery_id: "logical-direct-1".into(),
-            native_receipt: signal_flow::NativeReceipt {
-                harness_kind: signal_flow::HarnessKind::Codex,
-                native_session_id: "native-direct-1".into(),
-                native_prompt_id: "prompt-direct-1".into(),
-            },
+        Response::Sent(signal_flow::NativeReceipt {
+            harness_kind: signal_flow::HarnessKind::Codex,
+            native_session_id: "native-direct-1".into(),
+            native_prompt_id: "prompt-direct-1".into(),
         }),
-        Response::Failed(SendFailure {
-            logical_delivery_id_option: None,
-            send_failure_reason: SendFailureReason::QueueNotPermitted,
+        Response::Failed(VisibleSendFailure {
+            visible_send_failure_reason: VisibleSendFailureReason::QueueNotPermitted,
         }),
-        Response::Failed(SendFailure {
-            logical_delivery_id_option: Some("logical-direct-2".into()),
-            send_failure_reason: SendFailureReason::ReceiptUncertain,
+        Response::Failed(VisibleSendFailure {
+            visible_send_failure_reason: VisibleSendFailureReason::ReceiptUncertain,
         }),
     ];
     for reply in replies {
@@ -972,35 +909,31 @@ fn remind_is_gone_and_a_task_with_minutes_stands_in_its_place() {
 /// rkyv and reads back equal, and prints as the same text.
 #[test]
 fn task_refusals_round_trip_from_datom_through_rkyv_to_datom() {
-    use signal_flow::{MinutesRefusal, SendFailure, SendFailureReason};
+    use signal_flow::{
+        MinutesRefusal, VisibleRefusal, VisibleSendFailure, VisibleSendFailureReason,
+    };
     let refused = |refusal| Response::Refused(refusal);
     for (text, expected) in [
-        (
-            "Refused.NoOpenTask.logical-delivery-00000000000000009613",
-            refused(Refusal::NoOpenTask(
-                "logical-delivery-00000000000000009613".into(),
-            )),
-        ),
+        ("Refused.Unresolved", refused(VisibleRefusal::Unresolved)),
         (
             "Refused.MinutesRefused.Zero",
-            refused(Refusal::MinutesRefused(MinutesRefusal::Zero)),
+            refused(VisibleRefusal::MinutesRefused(MinutesRefusal::Zero)),
         ),
         (
             "Refused.MinutesRefused.Negative",
-            refused(Refusal::MinutesRefused(MinutesRefusal::Negative)),
+            refused(VisibleRefusal::MinutesRefused(MinutesRefusal::Negative)),
         ),
         (
             "Refused.MinutesRefused.Unreachable",
-            refused(Refusal::MinutesRefused(MinutesRefusal::Unreachable)),
+            refused(VisibleRefusal::MinutesRefused(MinutesRefusal::Unreachable)),
         ),
         // An abrupt Send's refusal is answered as its failure.
         (
-            "Failed.{ None Refused.MinutesRefused.Zero }",
-            Response::Failed(SendFailure {
-                logical_delivery_id_option: None,
-                send_failure_reason: SendFailureReason::Refused(Refusal::MinutesRefused(
-                    MinutesRefusal::Zero,
-                )),
+            "Failed.{ Refused.MinutesRefused.Zero }",
+            Response::Failed(VisibleSendFailure {
+                visible_send_failure_reason: VisibleSendFailureReason::Refused(
+                    VisibleRefusal::MinutesRefused(MinutesRefusal::Zero),
+                ),
             }),
         ),
     ] {

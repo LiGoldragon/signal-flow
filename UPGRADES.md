@@ -2,6 +2,20 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 37.0.0: lifecycle replies project private run identities away
+
+- Ordinary lifecycle replies preserve the seat, launch, route and refusal
+  facts a caller acts on without exposing a `FlowId`. `Started`, launch
+  status and inspection, recipient and caller resolution, replacement,
+  agent observation, binding, waking, current state and listed metaflows use
+  dedicated `Visible*` values; `Stopped`, `Bound` and `Woken` are bare
+  success variants.
+- The complete `FlowNode`, launch attempt, caller, metaflow and outcome types
+  remain unchanged for Flow's private routing and Memory. This is a wire
+  projection only and changes no stored row or schema hash.
+- Major: ordinary `Response` archives change shape. Consumers pin
+  signal-flow 37.0.0 and update every producer and consumer together.
+
 ## 36.0.0: public replies and messages carry metaflows, not ledger keys
 
 - `Send` takes the typed public `VisibleMessage`; `Result` and `Done` name
