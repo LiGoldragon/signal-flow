@@ -959,7 +959,8 @@ fn remind_is_gone_and_a_task_with_minutes_stands_in_its_place() {
             "{text} still reads"
         );
     }
-    let task = "Send.{ Address.{ Mind core Secondary } Wake Soft.Task.{ 30 «Check the capsule run.» } }";
+    let task =
+        "Send.{ Address.{ Mind core Secondary } Wake Soft.Task.{ 30 «Check the capsule run.» } }";
     let query = Potential::<Query>::from(task)
         .actualize(&mut budget())
         .unwrap_or_else(|error| panic!("{task}: {error:?}"));

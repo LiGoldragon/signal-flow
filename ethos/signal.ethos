@@ -57,14 +57,6 @@
 ; ambiguous when the confirmation wait ends answers SuccessorUnconfirmed,
 ; and stays owed.
 ;
-; Remind asks Flow to send the caller a reminder: at Instant, an RFC 3339
-; date-time, Flow queues Soft.Notice.Body for the caller's metaflow with
-; Delivery.Wake, as from that metaflow. The reminder is held in Flow's
-; memory until then, so a refresh or a restart of the Nexus keeps it; an
-; Instant already past is sent at once. The caller is read from the socket
-; as a Send's sender is. Reminded answers that the reminder is held; an
-; Instant that is no RFC 3339 date-time is refused InstantUnreadable.
-;
 ; A Task (flow_ethos Request) is an order with its Minutes: Flow keeps it,
 ; named by the LogicalDeliveryId it answers the send with, and when the
 ; minutes lapse with no Done naming it, sends its sender Soft.Notice with
@@ -256,8 +248,7 @@ Signal
   ObserveSender.{ Process Option<NativeSessionId> Option<DeliveryCursor> }
   DeliverAll.Address
   Launch.{ Address Remembering InstructionPrompt }
-  BindSeat.Address
-  Remind.{ Instant Body } ]
+  BindSeat.Address ]
 [ Started.Launched
   LaunchPending.LaunchAttempt
   StartAmbiguous.PromptDeliveryIntent
@@ -289,8 +280,7 @@ Signal
   Current.[ Awake.FlowId Asleep Unknown ]
   Refused.Refusal
   Sent.SendReceipt
-  Failed.SendFailure
-  Reminded ]
+  Failed.SendFailure ]
 [
   SessionId.String
   FlowType.String
@@ -530,8 +520,6 @@ Signal
   Title.String
   Presentation.{ Title }
   TranscriptPath.String
-  Instant.String
-  Body.String
   Refusal.[ Locked
             Held.Lock
             Awake.FlowId
@@ -549,7 +537,6 @@ Signal
             Oversized.SendPayloadSize
             Direct.String
             TopicRefused.Topic
-            InstantUnreadable.Instant
             NoOpenTask.LogicalDeliveryId
             MinutesRefused.MinutesRefusal ]
   ; Why a Task's Minutes was refused at admission: zero, below zero, or a

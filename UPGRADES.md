@@ -2,6 +2,16 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 33.3.0: Remind leaves the ordinary socket; a Task with its Minutes replaces it
+
+- `Query` loses `Remind.{ Instant Body }`, `Response` loses `Reminded`,
+  and `Refusal` loses `InstantUnreadable.Instant`; the `Instant` and `Body`
+  types go with them. A reminder is a `Task` (flow-ethos `Request`) with
+  its Minutes: its sender is reminded when the Minutes lapse with no Done.
+  `NoOpenTask` and `MinutesRefused` move up one discriminant, so an archive
+  holding a `Refusal` written by 33.1 or 33.2 reads differently; no
+  released Flow stores one. Consumers drop the arms; no compatibility path.
+
 ## 33.2.0: Flow refuses a Task's Minutes at admission; flow-ethos carries the ruled message contract
 
 - `Refusal` gains `MinutesRefused.MinutesRefusal`, appended, with
