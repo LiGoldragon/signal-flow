@@ -44,7 +44,7 @@ fn reports() -> Vec<Query> {
 fn replies() -> Vec<Response> {
     vec![
         Response::Reported,
-        Response::Refused(VisibleRefusal::Unknown(VisibleUnknown::Address(Address {
+        Response::SendRefused(VisibleRefusal::Unknown(VisibleUnknown::Address(Address {
             aspect: Aspect::Mind,
             topic: Topic::from("core"),
             layer: Layer::Secondary,

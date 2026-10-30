@@ -278,7 +278,8 @@ Signal
   Woken.FlowId
   Released
   Current.[ Awake.FlowId Asleep Unknown ]
-  Refused.VisibleRefusal
+  Refused.Refusal
+  SendRefused.VisibleRefusal
   Sent.VisibleSendReceipt
   Failed.VisibleSendFailure ]
 [

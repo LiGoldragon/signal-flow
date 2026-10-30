@@ -1290,7 +1290,8 @@ pub enum Response {
     Woken(flow_ethos::FlowId),
     Released,
     Current(Current_Data),
-    Refused(VisibleRefusal),
+    Refused(Refusal),
+    SendRefused(VisibleRefusal),
     Sent(VisibleSendReceipt),
     Failed(VisibleSendFailure),
 }
