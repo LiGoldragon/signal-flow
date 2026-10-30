@@ -2,6 +2,22 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 36.0.0: public replies and messages carry metaflows, not ledger keys
+
+- `Send` takes the typed public `VisibleMessage`; `Result` and `Done` name
+  the complete typed `Order` or `Task` value they answer. The Nexus derives
+  the sender from the authenticated caller and keeps delivery and run ids in
+  its private ledger.
+- Send admission, observation, drain, receipt and failure responses retain
+  their state and typed reason without exposing the private logical-delivery
+  key.
+- `VisibleNativeInput` carries the sender and recipient metaflow addresses
+  and the typed message, without a delivery id. The private `QueueEntry`,
+  `NativeInput`, response and delivery types remain available to the Nexus
+  for its existing stored rows; this contract change does not rewrite them.
+- Major: ordinary Query and Response archives change shape. Consumers pin
+  signal-flow 36.0.0 and update every producer and consumer together.
+
 ## 35.0.0: Unidentified carries the raw evidence of the seat
 
 - `Refusal.Unidentified` carries `SeatEvidence` where it carried `Process`:

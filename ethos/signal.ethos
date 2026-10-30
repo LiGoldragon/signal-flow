@@ -225,7 +225,7 @@
 
 Signal
 [
-  flow_ethos:[ Aspect Address FlowId Request SentBy QueueEntry NativeInput LogicalDeliveryId Delivery Message Lock Sender Process Metaflow Key Recipient Layer Topic Subaspect OrdinarySocketPath MetaSocketPath Start ModelName HarnessKind ] ]
+  flow_ethos:[ Aspect Address FlowId Request Said SentBy QueueEntry NativeInput LogicalDeliveryId Delivery Message Lock Sender Process Metaflow Key Recipient Layer Topic Subaspect OrdinarySocketPath MetaSocketPath Start ModelName HarnessKind Minutes AnswerableTask Answerable ResultPayload ] ]
 [ Start.LaunchProfile
   Refresh.Address
   ResolveRecipient.RecipientResolutionRequest
@@ -271,16 +271,16 @@ Signal
   Locked.Lock
   Bound.FlowId
   Identified.Address
-  SendAccepted.SendAcceptance
-  SendsObserved.SendObservation
-  SendChanged.DeliverySnapshot
-  Drained.DrainOutcome
+  SendAccepted.VisibleSendAcceptance
+  SendsObserved.VisibleSendObservation
+  SendChanged.VisibleDeliverySnapshot
+  Drained.VisibleDrainOutcome
   Woken.FlowId
   Released
   Current.[ Awake.FlowId Asleep Unknown ]
-  Refused.Refusal
-  Sent.SendReceipt
-  Failed.SendFailure ]
+  Refused.VisibleRefusal
+  Sent.VisibleSendReceipt
+  Failed.VisibleSendFailure ]
 [
   SessionId.String
   FlowType.String
@@ -550,6 +550,8 @@ Signal
             Direct.String
             TopicRefused.Topic
             NoOpenTask.LogicalDeliveryId
+            Unresolved
+            Ambiguous
             MinutesRefused.MinutesRefusal ]
   ; Why a Task's Minutes was refused at admission: zero, below zero, or a
   ; deadline the clock cannot hold.
@@ -563,10 +565,40 @@ Signal
   LastAssistantMessageOption.Option<String>
   NativeStop.{ Option<NativeSessionId> Option<TranscriptPath> LastAssistantMessageOption }
   NativePrompt.{ Option<NativeSessionId> Option<PromptId> PromptSha256 }
-  ; A message is its Request under a Priority head: HardAbrupt interrupts
-  ; the recipient's turn, MiddleAbrupt reaches it at its next tool
-  ; boundary, Soft waits for the recipient to finish.
-  SendRequest.{ Recipient Delivery Message }
+  ; The caller names an original answerable request by its complete typed
+  ; datom. Flow resolves that value against the authenticated caller's open
+  ; tasks and keeps the private logical identity inside the Nexus.
+  VisibleResultPayload.[ Answered.{ Answerable String }
+                         Historical.String ]
+  VisibleDonePayload.[ Answered.{ Answerable String }
+                       Historical.String ]
+  SendableRequest.[ Order.String
+                    Question.String
+                    Psyche.Said
+                    Psyches.Vector<Said>
+                    Result.{ Answerable String }
+                    Notice.String
+                    Task.AnswerableTask
+                    Done.{ Answerable String } ]
+  SendableMessage.[ HardAbrupt.SendableRequest
+                    MiddleAbrupt.SendableRequest
+                    Soft.SendableRequest ]
+  ; A message at the public edge carries words and metaflow identities. The
+  ; durable Message below remains the private ledger value.
+  VisibleRequest.[ Order.String
+                   Question.String
+                   Psyche.Said
+                   Psyches.Vector<Said>
+                   Result.VisibleResultPayload
+                   Notice.String
+                   Task.AnswerableTask
+                   Done.VisibleDonePayload ]
+  VisibleMessage.[ HardAbrupt.VisibleRequest
+                   MiddleAbrupt.VisibleRequest
+                   Soft.VisibleRequest ]
+  VisibleSender.[ Sender.Address Unknown Nexus ]
+  VisibleNativeInput.{ VisibleSender Address VisibleMessage }
+  SendRequest.{ Recipient Delivery SendableMessage }
   DeliveryCursor.Integer
   NativeReceipt.{ HarnessKind NativeSessionId NativePromptId.String }
   ; WakeRefused: the start that would wake the recipient was refused, for
@@ -590,6 +622,54 @@ Signal
   DeliverySnapshot.{ DeliveryCursor LogicalDeliveryId SentBy Address DeliveryState }
   SendObservation.{ DeliveryCursor Vector<DeliverySnapshot> }
   DrainOutcome.{ Address DrainState.[ Delivered Held.Vector<LogicalDeliveryId> ] }
+  ; The Nexus uses this result while it admits, journals and delivers a
+  ; message. It is never an ordinary Signal response.
+  PrivateSendResponse.[ SendAccepted.SendAcceptance
+                        Refused.Refusal
+                        Sent.SendReceipt
+                        Failed.SendFailure ]
+  ; Public results project the private delivery ledger without its keys.
+  ; Unresolved and Ambiguous preserve every open task and name why no answer
+  ; was admitted.
+  VisibleRefusal.[ Locked
+                   Held.Lock
+                   Awake
+                   Asleep
+                   Lapsed
+                   Unknown.VisibleUnknown
+                   NoLayer
+                   NotConfigured
+                   NoneAbove
+                   NotMessage
+                   Taken.Address
+                   Unidentified.SeatEvidence
+                   Store.String
+                   NotSendServer.Process
+                   Oversized.SendPayloadSize
+                   Direct.String
+                   TopicRefused.Topic
+                   Unresolved
+                   Ambiguous
+                   MinutesRefused.MinutesRefusal ]
+  VisibleUnknown.[ Address.Address Lock.Lock Flow Key.Key ]
+  VisibleDeliveryState.[ Queued
+                         Attempting
+                         Retryable.RetryCause
+                         Uncertain
+                         Delivered.NativeReceipt
+                         Failed.VisibleRefusal
+                         Withdrawn ]
+  VisibleSendReceipt.NativeReceipt
+  VisibleSendFailure.{ VisibleSendFailureReason }
+  VisibleSendFailureReason.[ RecipientUnavailable.Address
+                             QueueNotPermitted
+                             Refused.VisibleRefusal
+                             ReceiptUncertain
+                             NotSent.String ]
+  VisibleSendAcceptance.{ DeliveryCursor VisibleDeliveryState }
+  VisibleDeliverySnapshot.{ DeliveryCursor VisibleSender Address VisibleDeliveryState }
+  VisibleSendObservation.{ DeliveryCursor Vector<VisibleDeliverySnapshot> }
+  VisibleDrainOutcome.{ Address VisibleDrainState.[ Delivered Held ] }
   ; Started: the harness's session started (Claude's SessionStart), naming
   ; the native session Claude Code gave the hook. One that follows the
   ; flow's own Cleared rebinds the flow to that session; the FlowId stays.
