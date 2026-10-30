@@ -940,32 +940,76 @@ fn composition_refused_carries_its_reason() {
     );
 }
 
+/// A Task with its Minutes replaces Remind: the ordinary socket reads no
+/// Remind, answers no Reminded and refuses no unreadable instant.
 #[test]
-fn remind_carries_an_instant_and_a_body_and_is_answered_reminded() {
-    // The caller is read from the socket: a Remind names no recipient.
-    let text = "Remind.{ 2026-10-29T23:30:00-06:00 «Check the capsule run.» }";
-    let query = Potential::<Query>::from(text)
-        .actualize(&mut budget())
-        .unwrap_or_else(|error| panic!("{text}: {error:?}"));
-    assert_eq!(
-        query,
-        Query::Remind(signal_flow::Remind_Data {
-            instant: "2026-10-29T23:30:00-06:00".into(),
-            body: "Check the capsule run.".into(),
-        })
+fn remind_is_gone_and_a_task_with_minutes_stands_in_its_place() {
+    let remind = "Remind.{ 2026-10-29T23:30:00-06:00 «Check the capsule run.» }";
+    assert!(
+        Potential::<Query>::from(remind)
+            .actualize(&mut budget())
+            .is_err(),
+        "{remind} still reads"
     );
-    assert_eq!(query.datomize(Vec::new()).protosize().compact(), text);
-    for text in [
-        "Reminded",
-        "Refused.InstantUnreadable.tomorrow",
-        "Refused.NoOpenTask.logical-delivery-00000000000000009613",
-        "Refused.MinutesRefused.Zero",
-        "Refused.MinutesRefused.Negative",
-        "Refused.MinutesRefused.Unreachable",
+    for text in ["Reminded", "Refused.InstantUnreadable.tomorrow"] {
+        assert!(
+            Potential::<Response>::from(text)
+                .actualize(&mut budget())
+                .is_err(),
+            "{text} still reads"
+        );
+    }
+    let task = "Send.{ Address.{ Mind core Secondary } Wake Soft.Task.{ 30 «Check the capsule run.» } }";
+    let query = Potential::<Query>::from(task)
+        .actualize(&mut budget())
+        .unwrap_or_else(|error| panic!("{task}: {error:?}"));
+    assert_eq!(query.datomize(Vec::new()).protosize().compact(), task);
+}
+
+/// Every refusal a Task or a Done meets at admission is carried whole:
+/// datom text reads into the Response, the Response crosses the wire as
+/// rkyv and reads back equal, and prints as the same text.
+#[test]
+fn task_refusals_round_trip_from_datom_through_rkyv_to_datom() {
+    use signal_flow::{MinutesRefusal, SendFailure, SendFailureReason};
+    let refused = |refusal| Response::Refused(refusal);
+    for (text, expected) in [
+        (
+            "Refused.NoOpenTask.logical-delivery-00000000000000009613",
+            refused(Refusal::NoOpenTask(
+                "logical-delivery-00000000000000009613".into(),
+            )),
+        ),
+        (
+            "Refused.MinutesRefused.Zero",
+            refused(Refusal::MinutesRefused(MinutesRefusal::Zero)),
+        ),
+        (
+            "Refused.MinutesRefused.Negative",
+            refused(Refusal::MinutesRefused(MinutesRefusal::Negative)),
+        ),
+        (
+            "Refused.MinutesRefused.Unreachable",
+            refused(Refusal::MinutesRefused(MinutesRefusal::Unreachable)),
+        ),
+        // An abrupt Send's refusal is answered as its failure.
+        (
+            "Failed.{ None Refused.MinutesRefused.Zero }",
+            Response::Failed(SendFailure {
+                logical_delivery_id_option: None,
+                send_failure_reason: SendFailureReason::Refused(Refusal::MinutesRefused(
+                    MinutesRefusal::Zero,
+                )),
+            }),
+        ),
     ] {
         let response = Potential::<Response>::from(text)
             .actualize(&mut budget())
             .unwrap_or_else(|error| panic!("{text}: {error:?}"));
-        assert_eq!(response.datomize(Vec::new()).protosize().compact(), text);
+        assert_eq!(response, expected, "{text}");
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
+        let carried = rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap();
+        assert_eq!(carried, response, "{text}");
+        assert_eq!(carried.datomize(Vec::new()).protosize().compact(), text);
     }
 }
