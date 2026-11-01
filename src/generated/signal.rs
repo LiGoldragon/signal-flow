@@ -35,11 +35,21 @@ pub enum Remembering {
     Custom(std::vec::Vec<flow_ethos::FlowId>),
 }
 #[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct LaunchRequest {
+    pub address: flow_ethos::Address,
+    pub remembering: Remembering,
+    pub instruction_prompt: InstructionPrompt,
+}
+#[rustfmt::skip]
 pub type SystemPromptText = String;
 #[rustfmt::skip]
 pub type SystemPromptSha256 = String;
 #[rustfmt::skip]
 pub type InstructionPrompt = String;
+#[rustfmt::skip]
+pub type Command = String;
 #[rustfmt::skip]
 pub type FirstPromptBody = String;
 #[rustfmt::skip]
@@ -623,8 +633,17 @@ pub enum CompositionRefusal {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum HarnessFlagsRefusal {
+    UnclosedSingleQuote,
+    UnclosedDoubleQuote,
+    TrailingEscape,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum StartRejection {
     CompositionRefused(CompositionRefusal),
+    MalformedHarnessFlags(HarnessFlagsRefusal),
     LaunchRequestConflict,
     LaunchPersistenceRefused,
     NativeLaunchRefused(NativeLaunchRefusal),
@@ -1215,14 +1234,6 @@ pub struct ObserveSender_Data {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct Launch_Data {
-    pub address: flow_ethos::Address,
-    pub remembering: Remembering,
-    pub instruction_prompt: InstructionPrompt,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Query {
     Start(LaunchProfile),
     Refresh(flow_ethos::Address),
@@ -1245,7 +1256,8 @@ pub enum Query {
     ObserveSends(std::option::Option<DeliveryCursor>),
     ObserveSender(ObserveSender_Data),
     DeliverAll(flow_ethos::Address),
-    Launch(Launch_Data),
+    Launch(LaunchRequest),
+    Rehearse(LaunchRequest),
     BindSeat(flow_ethos::Address),
 }
 #[rustfmt::skip]
@@ -1268,6 +1280,8 @@ pub enum Response {
     Stopped(flow_ethos::FlowId),
     Listed(std::vec::Vec<flow_ethos::Metaflow>),
     StartRejected(StartRejection),
+    Rehearsed(Command),
+    RehearseRejected(StartRejection),
     RefreshRejected(RefreshRejection),
     RecipientResolutionRejected(RecipientResolutionRejection),
     StopRejected(StopRejection),

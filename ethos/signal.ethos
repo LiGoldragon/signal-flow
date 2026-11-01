@@ -247,7 +247,8 @@ Signal
   ObserveSends.Option<DeliveryCursor>
   ObserveSender.{ Process Option<NativeSessionId> Option<DeliveryCursor> }
   DeliverAll.Address
-  Launch.{ Address Remembering InstructionPrompt }
+  Launch.LaunchRequest
+  Rehearse.LaunchRequest
   BindSeat.Address ]
 [ Started.Launched
   LaunchPending.LaunchAttempt
@@ -257,6 +258,8 @@ Signal
   Stopped.FlowId
   Listed.Vector<Metaflow>
   StartRejected.StartRejection
+  Rehearsed.Command
+  RehearseRejected.StartRejection
   RefreshRejected.RefreshRejection
   RecipientResolutionRejected.RecipientResolutionRejection
   StopRejected.StopRejection
@@ -300,9 +303,13 @@ Signal
   Effort.String
   RememberingDepth.Integer
   Remembering.[ Predecessors.RememberingDepth Custom.Vector<FlowId> ]
+  ; Launch and Rehearse take the same declared request. Rehearse renders the
+  ; final native invocation and creates none of its resources.
+  LaunchRequest.{ Address Remembering InstructionPrompt }
   SystemPromptText.String
   SystemPromptSha256.String
   InstructionPrompt.String
+  Command.String
   FirstPromptBody.String
   PromptPartText.String
   PromptSha256.String
@@ -488,7 +495,8 @@ Signal
   ; PresentationUnavailable: the Psyche core presentation prompt could not
   ; be read. Unrecorded: an outcome Flow archived before it kept the reason.
   CompositionRefusal.[ InvalidLaunchRequestId InvalidModelName InvalidEffort InvalidToolSet InvalidHerdrSessionName InvalidSystemModules InvalidUserModules InvalidRemembering InexactModel Unconfigured PresentationUnavailable Unrecorded ]
-  StartRejection.[ CompositionRefused.CompositionRefusal LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal NoSecondary Undeclared TopicRefused.Topic ]
+  HarnessFlagsRefusal.[ UnclosedSingleQuote UnclosedDoubleQuote TrailingEscape ]
+  StartRejection.[ CompositionRefused.CompositionRefusal MalformedHarnessFlags.HarnessFlagsRefusal LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal NoSecondary Undeclared TopicRefused.Topic ]
   ; RefreshRejection names why a refresh ended no flow: the metaflow is not
   ; Awake; a refresh, a waking or an unconfirmed launch holds its lock;
   ; Herdr refused to close the ending flow's pane; the flow's end was not

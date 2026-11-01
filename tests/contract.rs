@@ -571,6 +571,34 @@ fn resolve_caller_queries_and_replies_have_concrete_datoms() {
 }
 
 #[test]
+fn launch_and_rehearse_share_one_request_and_have_typed_answers() {
+    for text in [
+        "Launch.{ { Psyche core Primary } Predecessors.1 «Begin.» }",
+        "Rehearse.{ { Psyche core Primary } Predecessors.1 «Begin.» }",
+    ] {
+        let query = Potential::<Query>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&query).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Query, rkyv::rancor::Error>(&archive).unwrap(),
+            query
+        );
+        assert_eq!(query.datomize(vec![]).protosize().compact(), text);
+    }
+    for text in [
+        "Rehearsed.«'herdr' '--session' 'main'»",
+        "RehearseRejected.MalformedHarnessFlags.UnclosedSingleQuote",
+        "StartRejected.MalformedHarnessFlags.TrailingEscape",
+    ] {
+        let response = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        assert_eq!(response.datomize(vec![]).protosize().compact(), text);
+    }
+}
+
+#[test]
 fn caller_names_the_flow_its_aspect_power_and_model() {
     let reply = Response::CallerResolved(signal_flow::Caller {
         flow_id: "38de5b".into(),

@@ -541,3 +541,14 @@ To deploy, in each consumer (meta-signal-flow, flow):
 3. Rebuild and run the tests. The rkyv archive of every value is unchanged,
    so a Nexus and its clients need no store migration; rebuild and restart
    the Nexus and both CLIs together.
+# 39.0.0: one declared launch request can be rehearsed
+
+- `LaunchRequest.{ Address Remembering InstructionPrompt }` is the named
+  request carried by both `Launch` and the new `Rehearse` query.
+- `Rehearsed.Command.String` answers the fully shell-quoted final native
+  invocation. `RehearseRejected.StartRejection` changes nothing.
+- malformed configured harness flags are a typed
+  `StartRejection.MalformedHarnessFlags.HarnessFlagsRefusal`.
+
+All ordinary clients and Flow must move together because Query, Response and
+the contract digest changed.
