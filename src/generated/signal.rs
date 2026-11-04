@@ -967,7 +967,6 @@ pub struct VisibleNativeInput {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct SendRequest {
     pub recipient: flow_ethos::Recipient,
-    pub delivery: flow_ethos::Delivery,
     pub sendable_message: SendableMessage,
 }
 #[rustfmt::skip]
@@ -1213,7 +1212,6 @@ pub struct Bind_Data {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct Deliver_Data {
     pub lock: flow_ethos::Lock,
-    pub delivery: flow_ethos::Delivery,
     pub message: flow_ethos::Message,
 }
 #[rustfmt::skip]

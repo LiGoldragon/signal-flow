@@ -304,7 +304,7 @@ fn agent_observation_carries_the_flow_and_its_herdr_state() {
 }
 
 #[test]
-fn a_send_names_delivery_and_deliver_all_names_a_metaflow() {
+fn a_send_names_its_recipient_and_deliver_all_names_a_metaflow() {
     // The recipient is a metaflow Address or Up, never a FlowId, and the
     // request carries no sender: Flow reads the caller from its socket.
     assert!(
@@ -313,8 +313,8 @@ fn a_send_names_delivery_and_deliver_all_names_a_metaflow() {
             .is_err()
     );
     for text in [
-        "Send.{ Address.{ Mind core Secondary } Queue Soft.Order.«Review the drain fix» }",
-        "Send.{ Up Wake HardAbrupt.Question.«Which store?» }",
+        "Send.{ Address.{ Mind core Secondary } Soft.Order.«Review the drain fix» }",
+        "Send.{ Up HardAbrupt.Question.«Which store?» }",
         "DeliverAll.{ Psyche core Secondary }",
         "Launch.{ { Mind core Primary } Predecessors.2 brief }",
         "Launch.{ { Mind core Primary } Custom.[ 36b71b e3c8c1 ] brief }",
@@ -641,7 +641,7 @@ fn metaflows_query_and_listed_metaflow_roundtrip() {
         .unwrap();
     assert_eq!(query, Query::Metaflows);
 
-    let text = "Listed.[ { { Psyche flow Primary } Awake.f1c841 [ past-1 ] [ { logical-1 Sender.{ Mind flow Tertiary } Wake Soft.Order.continue } { logical-2 Unknown Queue Soft.Notice.kept } { logical-3 Flow Queue Soft.Result.Historical.landed } ] } ]";
+    let text = "Listed.[ { { Psyche flow Primary } Awake.f1c841 [ past-1 ] [] } ]";
     let restored = Potential::<Response>::from(text)
         .actualize(&mut budget())
         .unwrap();
@@ -653,35 +653,7 @@ fn metaflows_query_and_listed_metaflow_roundtrip() {
     assert_eq!(rows[0].address.topic, "flow");
     assert_eq!(rows[0].state, flow_ethos::State::Awake("f1c841".into()));
     assert_eq!(rows[0].past, vec!["past-1".to_owned()]);
-    assert_eq!(
-        rows[0].queue,
-        vec![
-            flow_ethos::QueueEntry {
-                logical_delivery_id: "logical-1".into(),
-                delivery: flow_ethos::Delivery::Wake,
-                sent_by: flow_ethos::SentBy::Sender(flow_ethos::Address {
-                    aspect: Aspect::Mind,
-                    topic: "flow".into(),
-                    layer: flow_ethos::Layer::Tertiary,
-                }),
-                message: flow_ethos::Message::Soft(flow_ethos::Request::Order("continue".into())),
-            },
-            flow_ethos::QueueEntry {
-                logical_delivery_id: "logical-2".into(),
-                delivery: flow_ethos::Delivery::Queue,
-                sent_by: flow_ethos::SentBy::Unknown,
-                message: flow_ethos::Message::Soft(flow_ethos::Request::Notice("kept".into())),
-            },
-            flow_ethos::QueueEntry {
-                logical_delivery_id: "logical-3".into(),
-                delivery: flow_ethos::Delivery::Queue,
-                sent_by: flow_ethos::SentBy::Flow,
-                message: flow_ethos::Message::Soft(flow_ethos::Request::Result(
-                    flow_ethos::ResultPayload::Historical("landed".into()),
-                )),
-            },
-        ]
-    );
+    assert!(rows[0].queue.is_empty());
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&restored).unwrap();
     assert_eq!(
         rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
@@ -845,7 +817,7 @@ fn identify_thread_and_its_refusal_have_concrete_datoms() {
 #[test]
 fn durable_admission_and_resumable_sender_outcomes_round_trip() {
     for text in [
-        "Send.{ Address.{ Mind flow Secondary } Wake MiddleAbrupt.Notice.ready }",
+        "Send.{ Address.{ Mind flow Secondary } MiddleAbrupt.Notice.ready }",
         "ObserveSends.None",
         "ObserveSender.{ { 17 99 } None Some.4 }",
     ] {
@@ -1003,8 +975,7 @@ fn remind_is_gone_and_a_task_with_minutes_stands_in_its_place() {
             "{text} still reads"
         );
     }
-    let task =
-        "Send.{ Address.{ Mind core Secondary } Wake Soft.Task.{ 30 «Check the capsule run.» } }";
+    let task = "Send.{ Address.{ Mind core Secondary } Soft.Task.{ 30 «Check the capsule run.» } }";
     let query = Potential::<Query>::from(task)
         .actualize(&mut budget())
         .unwrap_or_else(|error| panic!("{task}: {error:?}"));

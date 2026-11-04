@@ -2,6 +2,17 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 41.0.0: message priority is the delivery policy
+
+- `Send` is `Send.{ Recipient Message }`. The sender supplies the recipient
+  and typed message; the message priority determines immediate delivery,
+  interruption, queueing and waking.
+- The private `Deliver` query is `Deliver.{ Lock Message }` for the same
+  reason. The sender-selected `Delivery.[ Queue Wake ]` policy leaves both
+  wires and the current signal-flow API.
+- This changes the ordinary Query archive. Every producer and consumer moves
+  to 41.0.0 together; there is no compatibility path.
+
 ## 38.0.0: lifecycle replies retain their run identities
 
 - Lifecycle replies again carry their useful Flow ids. Version 37 removed

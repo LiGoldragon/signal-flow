@@ -10,11 +10,11 @@
 ; (Up is the layer above the sender, in its aspect and topic) and must be a
 ; metaflow Flow holds; a recipient Address whose topic is not an
 ; uncapitalized camelCase identifier is refused TopicRefused, carrying the
-; topic as written. Delivery.Queue leaves the message queued for the
-; recipient's next wake. Delivery.Wake asks Flow to wake the recipient after
-; enqueueing; the message kind never decides whether to wake. A HardAbrupt or
-; MiddleAbrupt message for an Awake live flow is typed into its pane by Flow
-; under its lease (Delivered); when its pane refuses it, it is queued instead.
+; topic as written. Priority determines delivery: an Awake recipient receives
+; every priority immediately and HardAbrupt alone interrupts; an Asleep
+; recipient queues Soft and is woken by MiddleAbrupt or HardAbrupt. A native
+; receipt settles a Send as Delivered; submission without that receipt remains
+; Attempting or Uncertain and is never retried blindly.
 ; DeliverAll asks Flow to deliver every queued message for an Address and does
 ; not insert a prompt when that queue is empty.
 ;
@@ -225,7 +225,7 @@
 
 Signal
 [
-  flow_ethos:[ Aspect Address FlowId Request Said SentBy QueueEntry NativeInput LogicalDeliveryId Delivery Message Lock Sender Process Metaflow Key Recipient Layer Topic Subaspect OrdinarySocketPath MetaSocketPath Start ModelName HarnessKind Minutes AnswerableTask Answerable ResultPayload ] ]
+  flow_ethos:[ Aspect Address FlowId Request Said SentBy QueueEntry NativeInput LogicalDeliveryId Message Lock Sender Process Metaflow Key Recipient Layer Topic Subaspect OrdinarySocketPath MetaSocketPath Start ModelName HarnessKind Minutes AnswerableTask Answerable ResultPayload ] ]
 [ Start.LaunchProfile
   Refresh.Address
   ResolveRecipient.RecipientResolutionRequest
@@ -238,7 +238,7 @@ Signal
   Lock.{ Sender Recipient }
   Bind.{ Address Process }
   Identify.Process
-  Deliver.{ Lock Delivery Message }
+  Deliver.{ Lock Message }
   Release.Lock
   Current.Address
   Metaflows
@@ -607,7 +607,7 @@ Signal
                    Soft.VisibleRequest ]
   VisibleSender.[ Sender.Address Unknown Nexus ]
   VisibleNativeInput.{ VisibleSender VisibleMessage }
-  SendRequest.{ Recipient Delivery SendableMessage }
+  SendRequest.{ Recipient SendableMessage }
   DeliveryCursor.Integer
   NativeReceipt.{ HarnessKind NativeSessionId NativePromptId.String }
   ; WakeRefused: the start that would wake the recipient was refused, for
