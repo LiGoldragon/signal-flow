@@ -14,6 +14,26 @@ fn budget() -> Budget {
 }
 
 #[test]
+fn missing_module_refusal_carries_known_or_historical_identity() {
+    for (text, expected) in [
+        (
+            "ModuleMissing.Some.vision:absent",
+            signal_flow::ContextRefusal::ModuleMissing(Some("vision:absent".into())),
+        ),
+        (
+            "ModuleMissing.None",
+            signal_flow::ContextRefusal::ModuleMissing(None),
+        ),
+    ] {
+        let actual = Potential::<signal_flow::ContextRefusal>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        assert_eq!(actual, expected);
+        assert_eq!(actual.datomize(vec![]).protosize().compact(), text);
+    }
+}
+
+#[test]
 fn every_ordinary_request_has_a_concrete_datom() {
     for text in [
         "Start.{ request-7 [ spirit:core ] [ compensation:main-flow knowledge:flow ] Custom.[ 4e1d2a ] { Field flow Primary } gpt-6-astra medium Some.836818 messaging-build Some.[ SkillTool WorkflowTool ] Regular Default «Carry this bounded launch request.» }",
