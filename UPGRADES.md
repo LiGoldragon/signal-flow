@@ -2,6 +2,13 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 42.0.0: Start reports configuration readiness
+
+- `StartRejection.NotConfigured` says the running Nexus is serving
+  configuration and no launch effect has begun.
+- Major: `StartRejection`'s Datom and archive shapes change. Update every
+  producer and consumer together.
+
 ## 41.0.0: message priority is the delivery policy
 
 - `Send` is `Send.{ Recipient Message }`. The sender supplies the recipient

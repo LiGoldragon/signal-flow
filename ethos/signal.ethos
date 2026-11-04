@@ -467,6 +467,8 @@ Signal
   NativeLaunchFailure.[ PaneTargetMismatch NativeSessionMissing NativeIdentityConflict FlowClaimUnavailable HarnessMismatch HerdrUnreadable ForeignBinding InvalidFlowId NotReady TranscriptUnreadable TitleReadbackDiffers CodexNamingRefused PaneLabelRefused AdapterRefused BoundaryMismatch ThreadNotNamed PartDiffers LeaveOutShown ModelOrEffortDiffers SessionUnrecorded Unclassified SendToolUnsupported WorkspaceLabelRefused ]
   NativeLaunchRefusal.{ NativeLaunchStage NativeLaunchFailure }
   ; StartRejection preserves a typed BindingRefused result at the public wire.
+  ; NotConfigured: the running Nexus is serving configuration and has not
+  ; reached Ready; no launch effect has begun.
   ; AddressAwake: the profile's Address is Awake as a live flow, or another
   ; unsettled launch names it.
   ; NativeLaunchRefused: a native step of the launch failed, at its stage.
@@ -496,7 +498,7 @@ Signal
   ; be read. Unrecorded: an outcome Flow archived before it kept the reason.
   CompositionRefusal.[ InvalidLaunchRequestId InvalidModelName InvalidEffort InvalidToolSet InvalidHerdrSessionName InvalidSystemModules InvalidUserModules InvalidRemembering InexactModel Unconfigured PresentationUnavailable Unrecorded ]
   HarnessFlagsRefusal.[ UnclosedSingleQuote UnclosedDoubleQuote TrailingEscape ]
-  StartRejection.[ CompositionRefused.CompositionRefusal MalformedHarnessFlags.HarnessFlagsRefusal LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal NoSecondary Undeclared TopicRefused.Topic ]
+  StartRejection.[ CompositionRefused.CompositionRefusal MalformedHarnessFlags.HarnessFlagsRefusal LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal NoSecondary Undeclared TopicRefused.Topic NotConfigured ]
   ; RefreshRejection names why a refresh ended no flow: the metaflow is not
   ; Awake; a refresh, a waking or an unconfirmed launch holds its lock;
   ; Herdr refused to close the ending flow's pane; the flow's end was not
