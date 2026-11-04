@@ -2,6 +2,13 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 41.0.0: Start reports configuration readiness
+
+- `StartRejection.NotConfigured` says the running Nexus is serving
+  configuration and no launch effect has begun.
+- Major: `StartRejection`'s Datom and archive shapes change. Update every
+  producer and consumer together.
+
 ## 38.0.0: lifecycle replies retain their run identities
 
 - Lifecycle replies again carry their useful Flow ids. Version 37 removed

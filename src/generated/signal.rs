@@ -659,6 +659,7 @@ pub enum StartRejection {
     NoSecondary,
     Undeclared,
     TopicRefused(flow_ethos::Topic),
+    NotConfigured,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]

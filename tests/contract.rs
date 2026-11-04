@@ -327,6 +327,7 @@ fn a_send_names_delivery_and_deliver_all_names_a_metaflow() {
     }
     for text in [
         "StartRejected.Undeclared",
+        "StartRejected.NotConfigured",
         "Refused.TopicRefused.Primary_Committing",
     ] {
         let response = Potential::<Response>::from(text)
