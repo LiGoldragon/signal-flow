@@ -541,6 +541,10 @@ To deploy, in each consumer (meta-signal-flow, flow):
 3. Rebuild and run the tests. The rkyv archive of every value is unchanged,
    so a Nexus and its clients need no store migration; rebuild and restart
    the Nexus and both CLIs together.
+# 40.0.0: launch rehearsal and missing-module identity compose
+
+The launch rehearsal contract and typed missing-module context refusal are one contract. Every consumer moves to this version together.
+
 # 39.0.0: one declared launch request can be rehearsed
 
 - `LaunchRequest.{ Address Remembering InstructionPrompt }` is the named

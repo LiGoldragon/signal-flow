@@ -486,7 +486,7 @@ pub enum ContextRefusal {
     ComposerRejected,
     MetaflowMismatch,
     PayloadMismatch,
-    ModuleMissing,
+    ModuleMissing(std::option::Option<ModuleIdentity>),
     RecordMissing,
     SystemTooLarge,
     ModuleTooLarge,
