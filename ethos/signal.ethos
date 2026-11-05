@@ -37,6 +37,10 @@
 ; its real id. The seat is recorded live in its pane and the metaflow Awake
 ; as it; a metaflow Awake as another live flow is refused Taken.
 ;
+; Adopt binds that same authenticated seat to Address only when the native
+; session supplied by the seat is the NativeSessionId in the request. The
+; caller supplies no FlowId: Flow derives it from the verified native session.
+;
 ; Refresh ends the flow the metaflow at Address is Awake as. Anybody may
 ; refresh a metaflow. Flow takes the metaflow's lock: from then nothing is
 ; delivered to it, and a Send that arrives queues on the metaflow. A
@@ -249,7 +253,8 @@ Signal
   DeliverAll.Address
   Launch.LaunchRequest
   Rehearse.LaunchRequest
-  BindSeat.Address ]
+  BindSeat.Address
+  Adopt.{ Address NativeSessionId } ]
 [ Started.Launched
   LaunchPending.LaunchAttempt
   StartAmbiguous.PromptDeliveryIntent
@@ -279,6 +284,7 @@ Signal
   SendChanged.VisibleDeliverySnapshot
   Drained.VisibleDrainOutcome
   Woken.FlowId
+  Adopted.FlowId
   Released
   Current.[ Awake.FlowId Asleep Unknown ]
   Refused.Refusal

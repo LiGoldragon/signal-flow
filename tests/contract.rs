@@ -40,6 +40,7 @@ fn every_ordinary_request_has_a_concrete_datom() {
         "Start.{ field-flow-quaternary-1 [ spirit:core ] [ compensation:main-flow ] Predecessors.0 { Field flow Quaternary } haiku medium None fieldFlow None Regular Default «Send the Order through Message.» }",
         "Refresh.{ Psyche core Primary }",
         "ResolveRecipient.fac697",
+        "Adopt.{ { Mind core Secondary } 6c9e081f-70b0-4a35-9838-6cc7dca01971 }",
     ] {
         let query = Potential::<Query>::from(text)
             .actualize(&mut budget())

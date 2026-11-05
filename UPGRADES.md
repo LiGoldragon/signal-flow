@@ -2,6 +2,15 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 42.0.0: an existing running seat adopts itself
+
+- `Adopt.{ Address NativeSessionId }` binds the authenticated calling seat to
+  the address only when its observed native session is the supplied session.
+  It answers `Adopted.FlowId`; refusals use the existing typed `Refused` reply.
+- The request carries no FlowId. Flow derives it from the verified native
+  session and retains every `BindSeat` ownership and duplicate-binding check.
+- `BindSeat` and every 41.0.0 operation remain unchanged.
+
 ## 41.0.0: message priority is the delivery policy
 
 - `Send` is `Send.{ Recipient Message }`. The sender supplies the recipient

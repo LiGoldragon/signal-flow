@@ -1232,6 +1232,13 @@ pub struct ObserveSender_Data {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Adopt_Data {
+    pub address: flow_ethos::Address,
+    pub native_session_id: NativeSessionId,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Query {
     Start(LaunchProfile),
     Refresh(flow_ethos::Address),
@@ -1257,6 +1264,7 @@ pub enum Query {
     Launch(LaunchRequest),
     Rehearse(LaunchRequest),
     BindSeat(flow_ethos::Address),
+    Adopt(Adopt_Data),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1299,6 +1307,7 @@ pub enum Response {
     SendChanged(VisibleDeliverySnapshot),
     Drained(VisibleDrainOutcome),
     Woken(flow_ethos::FlowId),
+    Adopted(flow_ethos::FlowId),
     Released,
     Current(Current_Data),
     Refused(Refusal),
