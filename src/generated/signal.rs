@@ -953,7 +953,7 @@ pub enum VisibleMessage {
 pub enum VisibleSender {
     Sender(flow_ethos::Address),
     Unknown,
-    Nexus,
+    Notification,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]

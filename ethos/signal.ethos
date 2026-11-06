@@ -611,7 +611,7 @@ Signal
   VisibleMessage.[ HardAbrupt.VisibleRequest
                    MiddleAbrupt.VisibleRequest
                    Soft.VisibleRequest ]
-  VisibleSender.[ Sender.Address Unknown Nexus ]
+  VisibleSender.[ Sender.Address Unknown Notification ]
   VisibleNativeInput.{ VisibleSender VisibleMessage }
   SendRequest.{ Recipient SendableMessage }
   DeliveryCursor.Integer
