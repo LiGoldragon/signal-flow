@@ -2,6 +2,10 @@
 #[rustfmt::skip]
 pub type SessionId = String;
 #[rustfmt::skip]
+pub type Tokens = i64;
+#[rustfmt::skip]
+pub type Timestamp = i64;
+#[rustfmt::skip]
 pub type FlowType = String;
 #[rustfmt::skip]
 pub type EndpointPath = String;
@@ -1204,6 +1208,50 @@ pub struct VisibleDrainOutcome {
     pub visible_drain_state: VisibleDrainState,
 }
 #[rustfmt::skip]
+pub type Description = String;
+#[rustfmt::skip]
+pub type Body = String;
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Section {
+    pub title: Title,
+    pub description: Description,
+    pub body: Body,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Heading {
+    pub title: Title,
+    pub description: Description,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Known_Data {
+    pub flow_id: flow_ethos::FlowId,
+    pub tokens: Tokens,
+    pub timestamp: Timestamp,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum Touch {
+    Unknown,
+    Known(Known_Data),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum HandoverRefusal {
+    MissingTitle,
+    UnknownFlow,
+    UnknownCaller,
+    NotOwner,
+    Store(String),
+}
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Event {
@@ -1267,6 +1315,20 @@ pub struct Adopt_Data {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Keep_Data {
+    pub address: flow_ethos::Address,
+    pub section: Section,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Drop_Data {
+    pub address: flow_ethos::Address,
+    pub title: Title,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Query {
     Start(LaunchProfile),
     Refresh(flow_ethos::Address),
@@ -1294,6 +1356,10 @@ pub enum Query {
     BindSeat(flow_ethos::Address),
     Adopt(Adopt_Data),
     Restart(flow_ethos::FlowId),
+    Keep(Keep_Data),
+    Drop(Drop_Data),
+    Glance(flow_ethos::Address),
+    Read(flow_ethos::Address),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1302,6 +1368,22 @@ pub enum Current_Data {
     Awake(flow_ethos::FlowId),
     Asleep,
     Unknown,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Kept_Data {
+    pub address: flow_ethos::Address,
+    pub title: Title,
+    pub touch: Touch,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Dropped_Data {
+    pub address: flow_ethos::Address,
+    pub title: Title,
+    pub touch: Touch,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1345,4 +1427,12 @@ pub enum Response {
     Failed(VisibleSendFailure),
     Restarted(flow_ethos::FlowId),
     RestartRefused(RestartRefusal),
+    KeepRefused(HandoverRefusal),
+    DropRefused(HandoverRefusal),
+    GlanceRefused(HandoverRefusal),
+    ReadRefused(HandoverRefusal),
+    Kept(Kept_Data),
+    Dropped(Dropped_Data),
+    Glanced(std::vec::Vec<Heading>),
+    Handover(std::vec::Vec<Section>),
 }

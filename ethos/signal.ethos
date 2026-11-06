@@ -754,7 +754,6 @@ Signal
   ; Cleared: the session was cleared (Claude's SessionEnd with reason
   ; clear), naming the session that ended. The harness goes on in a new
   ; session: the flow has not exited and its pane stays.
-  Title.String
   Description.String
   Body.String
   Section.{ Title Description Body }
