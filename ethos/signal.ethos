@@ -715,9 +715,15 @@ Signal
   ; Cleared: the session was cleared (Claude's SessionEnd with reason
   ; clear), naming the session that ended. The harness goes on in a new
   ; session: the flow has not exited and its pane stays.
+  ; Warned: the Nexus asked the flow for its handover, its context having
+  ; reached the Warning share of its model's threshold. Threshold: its
+  ; context passed its model's threshold. Both are recorded by the Nexus
+  ; alone, once per flow; a hook that reports either is refused.
   Event.[ Started.Option<NativeSessionId>
           ToolUsed.String
           Stopped.NativeStop
           PromptSubmitted.NativePrompt
           Ended.Option<NativeSessionId>
-          Cleared.Option<NativeSessionId> ] ]
+          Cleared.Option<NativeSessionId>
+          Warned
+          Threshold ] ]

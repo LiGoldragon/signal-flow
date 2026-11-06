@@ -41,6 +41,8 @@ fn every_ordinary_request_has_a_concrete_datom() {
         "Refresh.{ Psyche core Fable }",
         "ResolveRecipient.fac697",
         "Adopt.{ { Mind core Sol } 6c9e081f-70b0-4a35-9838-6cc7dca01971 }",
+        "Report.{ fac697 Warned }",
+        "Report.{ fac697 Threshold }",
     ] {
         let query = Potential::<Query>::from(text)
             .actualize(&mut budget())

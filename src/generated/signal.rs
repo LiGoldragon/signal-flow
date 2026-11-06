@@ -1192,6 +1192,8 @@ pub enum Event {
     PromptSubmitted(NativePrompt),
     Ended(std::option::Option<NativeSessionId>),
     Cleared(std::option::Option<NativeSessionId>),
+    Warned,
+    Threshold,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]

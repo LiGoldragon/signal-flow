@@ -2,6 +2,14 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 47.0.0: a flow is warned before its threshold
+
+- `Event` appends `Warned` (the Nexus asked the flow for its handover, its
+  context at the Warning share of its model's threshold) and `Threshold`
+  (its context passed that threshold). The Nexus records each, once per
+  flow, in the flow's events; a hook reporting either is refused.
+- Every producer and consumer moves to 47.0.0 together.
+
 ## 46.0.0: a live flow restarts as its own session
 
 - `Restart.FlowId` closes a Claude flow's harness, Awake and resting, and
