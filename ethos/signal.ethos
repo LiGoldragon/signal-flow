@@ -76,18 +76,22 @@
 ; in a new pane, keeping its FlowId, session, Model and transcript, with the
 ; current launch configuration, modules and hooks of its Address aimed at
 ; this Nexus, and no prompt typed. Anybody may restart a flow, as anybody
-; may refresh one; the Nexus derives the origin from the calling process,
-; and a flow asking for its own restart is refused Unsupported. Only a
-; Claude flow, Awake and resting, is restarted: Codex, Asleep, a working
-; seat, a past flow and a restart asked by the flow itself are Unsupported.
-; While its restart is under way the flow's Address is held: a Send queues,
-; and the queue is handed to the resumed seat once it is bound. Restarted
-; names the flow, resumed and bound. A refusal names why: UnknownFlow,
-; NoHeldSession (no native session recorded), TranscriptAbsent, Busy (a
-; launch, wake, hand-over or restart is under way for it), CloseRefused
-; (the old harness was not shown closed), ResumeRefused (the resume or its
-; bind failed, with its fixed category; session, queue and custody kept),
-; Interrupted (a spawn's outcome is unproven; only Stop clears it).
+; may refresh one, and a flow may ask for its own; the Nexus derives the
+; origin from the calling process. A Claude flow, Awake and resting, asked
+; from outside, is restarted at once and answered Restarted. A working seat,
+; or a flow asking for its own restart, is answered RestartOwed at once,
+; before anything closes its pane: the restart is recorded owed and runs at
+; the seat's next real Stop, reported by the seat itself. While its restart
+; is owed or under way the flow's Address is held: a Send queues, and the
+; queue is handed to the resumed seat once it is bound. Codex, Asleep and a
+; past flow are Unsupported. Restarted names the flow, resumed and bound;
+; RestartOwed names the flow whose restart waits for its Stop. A refusal
+; names why: UnknownFlow, NoHeldSession (no native session recorded),
+; TranscriptAbsent, Busy (a launch, wake, hand-over or restart is under way
+; for it), CloseRefused (the old harness was not shown closed),
+; ResumeRefused (the resume or its bind failed, with its fixed category;
+; session, queue and custody kept), Interrupted (a spawn's outcome is
+; unproven; only Stop clears it), Unsupported (a case not served).
 ;
 ; Flow ordinary Signal.
 ;
@@ -308,6 +312,7 @@ Signal
   Sent.VisibleSendReceipt
   Failed.VisibleSendFailure
   Restarted.FlowId
+  RestartOwed.FlowId
   RestartRefused.RestartRefusal ]
 [
   SessionId.String

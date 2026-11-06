@@ -1325,5 +1325,6 @@ pub enum Response {
     Sent(VisibleSendReceipt),
     Failed(VisibleSendFailure),
     Restarted(flow_ethos::FlowId),
+    RestartOwed(flow_ethos::FlowId),
     RestartRefused(RestartRefusal),
 }

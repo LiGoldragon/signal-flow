@@ -2,6 +2,14 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 48.0.0: a restart a working or asking seat is owed
+
+- `Response` gains `RestartOwed.FlowId`: a working seat, or a flow asking
+  for its own restart, is answered at once, before anything closes its
+  pane; the restart runs at the seat's next real Stop.
+- A flow asking for its own restart is no longer refused `Unsupported`.
+- Every producer and consumer moves to 48.0.0 together.
+
 ## 47.0.0: a flow is warned before its threshold
 
 - `Event` appends `Warned` (the Nexus asked the flow for its handover, its
