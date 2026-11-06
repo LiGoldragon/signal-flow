@@ -280,8 +280,8 @@ Signal
   BindSeat.Address
   Adopt.{ Address NativeSessionId }
   Restart.FlowId
-  Keep.Section
-  Drop.Title
+  Keep.{ Address Section }
+  Drop.{ Address Title }
   Glance.Address
   Read.Address ]
 [ Started.Launched
@@ -328,8 +328,8 @@ Signal
   ReadRefused.HandoverRefusal
   Kept.{ Address Title Touch }
   Dropped.{ Address Title Touch }
-  Glanced.{ Address Vector<Heading> }
-  Read.{ Address Vector<Section> } ]
+  Glanced.Vector<Heading>
+  Handover.Vector<Section> ]
 [
   SessionId.String
   Tokens.Integer
@@ -755,10 +755,12 @@ Signal
   ; clear), naming the session that ended. The harness goes on in a new
   ; session: the flow has not exited and its pane stays.
   Title.String
+  Description.String
+  Body.String
   Section.{ Title Description Body }
   Heading.{ Title Description }
   Touch.[ Unknown Known.{ FlowId Tokens Timestamp } ]
-  HandoverRefusal.[ MissingTitle UnknownFlow UnknownCaller Store.String ]
+  HandoverRefusal.[ MissingTitle UnknownFlow UnknownCaller NotOwner Store.String ]
   Event.[ Started.Option<NativeSessionId>
           ToolUsed.String
           Stopped.NativeStop
