@@ -279,7 +279,11 @@ Signal
   Rehearse.LaunchRequest
   BindSeat.Address
   Adopt.{ Address NativeSessionId }
-  Restart.FlowId ]
+  Restart.FlowId
+  Keep.Section
+  Drop.Title
+  Glance.Address
+  Read.Address ]
 [ Started.Launched
   LaunchPending.LaunchAttempt
   StartAmbiguous.PromptDeliveryIntent
@@ -317,9 +321,19 @@ Signal
   Sent.VisibleSendReceipt
   Failed.VisibleSendFailure
   Restarted.FlowId
-  RestartRefused.RestartRefusal ]
+  RestartRefused.RestartRefusal
+  KeepRefused.HandoverRefusal
+  DropRefused.HandoverRefusal
+  GlanceRefused.HandoverRefusal
+  ReadRefused.HandoverRefusal
+  Kept.{ Address Title Touch }
+  Dropped.{ Address Title Touch }
+  Glanced.{ Address Vector<Heading> }
+  Read.{ Address Vector<Section> } ]
 [
   SessionId.String
+  Tokens.Integer
+  Timestamp.Integer
   FlowType.String
   EndpointPath.String
   HerdrSessionName.String
@@ -740,6 +754,11 @@ Signal
   ; Cleared: the session was cleared (Claude's SessionEnd with reason
   ; clear), naming the session that ended. The harness goes on in a new
   ; session: the flow has not exited and its pane stays.
+  Title.String
+  Section.{ Title Description Body }
+  Heading.{ Title Description }
+  Touch.[ Unknown Known.{ FlowId Tokens Timestamp } ]
+  HandoverRefusal.[ MissingTitle UnknownFlow UnknownCaller Store.String ]
   Event.[ Started.Option<NativeSessionId>
           ToolUsed.String
           Stopped.NativeStop
