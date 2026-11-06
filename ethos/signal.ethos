@@ -6,12 +6,10 @@
 ; socket and names the flow it runs in, by the Herdr pane it or its nearest
 ; marked ancestor runs in, or, for a Codex flow, by the thread the Codex
 ; app-server named in the environment of the command it started. The
-; sender's metaflow must be Awake as that flow. The recipient is resolved
-; (Up is the model before the sender's in its family, Fable Opus Sonnet
-; Haiku or Astra Sol Luna Terra, in its aspect and topic) and must be a
-; metaflow Flow holds; a recipient Address whose topic is not an
-; uncapitalized camelCase identifier is refused TopicRefused, carrying the
-; topic as written. Priority determines delivery: an Awake recipient receives
+; sender's metaflow must be Awake as that flow. The recipient is the Address
+; the Send names and must be a metaflow Flow holds; a recipient Address whose
+; topic is not an uncapitalized camelCase identifier is refused TopicRefused,
+; carrying the topic as written. Priority determines delivery: an Awake recipient receives
 ; every priority immediately and HardAbrupt alone interrupts; an Asleep
 ; recipient queues Soft and is woken by MiddleAbrupt or HardAbrupt. A native
 ; receipt settles a Send as Delivered; submission without that receipt remains
@@ -65,9 +63,8 @@
 ; A Task (flow_ethos Request) is an order with its Minutes: Flow keeps it,
 ; named by the LogicalDeliveryId it answers the send with, and when the
 ; minutes lapse with no Done naming it, sends its sender Soft.Notice with
-; Wake, then again every Minutes, four reminders in all, the last copied
-; to the second model of the sender's family (Opus or Sol), in its aspect
-; and topic, as a failure. Flow owns the Minutes rule at
+; Wake, then again every Minutes, four reminders in all; with the last, the
+; sender is sent the task's failure. Flow owns the Minutes rule at
 ; admission: Minutes of zero is refused MinutesRefused.Zero, below zero
 ; MinutesRefused.Negative, and a deadline that overflows the clock, computed
 ; with checked arithmetic, MinutesRefused.Unreachable; no policy maximum
@@ -82,9 +79,8 @@
 ; derives it from the calling process as Identify does (its pane's bound
 ; flow and that flow's native session), and a caller that is no bound flow,
 ; such as a deploy script, is an Unbound origin, recorded, never refused.
-; A launch's power is its Address Model's rank in its family and its harness is the one whose
-; configured endpoint serves its model (Codex), else Claude; neither is
-; named in the profile. The successor is launched; once it has
+; A launch's harness is the one whose configured endpoint serves its model
+; (Codex), else Claude; it is not named in the profile. The successor is launched; once it has
 ; Started, the predecessor is Stopped and taken out of receiving, and
 ; only then is the successor routable. Reaping belongs to the refresh
 ; event: no state holds both flows routable. Replaced carries the
@@ -332,7 +328,6 @@ Signal
   TranscriptRootInode.String
   PartsSubmitted.Integer
   StopsReported.Integer
-  PowerLevel.[ High Medium Low UltraLow ]
   ; A leave-out names one part of a harness's start that a flow goes
   ; without: a tool or tool group, an instruction block, or a harness
   ; feature. Each turns into the harness's own flag, environment variable
@@ -483,10 +478,6 @@ Signal
   ; ModelRefused: the profile's model is not the model configured for its
   ; Address's Model; the Start is refused before anything
   ; launches or is written.
-  ; NoSecondary: the profile's Address names the first model of its family
-  ; (Fable or Astra) and the second (Opus or Sol) of its aspect and topic
-  ; is not Awake as a live flow; the Start is refused
-  ; before anything launches or is written.
   ; TopicRefused: the Address's topic is not an uncapitalized camelCase
   ; identifier (an ASCII lowercase letter, then ASCII letters and digits);
   ; it carries the topic as written. Flow never lowers its capitals.
@@ -505,7 +496,7 @@ Signal
   ; be read. Unrecorded: an outcome Flow archived before it kept the reason.
   CompositionRefusal.[ InvalidLaunchRequestId InvalidModelName InvalidEffort InvalidToolSet InvalidHerdrSessionName InvalidSystemModules InvalidUserModules InvalidRemembering InexactModel Unconfigured PresentationUnavailable Unrecorded ]
   HarnessFlagsRefusal.[ UnclosedSingleQuote UnclosedDoubleQuote TrailingEscape ]
-  StartRejection.[ CompositionRefused.CompositionRefusal MalformedHarnessFlags.HarnessFlagsRefusal LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal NoSecondary Undeclared TopicRefused.Topic ]
+  StartRejection.[ CompositionRefused.CompositionRefusal MalformedHarnessFlags.HarnessFlagsRefusal LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal Undeclared TopicRefused.Topic ]
   ; RefreshRejection names why a refresh ended no flow: the metaflow is not
   ; Awake; a refresh, a waking or an unconfirmed launch holds its lock;
   ; Herdr refused to close the ending flow's pane; the flow's end was not
@@ -532,7 +523,7 @@ Signal
   AgentState.[ Idle Working Blocked Done Unknown Gone ]
   AgentObservation.{ FlowId AgentState }
   LaunchStatusRejection.[ UnknownLaunchRequest PersistenceRefused ReadViewChanged InconsistentRecords ]
-  Caller.{ FlowId Aspect PowerLevel ModelName }
+  Caller.{ FlowId Aspect ModelName }
   CallerResolutionRejection.[ CallerUnknown
                               CallerMismatch.Caller ]
   Title.String
@@ -556,9 +547,7 @@ Signal
             Asleep
             Lapsed
             Unknown.[ Address.Address Lock.Lock FlowId.FlowId Key.Key ]
-            NoLayer
             NotConfigured
-            NoneAbove
             NotMessage
             Taken.Address
             Unidentified.SeatEvidence
@@ -655,9 +644,7 @@ Signal
                    Asleep
                    Lapsed
                    Unknown.VisibleUnknown
-                   NoLayer
                    NotConfigured
-                   NoneAbove
                    NotMessage
                    Taken.Address
                    Unidentified.SeatEvidence

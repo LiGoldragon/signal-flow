@@ -306,16 +306,23 @@ fn agent_observation_carries_the_flow_and_its_herdr_state() {
 
 #[test]
 fn a_send_names_its_recipient_and_deliver_all_names_a_metaflow() {
-    // The recipient is a metaflow Address or Up, never a FlowId, and the
-    // request carries no sender: Flow reads the caller from its socket.
-    assert!(
-        Potential::<Query>::from("Send.{ 7d41e0 «hello» }")
-            .actualize(&mut budget())
-            .is_err()
-    );
+    // The recipient is a metaflow Address, never a FlowId nor a route
+    // relative to the sender, and the request carries no sender: Flow reads
+    // the caller from its socket.
     for text in [
-        "Send.{ Address.{ Mind core Sol } Soft.Order.«Review the drain fix» }",
+        "Send.{ 7d41e0 «hello» }",
         "Send.{ Up HardAbrupt.Question.«Which store?» }",
+        "Send.{ Address.{ Mind core Sol } Soft.Order.«Review the drain fix» }",
+    ] {
+        assert!(
+            Potential::<Query>::from(text)
+                .actualize(&mut budget())
+                .is_err(),
+            "{text} is refused"
+        );
+    }
+    for text in [
+        "Send.{ { Mind core Sol } Soft.Order.«Review the drain fix» }",
         "DeliverAll.{ Psyche core Opus }",
         "Launch.{ { Mind core Astra } Predecessors.2 brief }",
         "Launch.{ { Mind core Astra } Custom.[ 36b71b e3c8c1 ] brief }",
@@ -575,9 +582,9 @@ fn resolve_caller_queries_and_replies_have_concrete_datoms() {
         assert_eq!(query.datomize(vec![]).protosize().compact(), text);
     }
     for text in [
-        "CallerResolved.{ fac697 Psyche High claude-opus-5-5 }",
+        "CallerResolved.{ fac697 Psyche claude-opus-5-5 }",
         "CallerResolutionRejected.CallerUnknown",
-        "CallerResolutionRejected.CallerMismatch.{ fac697 Mind Medium gpt-6-sol }",
+        "CallerResolutionRejected.CallerMismatch.{ fac697 Mind gpt-6-sol }",
     ] {
         let response = Potential::<Response>::from(text)
             .actualize(&mut budget())
@@ -620,16 +627,21 @@ fn launch_and_rehearse_share_one_request_and_have_typed_answers() {
 }
 
 #[test]
-fn caller_names_the_flow_its_aspect_power_and_model() {
+fn caller_names_the_flow_its_aspect_and_model() {
     let reply = Response::CallerResolved(signal_flow::Caller {
         flow_id: "38de5b".into(),
         aspect: signal_flow::Aspect::Psyche,
-        power_level: signal_flow::PowerLevel::High,
         model_name: "claude-opus-5-5".into(),
     });
     assert_eq!(
         reply.datomize(vec![]).protosize().compact(),
-        "CallerResolved.{ 38de5b Psyche High claude-opus-5-5 }"
+        "CallerResolved.{ 38de5b Psyche claude-opus-5-5 }"
+    );
+    assert!(
+        Potential::<Response>::from("CallerResolved.{ 38de5b Psyche High claude-opus-5-5 }")
+            .actualize(&mut budget())
+            .is_err(),
+        "a Caller carries no power"
     );
 }
 
@@ -718,7 +730,6 @@ fn start_names_the_address_of_the_seat_it_launches() {
     assert_eq!(profile.effort, "medium");
     for text in [
         "StartRejected.AddressAwake",
-        "StartRejected.NoSecondary",
         "StartRejected.TopicRefused.FlowRepair",
         "StartRejected.ContextRefused.MetaflowMismatch",
         "StartRejected.ContextRefused.ModuleTooLarge",
@@ -765,22 +776,30 @@ fn an_ended_metaflow_is_no_datom_of_the_contract() {
     }
 }
 
-/// A Start of a Fable or Astra whose Opus or Sol metaflow is not recorded is
-/// refused with NoSecondary.
+/// No model ranks above another: no Start waits for another model's seat,
+/// and no Send is refused for a sender with nothing above it.
 #[test]
-fn no_secondary_start_rejection_round_trips() {
-    let response = Potential::<Response>::from("StartRejected.NoSecondary")
+fn no_rank_refusal_is_a_datom_of_the_contract() {
+    for text in [
+        "StartRejected.NoSecondary",
+        "Refused.NoneAbove",
+        "Refused.NoLayer",
+        "SendChanged.{ 1 Sender.{ Mind flow Sol } { Psyche flow Opus } Failed.NoneAbove }",
+    ] {
+        assert!(
+            Potential::<Response>::from(text)
+                .actualize(&mut budget())
+                .is_err(),
+            "{text} is refused"
+        );
+    }
+    // The same failure carrying a refusal the contract keeps is a datom.
+    let kept =
+        "SendChanged.{ 1 Sender.{ Mind flow Sol } { Psyche flow Opus } Failed.NotConfigured }";
+    let response = Potential::<Response>::from(kept)
         .actualize(&mut budget())
         .unwrap();
-    assert_eq!(
-        response,
-        Response::StartRejected(signal_flow::StartRejection::NoSecondary)
-    );
-    let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
-    assert_eq!(
-        rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
-        response
-    );
+    assert_eq!(response.datomize(vec![]).protosize().compact(), kept);
 }
 
 /// A send server's identification names its process and the Codex thread
@@ -818,7 +837,7 @@ fn identify_thread_and_its_refusal_have_concrete_datoms() {
 #[test]
 fn durable_admission_and_resumable_sender_outcomes_round_trip() {
     for text in [
-        "Send.{ Address.{ Mind flow Sol } MiddleAbrupt.Notice.ready }",
+        "Send.{ { Mind flow Sol } MiddleAbrupt.Notice.ready }",
         "ObserveSends.None",
         "ObserveSender.{ { 17 99 } None Some.4 }",
     ] {
@@ -834,7 +853,7 @@ fn durable_admission_and_resumable_sender_outcomes_round_trip() {
         "SendChanged.{ 3 Sender.{ Mind flow Sol } { Psyche flow Opus } Delivered.{ Claude session-1 prompt-1 } }",
         "SendChanged.{ 4 Sender.{ Mind flow Sol } { Psyche flow Opus } Withdrawn }",
         "SendChanged.{ 5 Sender.{ Mind flow Sol } { Psyche flow Opus } Retryable.WakeRefused.ContextRefused.RecordMissing }",
-        "SendsObserved.{ 6 [ { 6 Sender.{ Mind flow Sol } { Psyche flow Opus } Retryable.WakeRefused.NoSecondary } ] }",
+        "SendsObserved.{ 6 [ { 6 Sender.{ Mind flow Sol } { Psyche flow Opus } Retryable.WakeRefused.Undeclared } ] }",
         "Drained.{ { Psyche flow Opus } Held }",
     ] {
         let value = Potential::<Response>::from(text)
@@ -976,7 +995,7 @@ fn remind_is_gone_and_a_task_with_minutes_stands_in_its_place() {
             "{text} still reads"
         );
     }
-    let task = "Send.{ Address.{ Mind core Sol } Soft.Task.{ 30 «Check the capsule run.» } }";
+    let task = "Send.{ { Mind core Sol } Soft.Task.{ 30 «Check the capsule run.» } }";
     let query = Potential::<Query>::from(task)
         .actualize(&mut budget())
         .unwrap_or_else(|error| panic!("{task}: {error:?}"));

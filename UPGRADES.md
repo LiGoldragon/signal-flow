@@ -2,6 +2,20 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 45.0.0: a recipient is an Address; no model ranks above another
+
+- A `Recipient` is the `Address` it names: `Send.{ { Mind core Sol }
+  Soft.Order.«…» }`. `Up` leaves the contract; no route is inferred from the
+  sender's model.
+- `PowerLevel` leaves the contract, and with it the power field of `Caller`:
+  `Caller.{ FlowId Aspect ModelName }`.
+- `NoSecondary`, `NoneAbove` and `NoLayer` leave the contract: no Start waits
+  for another model's seat, and no Send is refused for having nothing above
+  its sender.
+- A task's last reminder sends its failure to the task's sender.
+- Pins flow-ethos 9644e01. Every producer and consumer moves to 45.0.0
+  together.
+
 ## 44.0.0: an address names its model
 
 - `Address` is `{ Aspect Topic Model }`, `Model.[ Fable Opus Sonnet Haiku

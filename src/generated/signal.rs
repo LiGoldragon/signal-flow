@@ -81,15 +81,6 @@ pub type StopsReported = i64;
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum PowerLevel {
-    High,
-    Medium,
-    Low,
-    UltraLow,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum LeaveOut {
     ClaudeAiConnectors,
     ConfiguredMcpServers,
@@ -656,7 +647,6 @@ pub enum StartRejection {
     LeaveOutRefused(LeaveOutRefusal),
     HarnessSpawnRefused(HarnessSpawnRefusal),
     ModelRefused(ModelRefusal),
-    NoSecondary,
     Undeclared,
     TopicRefused(flow_ethos::Topic),
 }
@@ -748,7 +738,6 @@ pub enum LaunchStatusRejection {
 pub struct Caller {
     pub flow_id: flow_ethos::FlowId,
     pub aspect: flow_ethos::Aspect,
-    pub power_level: PowerLevel,
     pub model_name: flow_ethos::ModelName,
 }
 #[rustfmt::skip]
@@ -808,9 +797,7 @@ pub enum Refusal {
     Asleep,
     Lapsed,
     Unknown(Unknown_Data),
-    NoLayer,
     NotConfigured,
-    NoneAbove,
     NotMessage,
     Taken(flow_ethos::Address),
     Unidentified(SeatEvidence),
@@ -1084,9 +1071,7 @@ pub enum VisibleRefusal {
     Asleep,
     Lapsed,
     Unknown(VisibleUnknown),
-    NoLayer,
     NotConfigured,
-    NoneAbove,
     NotMessage,
     Taken(flow_ethos::Address),
     Unidentified(SeatEvidence),
