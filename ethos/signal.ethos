@@ -41,7 +41,7 @@
 ; caller supplies no FlowId: Flow derives it from the verified native session.
 ;
 ; Refresh ends the flow the metaflow at Address is Awake as. Anybody may
-; refresh a metaflow. Flow takes the metaflow's lock: from then nothing is
+; refresh a metaflow but a protected one (below). Flow takes the metaflow's lock: from then nothing is
 ; delivered to it, and a Send that arrives queues on the metaflow. A
 ; metaflow whose declaration is Maintained, or whose queue holds a request
 ; that asks for a wake, has its successor started in the same event: the
@@ -88,6 +88,15 @@
 ; (the old harness was not shown closed), ResumeRefused (the resume or its
 ; bind failed, with its fixed category; session, queue and custody kept),
 ; Interrupted (a spawn's outcome is unproven; only Stop clears it).
+;
+; A protected Address (the meta ProtectedAddresses) is restarted, refreshed
+; or replaced on this socket only when its own seat asks, the Nexus reading
+; that seat from the calling process as it reads a restart's origin; a
+; Launch of it is such a Replace. Its Stop is taken from its own seat and
+; from the owner, a process in no flow's pane. Any other caller is refused
+; Protected: RestartRefusal.Protected names the flow; RefreshRejection,
+; ReplaceRejection and StopRejection carry Protected alone. A protected
+; Address's flow is never refreshed for its threshold.
 ;
 ; Flow ordinary Signal.
 ;
@@ -528,12 +537,14 @@ Signal
                      HerdrUnavailable
                      SuccessorRefused.ReplaceRejection ; the Replace that starts the successor owed was refused
                      Undeclared                        ; no declaration or model names a successor
-                     SuccessorUnconfirmed ]            ; the successor's launch is pending or ambiguous past the confirmation wait
+                     SuccessorUnconfirmed              ; the successor's launch is pending or ambiguous past the confirmation wait
+                     Protected ]                       ; the Address is protected and its own seat did not ask
   RecipientResolutionRejection.[ UnknownFlow FlowUnavailable ]
   ; Restarting: a restart step runs for the flow now. SpawnUnproven: the
   ; flow's interrupted restart may have started a harness that Flow cannot
-  ; show stopped; the restart stays Interrupted.
-  StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused PersistenceRefused Restarting SpawnUnproven ]
+  ; show stopped; the restart stays Interrupted. Protected: the flow's
+  ; Address is protected, and neither its own seat nor the owner asked.
+  StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused PersistenceRefused Restarting SpawnUnproven Protected ]
   RestartRefusal.[ UnknownFlow.FlowId
                    NoHeldSession.FlowId
                    TranscriptAbsent.FlowId
@@ -541,14 +552,16 @@ Signal
                    CloseRefused.FlowId
                    ResumeRefused.{ FlowId String }
                    Interrupted.FlowId
-                   Unsupported.FlowId ]
+                   Unsupported.FlowId
+                   Protected.FlowId ]
   Replaced.{ FlowId Launched }
   ReplaceRejection.[ PredecessorAbsent
                      UnknownPredecessor
                      PredecessorStopped
                      LaunchRefused.StartRejection ; the successor's start was refused
                      ReapRefused.StopRejection    ; the predecessor's end was refused
-                     Locked ]                     ; a refresh or a waking holds the metaflow
+                     Locked                       ; a refresh or a waking holds the metaflow
+                     Protected ]                  ; the predecessor's Address is protected and its own seat did not ask
   ObserveSelection.[ Launch.LaunchRequestId
                      Agent.FlowId ]
   AgentState.[ Idle Working Blocked Done Unknown Gone ]

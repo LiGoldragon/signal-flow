@@ -1115,3 +1115,34 @@ fn a_restart_and_each_of_its_answers_round_trip_as_text() {
         assert_eq!(actual.datomize(vec![]).protosize().compact(), text);
     }
 }
+
+/// A protected Address answers Protected to every caller but its own seat:
+/// a restart names the flow, the other three carry Protected alone. The
+/// concrete text is the specification.
+#[test]
+fn each_protected_refusal_round_trips_as_text() {
+    for (text, expected) in [
+        (
+            "RestartRefused.Protected.c1a0de",
+            Response::RestartRefused(signal_flow::RestartRefusal::Protected("c1a0de".into())),
+        ),
+        (
+            "RefreshRejected.Protected",
+            Response::RefreshRejected(signal_flow::RefreshRejection::Protected),
+        ),
+        (
+            "ReplaceRejected.Protected",
+            Response::ReplaceRejected(signal_flow::ReplaceRejection::Protected),
+        ),
+        (
+            "StopRejected.Protected",
+            Response::StopRejected(signal_flow::StopRejection::Protected),
+        ),
+    ] {
+        let actual = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        assert_eq!(actual, expected);
+        assert_eq!(actual.datomize(vec![]).protosize().compact(), text);
+    }
+}

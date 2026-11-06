@@ -2,6 +2,18 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 49.0.0: a protected Address answers only its own seat
+
+Built on 46.0.0; 47.0.0 and 48.0.0 are other lines.
+
+- `RestartRefusal` gains `Protected.FlowId`; `RefreshRejection`,
+  `ReplaceRejection` and `StopRejection` gain `Protected`. A Restart,
+  Refresh, Replace or Launch of an Address the meta `ProtectedAddresses`
+  names is answered `Protected` unless its own seat asks; its Stop also
+  from the owner.
+- Every producer and consumer moves to 49.0.0 together: an exhaustive match
+  on any of the four gains the variant.
+
 ## 46.0.0: a live flow restarts as its own session
 
 - `Restart.FlowId` closes a Claude flow's harness, Awake and resting, and

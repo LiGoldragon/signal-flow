@@ -662,6 +662,7 @@ pub enum RefreshRejection {
     SuccessorRefused(ReplaceRejection),
     Undeclared,
     SuccessorUnconfirmed,
+    Protected,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -681,6 +682,7 @@ pub enum StopRejection {
     PersistenceRefused,
     Restarting,
     SpawnUnproven,
+    Protected,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -701,6 +703,7 @@ pub enum RestartRefusal {
     ResumeRefused(ResumeRefused_Data),
     Interrupted(flow_ethos::FlowId),
     Unsupported(flow_ethos::FlowId),
+    Protected(flow_ethos::FlowId),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -719,6 +722,7 @@ pub enum ReplaceRejection {
     LaunchRefused(StartRejection),
     ReapRefused(StopRejection),
     Locked,
+    Protected,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
