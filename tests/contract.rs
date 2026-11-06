@@ -1090,6 +1090,7 @@ fn a_restart_and_each_of_its_answers_round_trip_as_text() {
     );
     for (text, expected) in [
         ("Restarted.c1a0de", Response::Restarted("c1a0de".into())),
+        ("RestartOwed.c1a0de", Response::RestartOwed("c1a0de".into())),
         (
             "RestartRefused.Busy.c1a0de",
             Response::RestartRefused(signal_flow::RestartRefusal::Busy("c1a0de".into())),
