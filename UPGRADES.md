@@ -2,6 +2,18 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 46.0.0: a live flow restarts as its own session
+
+- `Restart.FlowId` closes a Claude flow's harness, Awake and resting, and
+  resumes its own native session in a new pane: `Restarted.FlowId`, or
+  `RestartRefused.RestartRefusal`, one of `UnknownFlow`, `NoHeldSession`,
+  `TranscriptAbsent`, `Busy`, `CloseRefused`, `ResumeRefused.{ FlowId
+  String }`, `Interrupted` and `Unsupported`, each naming the flow.
+- `StopRejection` gains `Restarting` (a restart step runs for the flow) and
+  `SpawnUnproven` (an interrupted restart may have started a harness Flow
+  cannot show stopped).
+- Every producer and consumer moves to 46.0.0 together.
+
 ## 45.0.0: a recipient is an Address; no model ranks above another
 
 - A `Recipient` is the `Address` it names: `Send.{ { Mind core Sol }

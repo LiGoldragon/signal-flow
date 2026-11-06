@@ -72,6 +72,23 @@
 ; compose Error and never reaches Flow. A Done naming the task closes it; a
 ; Done naming no open task is refused NoOpenTask.
 ;
+; Restart closes a live flow's harness and resumes the same native session
+; in a new pane, keeping its FlowId, session, Model and transcript, with the
+; current launch configuration, modules and hooks of its Address aimed at
+; this Nexus, and no prompt typed. Anybody may restart a flow, as anybody
+; may refresh one; the Nexus derives the origin from the calling process,
+; and a flow asking for its own restart is refused Unsupported. Only a
+; Claude flow, Awake and resting, is restarted: Codex, Asleep, a working
+; seat, a past flow and a restart asked by the flow itself are Unsupported.
+; While its restart is under way the flow's Address is held: a Send queues,
+; and the queue is handed to the resumed seat once it is bound. Restarted
+; names the flow, resumed and bound. A refusal names why: UnknownFlow,
+; NoHeldSession (no native session recorded), TranscriptAbsent, Busy (a
+; launch, wake, hand-over or restart is under way for it), CloseRefused
+; (the old harness was not shown closed), ResumeRefused (the resume or its
+; bind failed, with its fixed category; session, queue and custody kept),
+; Interrupted (a spawn's outcome is unproven; only Stop clears it).
+;
 ; Flow ordinary Signal.
 ;
 ; Start and Replace carry a LaunchProfile; a Replace's profile names the
@@ -252,7 +269,8 @@ Signal
   Launch.LaunchRequest
   Rehearse.LaunchRequest
   BindSeat.Address
-  Adopt.{ Address NativeSessionId } ]
+  Adopt.{ Address NativeSessionId }
+  Restart.FlowId ]
 [ Started.Launched
   LaunchPending.LaunchAttempt
   StartAmbiguous.PromptDeliveryIntent
@@ -288,7 +306,9 @@ Signal
   Refused.Refusal
   SendRefused.VisibleRefusal
   Sent.VisibleSendReceipt
-  Failed.VisibleSendFailure ]
+  Failed.VisibleSendFailure
+  Restarted.FlowId
+  RestartRefused.RestartRefusal ]
 [
   SessionId.String
   FlowType.String
@@ -510,7 +530,18 @@ Signal
                      Undeclared                        ; no declaration or model names a successor
                      SuccessorUnconfirmed ]            ; the successor's launch is pending or ambiguous past the confirmation wait
   RecipientResolutionRejection.[ UnknownFlow FlowUnavailable ]
-  StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused PersistenceRefused ]
+  ; Restarting: a restart step runs for the flow now. SpawnUnproven: the
+  ; flow's interrupted restart may have started a harness that Flow cannot
+  ; show stopped; the restart stays Interrupted.
+  StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused PersistenceRefused Restarting SpawnUnproven ]
+  RestartRefusal.[ UnknownFlow.FlowId
+                   NoHeldSession.FlowId
+                   TranscriptAbsent.FlowId
+                   Busy.FlowId
+                   CloseRefused.FlowId
+                   ResumeRefused.{ FlowId String }
+                   Interrupted.FlowId
+                   Unsupported.FlowId ]
   Replaced.{ FlowId Launched }
   ReplaceRejection.[ PredecessorAbsent
                      UnknownPredecessor

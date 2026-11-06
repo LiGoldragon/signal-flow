@@ -679,6 +679,28 @@ pub enum StopRejection {
     RouteUnavailable,
     CloseRefused,
     PersistenceRefused,
+    Restarting,
+    SpawnUnproven,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct ResumeRefused_Data {
+    pub flow_id: flow_ethos::FlowId,
+    pub string: String,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum RestartRefusal {
+    UnknownFlow(flow_ethos::FlowId),
+    NoHeldSession(flow_ethos::FlowId),
+    TranscriptAbsent(flow_ethos::FlowId),
+    Busy(flow_ethos::FlowId),
+    CloseRefused(flow_ethos::FlowId),
+    ResumeRefused(ResumeRefused_Data),
+    Interrupted(flow_ethos::FlowId),
+    Unsupported(flow_ethos::FlowId),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1250,6 +1272,7 @@ pub enum Query {
     Rehearse(LaunchRequest),
     BindSeat(flow_ethos::Address),
     Adopt(Adopt_Data),
+    Restart(flow_ethos::FlowId),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1299,4 +1322,6 @@ pub enum Response {
     SendRefused(VisibleRefusal),
     Sent(VisibleSendReceipt),
     Failed(VisibleSendFailure),
+    Restarted(flow_ethos::FlowId),
+    RestartRefused(RestartRefusal),
 }

@@ -1074,3 +1074,44 @@ fn an_unidentified_refusal_carries_its_seat_evidence_round_trip() {
     .unwrap();
     assert!(matches!(refusal, Refusal::Unidentified(_)));
 }
+
+/// Restart names the flow alone; each answer names the flow again, and a
+/// resume refused carries its fixed category. The concrete text is the
+/// specification.
+#[test]
+fn a_restart_and_each_of_its_answers_round_trip_as_text() {
+    let query = Potential::<Query>::from("Restart.c1a0de")
+        .actualize(&mut budget())
+        .unwrap();
+    assert_eq!(query, Query::Restart("c1a0de".into()));
+    assert_eq!(
+        query.datomize(vec![]).protosize().compact(),
+        "Restart.c1a0de"
+    );
+    for (text, expected) in [
+        ("Restarted.c1a0de", Response::Restarted("c1a0de".into())),
+        (
+            "RestartRefused.Busy.c1a0de",
+            Response::RestartRefused(signal_flow::RestartRefusal::Busy("c1a0de".into())),
+        ),
+        (
+            "RestartRefused.ResumeRefused.{ c1a0de BindMismatch }",
+            Response::RestartRefused(signal_flow::RestartRefusal::ResumeRefused(
+                signal_flow::ResumeRefused_Data {
+                    flow_id: "c1a0de".into(),
+                    string: "BindMismatch".into(),
+                },
+            )),
+        ),
+        (
+            "StopRejected.SpawnUnproven",
+            Response::StopRejected(signal_flow::StopRejection::SpawnUnproven),
+        ),
+    ] {
+        let actual = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        assert_eq!(actual, expected);
+        assert_eq!(actual.datomize(vec![]).protosize().compact(), text);
+    }
+}
