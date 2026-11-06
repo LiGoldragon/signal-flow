@@ -7,7 +7,7 @@ use signal_flow::{Aspect, Query, Refusal, Response};
 fn budget() -> Budget {
     Budget {
         remaining: 4096,
-        reader: ReaderBudget { remaining: 4096 },
+        reader: ReaderBudget::try_from(4096).unwrap(),
         depth: 0,
         maximum_depth: 1024,
     }
@@ -600,13 +600,21 @@ fn resolve_caller_queries_and_replies_have_concrete_datoms() {
 
 #[test]
 fn launch_and_rehearse_share_one_request_and_have_typed_answers() {
+    // datom-codec 0.33 prints a bare String bare: `Begin.` is the canonical
+    // print of the brief the guillemet form `«Begin.»` also reads as.
     for text in [
-        "Launch.{ { Psyche core Fable } Predecessors.1 «Begin.» }",
-        "Rehearse.{ { Psyche core Fable } Predecessors.1 «Begin.» }",
+        "Launch.{ { Psyche core Fable } Predecessors.1 Begin. }",
+        "Rehearse.{ { Psyche core Fable } Predecessors.1 Begin. }",
     ] {
         let query = Potential::<Query>::from(text)
             .actualize(&mut budget())
             .unwrap();
+        assert_eq!(
+            Potential::<Query>::from(text.replace("Begin.", "«Begin.»"))
+                .actualize(&mut budget())
+                .unwrap(),
+            query
+        );
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&query).unwrap();
         assert_eq!(
             rkyv::from_bytes::<Query, rkyv::rancor::Error>(&archive).unwrap(),
@@ -1144,5 +1152,34 @@ fn each_protected_refusal_round_trips_as_text() {
             .unwrap();
         assert_eq!(actual, expected);
         assert_eq!(actual.datomize(vec![]).protosize().compact(), text);
+    }
+}
+
+/// A guillemet string is read by balance: an inner « » pair is content, and
+/// an unbalanced guillemet inside one is escaped. Each reads and prints back
+/// byte for byte, in a Send as a flow writes one.
+#[test]
+fn a_send_holding_nested_and_escaped_guillemets_round_trips_as_text() {
+    for (text, order) in [
+        (
+            "Send.{ { Mind core Sol } Soft.Order.«Title «The Belief Nexus made small»» }",
+            "Title «The Belief Nexus made small»",
+        ),
+        (
+            "Send.{ { Mind core Sol } Soft.Order.«an unbalanced \\» inside» }",
+            "an unbalanced » inside",
+        ),
+    ] {
+        let query = Potential::<Query>::from(text)
+            .actualize(&mut budget())
+            .unwrap_or_else(|error| panic!("{text}: {error:?}"));
+        let Query::Send(send) = &query else {
+            panic!("a Send: {query:?}")
+        };
+        assert_eq!(
+            send.sendable_message,
+            signal_flow::SendableMessage::Soft(signal_flow::SendableRequest::Order(order.into()))
+        );
+        assert_eq!(query.datomize(vec![]).protosize().compact(), text);
     }
 }

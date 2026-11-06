@@ -9,7 +9,7 @@ use signal_flow::Presentation;
 fn budget() -> Budget {
     Budget {
         remaining: 4096,
-        reader: ReaderBudget { remaining: 4096 },
+        reader: ReaderBudget::try_from(4096).unwrap(),
         depth: 0,
         maximum_depth: 1024,
     }

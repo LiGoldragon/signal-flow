@@ -2,6 +2,22 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 50.0.0: protos 0.33, datom-codec 0.33, signal 10.3
+
+Built on 49.0.0. The contract is unchanged; its stack moves.
+
+- `signal` 10.3.0 (7afb68b), `datom-codec` 0.33.0 and `protos` 0.33.0, the
+  last two pinned by the revs signal names (`eabead4`, `3c7ade3`) so a build
+  holds one of each; `flow-ethos` at 5ea2aa4, on the same stack. The
+  generator stays ethos-zero 17.0.0 (07714b0).
+- A guillemet string is read by balance: `«Title «The Belief Nexus made
+  small»»` is one string, its inner pair content; an unbalanced guillemet
+  inside one is escaped, `«an unbalanced \» inside»`.
+- `ReaderBudget` is built by `ReaderBudget::try_from(n)`.
+- A bare String prints bare: a brief `«Begin.»` reads as before and prints
+  `Begin.`.
+- Every producer and consumer moves to 50.0.0 together, on this stack.
+
 ## 49.0.0: a protected Address answers only its own seat
 
 Built on 46.0.0; 47.0.0 and 48.0.0 are other lines.
