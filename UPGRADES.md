@@ -2,6 +2,18 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 44.0.0: an address names its model
+
+- `Address` is `{ Aspect Topic Model }`, `Model.[ Fable Opus Sonnet Haiku
+  Astra Sol Luna Terra ]`, from flow-ethos; `Layer` leaves the contract. Any
+  model stands in any aspect.
+- `Up` resolves to the model before the sender's in its family: Opus to
+  Fable, Sonnet to Opus, Haiku to Sonnet, Sol to Astra, Luna to Sol, Terra
+  to Luna. Fable and Astra have none above: `NoneAbove`.
+- `NoSecondary` now refuses a Fable or Astra whose Opus or Sol of its aspect
+  and topic is not Awake. `NoLayer` is kept for archived refusals.
+- Every producer and consumer moves to 44.0.0 together.
+
 ## 42.0.0: an existing running seat adopts itself
 
 - `Adopt.{ Address NativeSessionId }` binds the authenticated calling seat to

@@ -2,7 +2,7 @@
 //! it, and a FlowId Flow does not hold is refused as Refused.Unknown.FlowId.
 
 use signal_flow::{
-    Address, Aspect, Event, Layer, NativePrompt, NativeStop, Query, Report_Data, Response, Topic,
+    Address, Aspect, Event, Model, NativePrompt, NativeStop, Query, Report_Data, Response, Topic,
     VisibleRefusal, VisibleUnknown,
 };
 
@@ -47,7 +47,7 @@ fn replies() -> Vec<Response> {
         Response::SendRefused(VisibleRefusal::Unknown(VisibleUnknown::Address(Address {
             aspect: Aspect::Mind,
             topic: Topic::from("core"),
-            layer: Layer::Secondary,
+            model: Model::Sol,
         }))),
     ]
 }
@@ -127,10 +127,10 @@ mod datom {
 
     #[test]
     fn reported_and_unknown_flow_have_exact_inline_datoms() {
-        for (reply, expected) in super::replies().into_iter().zip([
-            "Reported",
-            "SendRefused.Unknown.Address.{ Mind core Secondary }",
-        ]) {
+        for (reply, expected) in super::replies()
+            .into_iter()
+            .zip(["Reported", "SendRefused.Unknown.Address.{ Mind core Sol }"])
+        {
             let text = reply.datomize(vec![]).protosize().compact();
             assert_eq!(text, expected);
             assert_eq!(

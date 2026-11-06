@@ -36,11 +36,11 @@ fn missing_module_refusal_carries_known_or_historical_identity() {
 #[test]
 fn every_ordinary_request_has_a_concrete_datom() {
     for text in [
-        "Start.{ request-7 [ spirit:core ] [ compensation:main-flow knowledge:flow ] Custom.[ 4e1d2a ] { Field flow Primary } gpt-6-astra medium Some.836818 messaging-build Some.[ SkillTool WorkflowTool ] Regular Default «Carry this bounded launch request.» }",
-        "Start.{ field-flow-quaternary-1 [ spirit:core ] [ compensation:main-flow ] Predecessors.0 { Field flow Quaternary } haiku medium None fieldFlow None Regular Default «Send the Order through Message.» }",
-        "Refresh.{ Psyche core Primary }",
+        "Start.{ request-7 [ spirit:core ] [ compensation:main-flow knowledge:flow ] Custom.[ 4e1d2a ] { Field flow Astra } gpt-6-astra medium Some.836818 messaging-build Some.[ SkillTool WorkflowTool ] Regular Default «Carry this bounded launch request.» }",
+        "Start.{ field-flow-quaternary-1 [ spirit:core ] [ compensation:main-flow ] Predecessors.0 { Field flow Haiku } haiku medium None fieldFlow None Regular Default «Send the Order through Message.» }",
+        "Refresh.{ Psyche core Fable }",
         "ResolveRecipient.fac697",
-        "Adopt.{ { Mind core Secondary } 6c9e081f-70b0-4a35-9838-6cc7dca01971 }",
+        "Adopt.{ { Mind core Sol } 6c9e081f-70b0-4a35-9838-6cc7dca01971 }",
     ] {
         let query = Potential::<Query>::from(text)
             .actualize(&mut budget())
@@ -97,7 +97,7 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
         address: signal_flow::Address {
             aspect: signal_flow::Aspect::Field,
             topic: "flow".into(),
-            layer: signal_flow::Layer::Primary,
+            model: signal_flow::Model::Fable,
         },
         model_name: "gpt-6-astra".into(),
         effort: "medium".into(),
@@ -193,7 +193,7 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
             address: signal_flow::Address {
                 aspect: signal_flow::Aspect::Field,
                 topic: "flow".into(),
-                layer: signal_flow::Layer::Primary,
+                model: signal_flow::Model::Fable,
             },
             model_name: intent.model_name.clone(),
             effort: intent.effort.clone(),
@@ -314,12 +314,12 @@ fn a_send_names_its_recipient_and_deliver_all_names_a_metaflow() {
             .is_err()
     );
     for text in [
-        "Send.{ Address.{ Mind core Secondary } Soft.Order.«Review the drain fix» }",
+        "Send.{ Address.{ Mind core Sol } Soft.Order.«Review the drain fix» }",
         "Send.{ Up HardAbrupt.Question.«Which store?» }",
-        "DeliverAll.{ Psyche core Secondary }",
-        "Launch.{ { Mind core Primary } Predecessors.2 brief }",
-        "Launch.{ { Mind core Primary } Custom.[ 36b71b e3c8c1 ] brief }",
-        "BindSeat.{ Field core Secondary }",
+        "DeliverAll.{ Psyche core Opus }",
+        "Launch.{ { Mind core Astra } Predecessors.2 brief }",
+        "Launch.{ { Mind core Astra } Custom.[ 36b71b e3c8c1 ] brief }",
+        "BindSeat.{ Field core Sol }",
     ] {
         let query = Potential::<Query>::from(text)
             .actualize(&mut budget())
@@ -340,7 +340,7 @@ fn a_send_names_its_recipient_and_deliver_all_names_a_metaflow() {
 #[test]
 fn replace_and_launch_status_queries_have_concrete_datoms() {
     for text in [
-        "Replace.{ request-8 [ spirit:core ] [ compensation:main-flow ] Predecessors.1 { Field flow Secondary } opus-5-5 high Some.fac697 messaging-build None Regular Default «Carry on from fac697.» }",
+        "Replace.{ request-8 [ spirit:core ] [ compensation:main-flow ] Predecessors.1 { Field flow Sol } opus-5-5 high Some.fac697 messaging-build None Regular Default «Carry on from fac697.» }",
         "LaunchStatus.request-8",
         "Observe.Launch.request-8",
     ] {
@@ -358,7 +358,7 @@ fn replace_and_launch_status_queries_have_concrete_datoms() {
 
 #[test]
 fn replace_carries_the_predecessor_in_its_launch_profile() {
-    let text = "Replace.{ request-8 [ spirit:core ] [] Predecessors.1 { Field flow Secondary } opus-5-5 high Some.fac697 messaging-build None Regular Default «Carry on from fac697.» }";
+    let text = "Replace.{ request-8 [ spirit:core ] [] Predecessors.1 { Field flow Sol } opus-5-5 high Some.fac697 messaging-build None Regular Default «Carry on from fac697.» }";
     let Query::Replace(profile) = Potential::<Query>::from(text)
         .actualize(&mut budget())
         .unwrap()
@@ -398,7 +398,7 @@ fn replace_and_launch_status_responses_have_concrete_datoms() {
 #[test]
 fn refresh_answers_have_concrete_datoms() {
     for text in [
-        "Refreshed.{ { Psyche core Primary } 74e4d1 }",
+        "Refreshed.{ { Psyche core Fable } 74e4d1 }",
         "RefreshRejected.NotAwake",
         "RefreshRejected.Locked",
         "RefreshRejected.CloseRefused",
@@ -594,8 +594,8 @@ fn resolve_caller_queries_and_replies_have_concrete_datoms() {
 #[test]
 fn launch_and_rehearse_share_one_request_and_have_typed_answers() {
     for text in [
-        "Launch.{ { Psyche core Primary } Predecessors.1 «Begin.» }",
-        "Rehearse.{ { Psyche core Primary } Predecessors.1 «Begin.» }",
+        "Launch.{ { Psyche core Fable } Predecessors.1 «Begin.» }",
+        "Rehearse.{ { Psyche core Fable } Predecessors.1 «Begin.» }",
     ] {
         let query = Potential::<Query>::from(text)
             .actualize(&mut budget())
@@ -642,7 +642,7 @@ fn metaflows_query_and_listed_metaflow_roundtrip() {
         .unwrap();
     assert_eq!(query, Query::Metaflows);
 
-    let text = "Listed.[ { { Psyche flow Primary } Awake.f1c841 [ past-1 ] [] } ]";
+    let text = "Listed.[ { { Psyche flow Fable } Awake.f1c841 [ past-1 ] [] } ]";
     let restored = Potential::<Response>::from(text)
         .actualize(&mut budget())
         .unwrap();
@@ -680,7 +680,7 @@ fn store_refusal_roundtrips_with_its_error_text() {
 /// A sleeping metaflow retains its queue without claiming an awake flow.
 #[test]
 fn listed_asleep_metaflow_roundtrips_without_a_current_flow() {
-    let text = "Listed.[ { { Mind topics Primary } Asleep [] [] } ]";
+    let text = "Listed.[ { { Mind topics Astra } Asleep [] [] } ]";
     let restored = Potential::<Response>::from(text)
         .actualize(&mut budget())
         .unwrap();
@@ -699,7 +699,7 @@ fn listed_asleep_metaflow_roundtrips_without_a_current_flow() {
 
 #[test]
 fn start_names_the_address_of_the_seat_it_launches() {
-    let text = "Start.{ field-flow-quaternary-1 [ spirit:core ] [ compensation:main-flow ] Custom.[ fac697 ] { Field flow Quaternary } haiku medium None fieldFlow None Regular Default «Send the Order through Message.» }";
+    let text = "Start.{ field-flow-quaternary-1 [ spirit:core ] [ compensation:main-flow ] Custom.[ fac697 ] { Field flow Haiku } haiku medium None fieldFlow None Regular Default «Send the Order through Message.» }";
     let Query::Start(profile) = Potential::<Query>::from(text)
         .actualize(&mut budget())
         .unwrap()
@@ -711,7 +711,7 @@ fn start_names_the_address_of_the_seat_it_launches() {
         signal_flow::Address {
             aspect: Aspect::Field,
             topic: "flow".into(),
-            layer: signal_flow::Layer::Quaternary,
+            model: signal_flow::Model::Haiku,
         }
     );
     assert_eq!(profile.model_name, "haiku");
@@ -738,7 +738,7 @@ fn start_names_the_address_of_the_seat_it_launches() {
 #[test]
 fn an_ended_metaflow_is_no_datom_of_the_contract() {
     assert!(
-        Potential::<Query>::from("End.{ Psyche flow Primary }")
+        Potential::<Query>::from("End.{ Psyche flow Fable }")
             .actualize(&mut budget())
             .is_err(),
         "End is refused"
@@ -746,8 +746,8 @@ fn an_ended_metaflow_is_no_datom_of_the_contract() {
     for text in [
         "Ended",
         "Current.Ended",
-        "Refused.Ended.{ Psyche flow Primary }",
-        "Listed.[ { { Psyche flow Primary } Ended [] [] } ]",
+        "Refused.Ended.{ Psyche flow Fable }",
+        "Listed.[ { { Psyche flow Fable } Ended [] [] } ]",
         "StartRejected.AddressEnded",
     ] {
         assert!(
@@ -765,8 +765,8 @@ fn an_ended_metaflow_is_no_datom_of_the_contract() {
     }
 }
 
-/// A Start of a Primary whose Secondary metaflow is not recorded is refused
-/// with NoSecondary.
+/// A Start of a Fable or Astra whose Opus or Sol metaflow is not recorded is
+/// refused with NoSecondary.
 #[test]
 fn no_secondary_start_rejection_round_trips() {
     let response = Potential::<Response>::from("StartRejected.NoSecondary")
@@ -804,7 +804,7 @@ fn identify_thread_and_its_refusal_have_concrete_datoms() {
     );
     assert_eq!(query.datomize(vec![]).protosize().compact(), text);
     for text in [
-        "Identified.{ Mind flow Secondary }",
+        "Identified.{ Mind flow Sol }",
         "Refused.NotSendServer.{ 4242 987654 }",
         "Refused.Unidentified.{ None None None 1761800000 { 4242 987654 } }",
     ] {
@@ -818,7 +818,7 @@ fn identify_thread_and_its_refusal_have_concrete_datoms() {
 #[test]
 fn durable_admission_and_resumable_sender_outcomes_round_trip() {
     for text in [
-        "Send.{ Address.{ Mind flow Secondary } MiddleAbrupt.Notice.ready }",
+        "Send.{ Address.{ Mind flow Sol } MiddleAbrupt.Notice.ready }",
         "ObserveSends.None",
         "ObserveSender.{ { 17 99 } None Some.4 }",
     ] {
@@ -830,12 +830,12 @@ fn durable_admission_and_resumable_sender_outcomes_round_trip() {
     for text in [
         "SendAccepted.{ 1 Queued }",
         "SendAccepted.{ 4 Retryable.OwnerResolvedAbsent }",
-        "SendsObserved.{ 2 [ { 2 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Attempting } ] }",
-        "SendChanged.{ 3 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Delivered.{ Claude session-1 prompt-1 } }",
-        "SendChanged.{ 4 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Withdrawn }",
-        "SendChanged.{ 5 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Retryable.WakeRefused.ContextRefused.RecordMissing }",
-        "SendsObserved.{ 6 [ { 6 Sender.{ Mind flow Secondary } { Psyche flow Secondary } Retryable.WakeRefused.NoSecondary } ] }",
-        "Drained.{ { Psyche flow Secondary } Held }",
+        "SendsObserved.{ 2 [ { 2 Sender.{ Mind flow Sol } { Psyche flow Opus } Attempting } ] }",
+        "SendChanged.{ 3 Sender.{ Mind flow Sol } { Psyche flow Opus } Delivered.{ Claude session-1 prompt-1 } }",
+        "SendChanged.{ 4 Sender.{ Mind flow Sol } { Psyche flow Opus } Withdrawn }",
+        "SendChanged.{ 5 Sender.{ Mind flow Sol } { Psyche flow Opus } Retryable.WakeRefused.ContextRefused.RecordMissing }",
+        "SendsObserved.{ 6 [ { 6 Sender.{ Mind flow Sol } { Psyche flow Opus } Retryable.WakeRefused.NoSecondary } ] }",
+        "Drained.{ { Psyche flow Opus } Held }",
     ] {
         let value = Potential::<Response>::from(text)
             .actualize(&mut budget())
@@ -976,7 +976,7 @@ fn remind_is_gone_and_a_task_with_minutes_stands_in_its_place() {
             "{text} still reads"
         );
     }
-    let task = "Send.{ Address.{ Mind core Secondary } Soft.Task.{ 30 «Check the capsule run.» } }";
+    let task = "Send.{ Address.{ Mind core Sol } Soft.Task.{ 30 «Check the capsule run.» } }";
     let query = Potential::<Query>::from(task)
         .actualize(&mut budget())
         .unwrap_or_else(|error| panic!("{task}: {error:?}"));
