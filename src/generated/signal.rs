@@ -474,7 +474,7 @@ pub enum ModelRefusal {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum ContextRefusal {
     ComposerUnavailable,
-    ComposerRejected,
+    ComposerRejected(String),
     MetaflowMismatch,
     PayloadMismatch,
     ModuleMissing(std::option::Option<ModuleIdentity>),

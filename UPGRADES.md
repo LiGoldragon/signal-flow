@@ -2,6 +2,17 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 51.0.0: a composer's rejection carries its text
+
+Built on 50.0.0.
+
+- `ContextRefusal.ComposerRejected` is `ComposerRejected.String`: the text
+  Curriculum answered `Rejected` with, kept whole, as in
+  `StartRejected.ContextRefused.ComposerRejected.«missing module
+  knowledge:absent»`.
+- Every producer and consumer moves to 51.0.0 together: a match on
+  `ComposerRejected` binds its text.
+
 ## 50.0.0: protos 0.33, datom-codec 0.33, signal 10.3
 
 Built on 49.0.0. The contract is unchanged; its stack moves.

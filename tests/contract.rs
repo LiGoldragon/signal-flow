@@ -1183,3 +1183,19 @@ fn a_send_holding_nested_and_escaped_guillemets_round_trips_as_text() {
         assert_eq!(query.datomize(vec![]).protosize().compact(), text);
     }
 }
+
+/// A composer's rejection carries the composer's own text, whole.
+#[test]
+fn a_composer_rejection_carries_its_text() {
+    let text = "StartRejected.ContextRefused.ComposerRejected.«missing module knowledge:absent»";
+    let response = Potential::<Response>::from(text)
+        .actualize(&mut budget())
+        .unwrap();
+    assert_eq!(
+        response,
+        Response::StartRejected(signal_flow::StartRejection::ContextRefused(
+            signal_flow::ContextRefusal::ComposerRejected("missing module knowledge:absent".into())
+        ))
+    );
+    assert_eq!(response.datomize(vec![]).protosize().compact(), text);
+}

@@ -442,7 +442,11 @@ Signal
   ; which it carries, is another one. Models are compared exactly, name for
   ; name.
   ModelRefusal.[ Unconfigured Differs.ModelName ]
-  ContextRefusal.[ ComposerUnavailable ComposerRejected MetaflowMismatch PayloadMismatch ModuleMissing.Option<ModuleIdentity> RecordMissing SystemTooLarge ModuleTooLarge ]
+  ; ContextRefusal names why a seat's context was not composed or not
+  ; taken. ComposerRejected carries the composer's own text: what
+  ; Curriculum answered Rejected, or what Flow read of an answer that was
+  ; none it asked for.
+  ContextRefusal.[ ComposerUnavailable ComposerRejected.String MetaflowMismatch PayloadMismatch ModuleMissing.Option<ModuleIdentity> RecordMissing SystemTooLarge ModuleTooLarge ]
   ; HerdrRefusal is Herdr's own answer to a refused agent start, kept whole:
   ; the error code and message of its JSON error body, or no code and the
   ; whole text Herdr printed when it printed no such body.
