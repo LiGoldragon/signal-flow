@@ -304,6 +304,9 @@ Signal
   CallerResolved.Caller
   CallerResolutionRejected.CallerResolutionRejection
   AgentObserved.AgentObservation
+  RetirementObserved.RetirementSnapshot
+  RetirementChanged.RetirementChange
+  RetirementObservationFailed.RetirementObservationFailure
   Reported
   Locked.Lock
   Bound.FlowId
@@ -589,7 +592,24 @@ Signal
                      Locked                       ; a refresh or a waking holds the metaflow
                      Protected ]                  ; the predecessor's Address is protected and its own seat did not ask
   ObserveSelection.[ Launch.LaunchRequestId
-                     Agent.FlowId ]
+                     Agent.FlowId
+                     Retirement.Address ]
+  ; RetirementObserved is the closed-generation state when an ordinary
+  ; Observe.Retirement subscription attaches. It carries no claim about
+  ; changes before attachment. Later committed changes are pushed in FIFO
+  ; order; RetirementObservationFailed ends an incomplete observation.
+  HandoverGeneration.Integer
+  HandoverGenerationKey.{ Address HandoverGeneration Predecessor.FlowId Successor.FlowId }
+  GitCommit.String
+  GitBlob.String
+  ArchiveDocumentPath.String
+  HandoverArchiveIdentity.{ GitCommit ArchiveDocumentPath GitBlob }
+  RetirementSnapshot.{ Address Vector<HandoverGenerationKey> }
+  ArchiveCommitted.{ HandoverGenerationKey HandoverArchiveIdentity }
+  RetirementChange.[ GenerationClosed.HandoverGenerationKey
+                      ArchiveCommitted.ArchiveCommitted
+                      GenerationRemoved.HandoverGenerationKey ]
+  RetirementObservationFailure.[ Overflow MissingEvidence.String ]
   AgentState.[ Idle Working Blocked Done Unknown Gone ]
   AgentObservation.{ FlowId AgentState }
   LaunchStatusRejection.[ UnknownLaunchRequest PersistenceRefused ReadViewChanged InconsistentRecords ]

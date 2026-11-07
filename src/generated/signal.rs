@@ -751,6 +751,65 @@ pub enum ReplaceRejection {
 pub enum ObserveSelection {
     Launch(LaunchRequestId),
     Agent(flow_ethos::FlowId),
+    Retirement(flow_ethos::Address),
+}
+#[rustfmt::skip]
+pub type HandoverGeneration = i64;
+#[rustfmt::skip]
+pub type Predecessor = flow_ethos::FlowId;
+#[rustfmt::skip]
+pub type Successor = flow_ethos::FlowId;
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct HandoverGenerationKey {
+    pub address: flow_ethos::Address,
+    pub handover_generation: HandoverGeneration,
+    pub predecessor: Predecessor,
+    pub successor: Successor,
+}
+#[rustfmt::skip]
+pub type GitCommit = String;
+#[rustfmt::skip]
+pub type GitBlob = String;
+#[rustfmt::skip]
+pub type ArchiveDocumentPath = String;
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct HandoverArchiveIdentity {
+    pub git_commit: GitCommit,
+    pub archive_document_path: ArchiveDocumentPath,
+    pub git_blob: GitBlob,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct RetirementSnapshot {
+    pub address: flow_ethos::Address,
+    pub handover_generation_key_vector: std::vec::Vec<HandoverGenerationKey>,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct ArchiveCommitted {
+    pub handover_generation_key: HandoverGenerationKey,
+    pub handover_archive_identity: HandoverArchiveIdentity,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum RetirementChange {
+    GenerationClosed(HandoverGenerationKey),
+    ArchiveCommitted(ArchiveCommitted),
+    GenerationRemoved(HandoverGenerationKey),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum RetirementObservationFailure {
+    Overflow,
+    MissingEvidence(String),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1409,6 +1468,9 @@ pub enum Response {
     CallerResolved(Caller),
     CallerResolutionRejected(CallerResolutionRejection),
     AgentObserved(AgentObservation),
+    RetirementObserved(RetirementSnapshot),
+    RetirementChanged(RetirementChange),
+    RetirementObservationFailed(RetirementObservationFailure),
     Reported,
     Locked(flow_ethos::Lock),
     Bound(flow_ethos::FlowId),

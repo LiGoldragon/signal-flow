@@ -305,6 +305,75 @@ fn agent_observation_carries_the_flow_and_its_herdr_state() {
 }
 
 #[test]
+fn retirement_observation_carries_exact_generation_and_archive_identity() {
+    use signal_flow::{
+        Address, ArchiveCommitted, HandoverArchiveIdentity, HandoverGenerationKey, Model,
+        ObserveSelection, RetirementChange, RetirementObservationFailure, RetirementSnapshot,
+    };
+    let address = Address {
+        aspect: Aspect::Mind,
+        topic: "flowNexus".into(),
+        model: Model::Sol,
+    };
+    let key = HandoverGenerationKey {
+        address: address.clone(),
+        handover_generation: 7,
+        predecessor: "abc123".into(),
+        successor: "def456".into(),
+    };
+    let values = [
+        Query::Observe(ObserveSelection::Retirement(address.clone()))
+            .datomize(vec![])
+            .protosize()
+            .compact(),
+        Response::RetirementObserved(RetirementSnapshot {
+            address,
+            handover_generation_key_vector: vec![key.clone()],
+        })
+        .datomize(vec![])
+        .protosize()
+        .compact(),
+        Response::RetirementChanged(RetirementChange::ArchiveCommitted(ArchiveCommitted {
+            handover_generation_key: key,
+            handover_archive_identity: HandoverArchiveIdentity {
+                git_commit: "commit".into(),
+                archive_document_path: "Mind/flowNexus/Sol/abc123.md".into(),
+                git_blob: "blob".into(),
+            },
+        }))
+        .datomize(vec![])
+        .protosize()
+        .compact(),
+        Response::RetirementObservationFailed(RetirementObservationFailure::Overflow)
+            .datomize(vec![])
+            .protosize()
+            .compact(),
+    ];
+    assert_eq!(values[0], "Observe.Retirement.{ Mind flowNexus Sol }");
+    for text in values {
+        if text.starts_with("Observe") {
+            let value = Potential::<Query>::from(text.clone())
+                .actualize(&mut budget())
+                .unwrap();
+            let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&value).unwrap();
+            assert_eq!(
+                rkyv::from_bytes::<Query, rkyv::rancor::Error>(&bytes).unwrap(),
+                value
+            );
+        } else {
+            let value = Potential::<Response>::from(text)
+                .actualize(&mut budget())
+                .unwrap();
+            let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&value).unwrap();
+            assert_eq!(
+                rkyv::from_bytes::<Response, rkyv::rancor::Error>(&bytes).unwrap(),
+                value
+            );
+        }
+    }
+}
+
+#[test]
 fn a_send_names_its_recipient_and_deliver_all_names_a_metaflow() {
     // The recipient is a metaflow Address, never a FlowId nor a route
     // relative to the sender, and the request carries no sender: Flow reads

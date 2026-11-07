@@ -670,3 +670,11 @@ The launch rehearsal contract and typed missing-module context refusal are one c
 
 All ordinary clients and Flow must move together because Query, Response and
 the contract digest changed.
+# 55.0.0: observe handover retirement
+
+`Observe.Retirement.Address` opens the ordinary Observe subscription with a
+snapshot of the Address's closed handover generation identities. Each later
+close, verified archive commit and exact removal is pushed in FIFO order.
+`RetirementObservationFailed` ends an observation whose evidence became
+incomplete. Archive evidence names the actual Git commit, document path and
+blob. This observation is ephemeral and adds no durable history.
