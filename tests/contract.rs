@@ -949,17 +949,13 @@ fn durable_admission_and_resumable_sender_outcomes_round_trip() {
 fn direct_send_replies_carry_receipt_or_failure_never_queue_state() {
     use signal_flow::{VisibleSendFailure, VisibleSendFailureReason};
     let replies = [
-        Response::Sent(signal_flow::NativeReceipt {
-            harness_kind: signal_flow::HarnessKind::Codex,
-            native_session_id: "native-direct-1".into(),
-            native_prompt_id: "prompt-direct-1".into(),
-        }),
-        Response::Failed(VisibleSendFailure {
-            visible_send_failure_reason: VisibleSendFailureReason::QueueNotPermitted,
-        }),
-        Response::Failed(VisibleSendFailure {
-            visible_send_failure_reason: VisibleSendFailureReason::ReceiptUncertain,
-        }),
+        Response::Sent("direct1".into()),
+        Response::Failed(VisibleSendFailure::Unadmitted(
+            VisibleSendFailureReason::QueueNotPermitted,
+        )),
+        Response::Failed(VisibleSendFailure::Unadmitted(
+            VisibleSendFailureReason::ReceiptUncertain,
+        )),
     ];
     for reply in replies {
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&reply).unwrap();
@@ -1079,7 +1075,7 @@ fn remind_is_gone_and_a_task_with_minutes_stands_in_its_place() {
     assert_eq!(query.datomize(Vec::new()).protosize().compact(), task);
 }
 
-/// Every refusal a Task or a Done meets at admission is carried whole:
+/// Every refusal a Task meets at admission is carried whole:
 /// datom text reads into the Response, the Response crosses the wire as
 /// rkyv and reads back equal, and prints as the same text.
 #[test]
@@ -1087,12 +1083,6 @@ fn task_refusals_round_trip_from_datom_through_rkyv_to_datom() {
     use signal_flow::MinutesRefusal;
     let refused = |refusal| Response::Refused(refusal);
     for (text, expected) in [
-        (
-            "Refused.NoOpenTask.logical-delivery-00000000000000009613",
-            refused(Refusal::NoOpenTask(
-                "logical-delivery-00000000000000009613".into(),
-            )),
-        ),
         (
             "Refused.MinutesRefused.Zero",
             refused(Refusal::MinutesRefused(MinutesRefusal::Zero)),
@@ -1107,12 +1097,12 @@ fn task_refusals_round_trip_from_datom_through_rkyv_to_datom() {
         ),
         // An abrupt Send's refusal is answered as its failure.
         (
-            "Failed.{ Refused.MinutesRefused.Zero }",
-            Response::Failed(signal_flow::VisibleSendFailure {
-                visible_send_failure_reason: signal_flow::VisibleSendFailureReason::Refused(
+            "Failed.Unadmitted.Refused.MinutesRefused.Zero",
+            Response::Failed(signal_flow::VisibleSendFailure::Unadmitted(
+                signal_flow::VisibleSendFailureReason::Refused(
                     signal_flow::VisibleRefusal::MinutesRefused(MinutesRefusal::Zero),
                 ),
-            }),
+            )),
         ),
     ] {
         let response = Potential::<Response>::from(text)
