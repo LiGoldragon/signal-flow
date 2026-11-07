@@ -711,7 +711,9 @@ Signal
   VisibleNativeInput.{ VisibleSender DeliveredMessage }
   SendRequest.{ Recipient SendableMessage }
   DeliveryCursor.Integer
-  DeliverKey.String
+  Namespace.String
+  Counter.Integer
+  DeliverKey.{ Namespace Counter }
   StoreIdentity.String
   NativeReceipt.{ HarnessKind NativeSessionId NativePromptId.String }
   ; WakeRefused: the start that would wake the recipient was refused, for

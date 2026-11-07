@@ -917,6 +917,7 @@ fn durable_admission_and_resumable_sender_outcomes_round_trip() {
         "Send.{ { Mind flow Sol } MiddleAbrupt.Notice.ready }",
         "ObserveSends.None",
         "ObserveSender.{ { 17 99 } None Some.4 }",
+        "Acknowledge.[ { messageMemory 0 } { messageMemory 1 } ]",
     ] {
         let value = Potential::<Query>::from(text)
             .actualize(&mut budget())
