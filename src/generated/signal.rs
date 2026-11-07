@@ -1153,7 +1153,6 @@ pub struct SendRequest {
 #[rustfmt::skip]
 pub type DeliveryCursor = i64;
 #[rustfmt::skip]
-#[rustfmt::skip]
 pub type Namespace = String;
 #[rustfmt::skip]
 pub type Counter = i64;
