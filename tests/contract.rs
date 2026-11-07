@@ -861,7 +861,7 @@ fn no_rank_refusal_is_a_datom_of_the_contract() {
         "StartRejected.NoSecondary",
         "Refused.NoneAbove",
         "Refused.NoLayer",
-        "SendChanged.{ 1 Sender.{ Mind flow Sol } { Psyche flow Opus } Failed.NoneAbove }",
+        "SendChanged.{ req1 1 Sender.{ Mind flow Sol } { Psyche flow Opus } Failed.NoneAbove }",
     ] {
         assert!(
             Potential::<Response>::from(text)
@@ -872,7 +872,7 @@ fn no_rank_refusal_is_a_datom_of_the_contract() {
     }
     // The same failure carrying a refusal the contract keeps is a datom.
     let kept =
-        "SendChanged.{ 1 Sender.{ Mind flow Sol } { Psyche flow Opus } Failed.NotConfigured }";
+        "SendChanged.{ req1 1 Sender.{ Mind flow Sol } { Psyche flow Opus } Failed.NotConfigured }";
     let response = Potential::<Response>::from(kept)
         .actualize(&mut budget())
         .unwrap();
@@ -924,13 +924,13 @@ fn durable_admission_and_resumable_sender_outcomes_round_trip() {
         assert_eq!(value.datomize(vec![]).protosize().compact(), text);
     }
     for text in [
-        "SendAccepted.{ 1 Queued }",
-        "SendAccepted.{ 4 Retryable.OwnerResolvedAbsent }",
-        "SendsObserved.{ 2 [ { 2 Sender.{ Mind flow Sol } { Psyche flow Opus } Attempting } ] }",
-        "SendChanged.{ 3 Sender.{ Mind flow Sol } { Psyche flow Opus } Delivered.{ Claude session-1 prompt-1 } }",
-        "SendChanged.{ 4 Sender.{ Mind flow Sol } { Psyche flow Opus } Withdrawn }",
-        "SendChanged.{ 5 Sender.{ Mind flow Sol } { Psyche flow Opus } Retryable.WakeRefused.ContextRefused.RecordMissing }",
-        "SendsObserved.{ 6 [ { 6 Sender.{ Mind flow Sol } { Psyche flow Opus } Retryable.WakeRefused.Undeclared } ] }",
+        "SendAccepted.{ req1 1 Queued }",
+        "SendAccepted.{ req4 4 Retryable.OwnerResolvedAbsent }",
+        "SendsObserved.{ store1 2 [ { req2 2 Sender.{ Mind flow Sol } { Psyche flow Opus } Attempting } ] }",
+        "SendChanged.{ req3 3 Sender.{ Mind flow Sol } { Psyche flow Opus } Delivered.{ Claude session-1 prompt-1 } }",
+        "SendChanged.{ req4 4 Sender.{ Mind flow Sol } { Psyche flow Opus } Withdrawn }",
+        "SendChanged.{ req5 5 Sender.{ Mind flow Sol } { Psyche flow Opus } Retryable.WakeRefused.ContextRefused.RecordMissing }",
+        "SendsObserved.{ store1 6 [ { req6 6 Sender.{ Mind flow Sol } { Psyche flow Opus } Retryable.WakeRefused.Undeclared } ] }",
         "Drained.{ { Psyche flow Opus } Held }",
     ] {
         let value = Potential::<Response>::from(text)
