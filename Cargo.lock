@@ -119,7 +119,7 @@ dependencies = [
 
 [[package]]
 name = "flow-ethos"
-version = "0.53.1"
+version = "0.53.3"
 source = "git+https://github.com/LiGoldragon/flow?rev=78d7983984998727151048fae9384125d5d57bbb#78d7983984998727151048fae9384125d5d57bbb"
 dependencies = [
  "datom-codec 0.33.0",
