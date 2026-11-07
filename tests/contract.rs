@@ -1199,3 +1199,45 @@ fn a_composer_rejection_carries_its_text() {
     );
     assert_eq!(response.datomize(vec![]).protosize().compact(), text);
 }
+
+/// A composition refused for a predecessor's handover carries the
+/// predecessor and the fault, typed.
+#[test]
+fn a_handover_refusal_carries_its_predecessor_and_fault() {
+    for (text, fault) in [
+        (
+            "StartRejected.CompositionRefused.HandoverUnreadable.{ abc123 Unreadable.«flows/abc123/handover.md: Permission denied (os error 13)» }",
+            signal_flow::HandoverFault::Unreadable(
+                "flows/abc123/handover.md: Permission denied (os error 13)".into(),
+            ),
+        ),
+        (
+            "StartRejected.CompositionRefused.HandoverUnreadable.{ abc123 NotUtf8 }",
+            signal_flow::HandoverFault::NotUtf8,
+        ),
+        (
+            "StartRejected.CompositionRefused.HandoverUnreadable.{ abc123 InvalidPredecessor }",
+            signal_flow::HandoverFault::InvalidPredecessor,
+        ),
+        (
+            "StartRejected.CompositionRefused.HandoverUnreadable.{ abc123 RootUnresolved }",
+            signal_flow::HandoverFault::RootUnresolved,
+        ),
+    ] {
+        let response = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        assert_eq!(
+            response,
+            Response::StartRejected(signal_flow::StartRejection::CompositionRefused(
+                signal_flow::CompositionRefusal::HandoverUnreadable(
+                    signal_flow::HandoverUnreadable_Data {
+                        flow_id: "abc123".into(),
+                        handover_fault: fault,
+                    }
+                )
+            ))
+        );
+        assert_eq!(response.datomize(vec![]).protosize().compact(), text);
+    }
+}

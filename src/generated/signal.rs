@@ -607,6 +607,13 @@ pub struct NativeLaunchRefusal {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct HandoverUnreadable_Data {
+    pub flow_id: flow_ethos::FlowId,
+    pub handover_fault: HandoverFault,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum CompositionRefusal {
     InvalidLaunchRequestId,
     InvalidModelName,
@@ -620,6 +627,16 @@ pub enum CompositionRefusal {
     Unconfigured,
     PresentationUnavailable,
     Unrecorded,
+    HandoverUnreadable(HandoverUnreadable_Data),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum HandoverFault {
+    InvalidPredecessor,
+    RootUnresolved,
+    NotUtf8,
+    Unreadable(String),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]

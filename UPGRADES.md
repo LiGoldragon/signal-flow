@@ -2,6 +2,23 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 52.0.0: a handover that cannot be read refuses the launch
+
+Built on 51.0.0.
+
+- `CompositionRefusal` gains `HandoverUnreadable.{ FlowId HandoverFault }`,
+  last: the launch names a predecessor whose handover could not be read
+  whole, as in `StartRejected.CompositionRefused.HandoverUnreadable.{ abc123
+  NotUtf8 }`.
+- `HandoverFault.[ InvalidPredecessor RootUnresolved NotUtf8
+  Unreadable.String ]`: the predecessor names no flow, the launch root is
+  unresolved, the file is not UTF-8, or it exists and could not be read,
+  with the reader's text.
+- A rejection 51.0.0 archived reads the same: the variant is appended, and
+  a `StartRejection` holding it is no larger (`tests/archive.rs`).
+- Every producer and consumer moves to 52.0.0 together: a match on
+  `CompositionRefusal` names the new variant.
+
 ## 51.0.0: a composer's rejection carries its text
 
 Built on 50.0.0.

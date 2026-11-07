@@ -527,7 +527,15 @@ Signal
   ; configured for the Model of the seat a wake starts.
   ; PresentationUnavailable: the Psyche core presentation prompt could not
   ; be read. Unrecorded: an outcome Flow archived before it kept the reason.
-  CompositionRefusal.[ InvalidLaunchRequestId InvalidModelName InvalidEffort InvalidToolSet InvalidHerdrSessionName InvalidSystemModules InvalidUserModules InvalidRemembering InexactModel Unconfigured PresentationUnavailable Unrecorded ]
+  ; HandoverUnreadable: the launch names a predecessor whose handover could
+  ; not be read whole; it carries the predecessor and the fault.
+  CompositionRefusal.[ InvalidLaunchRequestId InvalidModelName InvalidEffort InvalidToolSet InvalidHerdrSessionName InvalidSystemModules InvalidUserModules InvalidRemembering InexactModel Unconfigured PresentationUnavailable Unrecorded HandoverUnreadable.{ FlowId HandoverFault } ]
+  ; HandoverFault names why a predecessor's handover was not read:
+  ; InvalidPredecessor, the predecessor does not name a flow; RootUnresolved,
+  ; the launch root it is kept under could not be resolved; NotUtf8, the
+  ; file is not UTF-8; Unreadable, the file exists and could not be read,
+  ; with the reader's own text.
+  HandoverFault.[ InvalidPredecessor RootUnresolved NotUtf8 Unreadable.String ]
   HarnessFlagsRefusal.[ UnclosedSingleQuote UnclosedDoubleQuote TrailingEscape ]
   StartRejection.[ CompositionRefused.CompositionRefusal MalformedHarnessFlags.HarnessFlagsRefusal LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal Undeclared TopicRefused.Topic ]
   ; RefreshRejection names why a refresh ended no flow: the metaflow is not
