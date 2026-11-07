@@ -927,7 +927,7 @@ fn durable_admission_and_resumable_sender_outcomes_round_trip() {
         "SendAccepted.{ req1 1 Queued }",
         "SendAccepted.{ req4 4 Retryable.OwnerResolvedAbsent }",
         "SendsObserved.{ store1 2 [ { req2 2 Sender.{ Mind flow Sol } { Psyche flow Opus } Attempting } ] }",
-        "SendChanged.{ req3 3 Sender.{ Mind flow Sol } { Psyche flow Opus } Delivered.{ Claude session-1 prompt-1 } }",
+        "SendChanged.{ req3 3 Sender.{ Mind flow Sol } { Psyche flow Opus } Delivered }",
         "SendChanged.{ req4 4 Sender.{ Mind flow Sol } { Psyche flow Opus } Withdrawn }",
         "SendChanged.{ req5 5 Sender.{ Mind flow Sol } { Psyche flow Opus } Retryable.WakeRefused.ContextRefused.RecordMissing }",
         "SendsObserved.{ store1 6 [ { req6 6 Sender.{ Mind flow Sol } { Psyche flow Opus } Retryable.WakeRefused.Undeclared } ] }",
