@@ -1497,6 +1497,14 @@ pub struct IdentifyThread_Data {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct ObserveSender_Data {
+    pub process: flow_ethos::Process,
+    pub native_session_id_option: std::option::Option<NativeSessionId>,
+    pub delivery_cursor_option: std::option::Option<DeliveryCursor>,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct Adopt_Data {
     pub address: flow_ethos::Address,
     pub native_session_id: NativeSessionId,
@@ -1540,6 +1548,7 @@ pub enum Query {
     IdentifyThread(IdentifyThread_Data),
     Send(SendRequest),
     ObserveSends(std::option::Option<DeliveryCursor>),
+    ObserveSender(ObserveSender_Data),
     ObserveDeliveries(std::option::Option<DeliveryCursor>),
     DeliverAll(flow_ethos::Address),
     Launch(LaunchRequest),
