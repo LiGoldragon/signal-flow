@@ -275,7 +275,7 @@ Signal
   IdentifyThread.{ Process NativeSessionId }
   Send.SendRequest
   ObserveSends.Option<DeliveryCursor>
-  ObserveSender.{ Process Option<NativeSessionId> Option<DeliveryCursor> }
+  ObserveDeliveries.Option<DeliveryCursor>
   DeliverAll.Address
   Launch.LaunchRequest
   Rehearse.LaunchRequest
