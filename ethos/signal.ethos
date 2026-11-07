@@ -607,7 +607,7 @@ Signal
   RetirementSnapshot.{ Address Vector<HandoverGenerationKey> }
   ArchiveCommitted.{ HandoverGenerationKey HandoverArchiveIdentity }
   RetirementChange.[ GenerationClosed.HandoverGenerationKey
-                      ArchiveCommitted.ArchiveCommitted
+                      ArchiveCommitted
                       GenerationRemoved.HandoverGenerationKey ]
   RetirementObservationFailure.[ Overflow MissingEvidence.String ]
   AgentState.[ Idle Working Blocked Done Unknown Gone ]
