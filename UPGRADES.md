@@ -2,6 +2,15 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 53.0.0: datom-codec 0bbeb11, protos 4024614, signal 10.4.0
+
+Built on 52.0.0. The contract is unchanged; only the pins move.
+
+- The `datom` feature pins datom-codec 0.33.1 (0bbeb11) and protos 0.33.0
+  (4024614), and signal 10.4.0 (7e6dfe5). A consumer repins the three to those
+  revisions so one datom-codec and one protos sit in its graph.
+- flow-ethos is taken at c585ea6, which pins the same two revisions.
+
 ## 52.0.0: a handover that cannot be read refuses the launch
 
 Built on 51.0.0.

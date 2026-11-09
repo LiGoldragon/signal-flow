@@ -55,11 +55,20 @@ dependencies = [
 
 [[package]]
 name = "datom-codec"
-version = "0.33.0"
-source = "git+https://github.com/LiGoldragon/datom-codec?rev=eabead4#eabead48b31e8d4f429d7fb156dd18548bbd79c1"
+version = "0.33.1"
+source = "git+https://github.com/LiGoldragon/datom-codec?rev=0bbeb11#0bbeb11b692606f85b5c60187b14586802cb4701"
 dependencies = [
- "datom-codec-derive 0.32.3",
- "protos 0.33.0",
+ "datom-codec-derive 0.32.3 (git+https://github.com/LiGoldragon/datom-codec?rev=0bbeb11)",
+ "protos 0.33.0 (git+https://github.com/LiGoldragon/protos?rev=4024614)",
+]
+
+[[package]]
+name = "datom-codec"
+version = "0.33.1"
+source = "git+https://github.com/LiGoldragon/datom-codec?rev=5cd6219#5cd62196d07ab52c69b6ed287510fa310c1838e7"
+dependencies = [
+ "datom-codec-derive 0.32.3 (git+https://github.com/LiGoldragon/datom-codec?rev=5cd6219)",
+ "protos 0.33.0 (git+https://github.com/LiGoldragon/protos?rev=3c7ade3)",
  "rkyv",
 ]
 
@@ -76,7 +85,17 @@ dependencies = [
 [[package]]
 name = "datom-codec-derive"
 version = "0.32.3"
-source = "git+https://github.com/LiGoldragon/datom-codec?rev=eabead4#eabead48b31e8d4f429d7fb156dd18548bbd79c1"
+source = "git+https://github.com/LiGoldragon/datom-codec?rev=0bbeb11#0bbeb11b692606f85b5c60187b14586802cb4701"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+]
+
+[[package]]
+name = "datom-codec-derive"
+version = "0.32.3"
+source = "git+https://github.com/LiGoldragon/datom-codec?rev=5cd6219#5cd62196d07ab52c69b6ed287510fa310c1838e7"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -105,13 +124,13 @@ dependencies = [
 
 [[package]]
 name = "ethos-zero"
-version = "19.2.0"
-source = "git+https://github.com/LiGoldragon/ethos-zero?rev=5a5daca#5a5daca315ab24460ccbcd5038130c453e853e6e"
+version = "22.0.0"
+source = "git+https://github.com/LiGoldragon/ethos-zero?rev=daa22ee#daa22eea68b5fc8c5b71c5790a77b6473c335108"
 dependencies = [
- "datom-codec 0.33.0",
+ "datom-codec 0.33.1 (git+https://github.com/LiGoldragon/datom-codec?rev=5cd6219)",
  "prettyplease",
  "proc-macro2",
- "protos 0.33.0",
+ "protos 0.33.0 (git+https://github.com/LiGoldragon/protos?rev=3c7ade3)",
  "quote",
  "rkyv",
  "syn 3.0.6",
@@ -120,11 +139,11 @@ dependencies = [
 [[package]]
 name = "flow-ethos"
 version = "0.53.1"
-source = "git+https://github.com/LiGoldragon/flow?rev=5ea2aa474a27bc2f233d189f1295d311c69c6ec8#5ea2aa474a27bc2f233d189f1295d311c69c6ec8"
+source = "git+https://github.com/LiGoldragon/flow?rev=c585ea6#c585ea6792cec66ffd81fb0a24cea3df90efd197"
 dependencies = [
- "datom-codec 0.33.0",
+ "datom-codec 0.33.1 (git+https://github.com/LiGoldragon/datom-codec?rev=0bbeb11)",
  "ethos-zero 17.0.0",
- "protos 0.33.0",
+ "protos 0.33.0 (git+https://github.com/LiGoldragon/protos?rev=4024614)",
  "rkyv",
 ]
 
@@ -247,6 +266,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "protos"
+version = "0.33.0"
+source = "git+https://github.com/LiGoldragon/protos?rev=4024614#4024614f1298bafcce7cb1bf1741005df6b0ef88"
+
+[[package]]
 name = "ptr_meta"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -331,24 +355,24 @@ checksum = "cf54715a573b99ac80df0bc206da022bcd442c974952c7b9720069370852e21f"
 
 [[package]]
 name = "signal"
-version = "10.3.0"
-source = "git+https://github.com/LiGoldragon/signal?rev=7afb68bcd19ce774f47d11c5e69f6e10054f78de#7afb68bcd19ce774f47d11c5e69f6e10054f78de"
+version = "10.4.0"
+source = "git+https://github.com/LiGoldragon/signal?rev=7e6dfe5#7e6dfe5e7539e0de35d5b568156867356542eb2c"
 dependencies = [
- "datom-codec 0.33.0",
- "ethos-zero 19.2.0",
- "protos 0.33.0",
+ "datom-codec 0.33.1 (git+https://github.com/LiGoldragon/datom-codec?rev=0bbeb11)",
+ "ethos-zero 22.0.0",
+ "protos 0.33.0 (git+https://github.com/LiGoldragon/protos?rev=4024614)",
  "rkyv",
  "thiserror",
 ]
 
 [[package]]
 name = "signal-flow"
-version = "52.0.0"
+version = "53.0.0"
 dependencies = [
- "datom-codec 0.33.0",
+ "datom-codec 0.33.1 (git+https://github.com/LiGoldragon/datom-codec?rev=0bbeb11)",
  "ethos-zero 17.0.0",
  "flow-ethos",
- "protos 0.33.0",
+ "protos 0.33.0 (git+https://github.com/LiGoldragon/protos?rev=4024614)",
  "rkyv",
  "signal",
 ]
