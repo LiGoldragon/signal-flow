@@ -31,6 +31,14 @@ Built on 56.0.0 (be85c63).
   with `TurnEnd.{ Address HarnessKind FlowId ObservedAt }`, as in
   `TurnEnded.{ { Psyche core Opus } Claude 7d41e0 1761800000 }`. `Response`
   gains both, after `UndecodableObserved`.
+- `ObserveSelection` gains `Metaflows`, after `TurnEnds`:
+  `Observe.Metaflows` answers `MetaflowsObserved.Vector<Metaflow>` on open,
+  the metaflows as `Metaflows` lists them, then at each change
+  `MetaflowChanged.Metaflow` for a metaflow as it now stands and
+  `MetaflowGone.Address` for one no longer listed, as in
+  `MetaflowChanged.{ { Psyche flow Fable } Asleep [ f1c841 ] [] }`.
+  `Response` gains all three, after `TurnEnded`. `Metaflows` stays the
+  one-shot read.
 - Every producer and consumer moves to 57.0.0 together: the hook that
   writes a Stop, the Nexus that stores it, and a match on `Response`.
 

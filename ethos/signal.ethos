@@ -185,6 +185,14 @@
 ; The last turn end of each harness is kept in Flow's Memory, so the state
 ; on open outlives a restart. Nothing is re-read on a timer.
 ;
+; Observe.Metaflows opens an exchange that goes on answering: on open it
+; sends MetaflowsObserved, the metaflows as Metaflows lists them; then, at
+; each commit that changes them, one MetaflowChanged for each metaflow that
+; is no longer as last sent, as it now stands, and one MetaflowGone for
+; each that is no longer listed, and it ends when the observer goes.
+; Commits that land before the change is read are sent as the state they
+; leave. Metaflows stays the one-shot read. Nothing is re-read on a timer.
+;
 ; A Pending flow becomes Active when it is witnessed live: on a
 ; Presented Deliver, or when List finds its bound pane present in Herdr.
 ; Nothing else promotes it.
@@ -389,7 +397,10 @@ Signal
   FrameRefused.UndecodableFrame
   UndecodableObserved.Vector<UndecodableFrame>
   TurnEndsObserved.Vector<TurnEnd>
-  TurnEnded.TurnEnd ]
+  TurnEnded.TurnEnd
+  MetaflowsObserved.Vector<Metaflow>
+  MetaflowChanged.Metaflow
+  MetaflowGone.Address ]
 [
   SessionId.String
   Tokens.Integer
@@ -655,7 +666,8 @@ Signal
                      Agent.FlowId
                      Retirement.Address
                      Undecodable
-                     TurnEnds ]
+                     TurnEnds
+                     Metaflows ]
   ; RetirementObserved is the closed-generation state when an ordinary
   ; Observe.Retirement subscription attaches. It carries no claim about
   ; changes before attachment. Later committed changes are pushed in FIFO

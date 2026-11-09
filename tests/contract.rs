@@ -1206,6 +1206,36 @@ fn a_turn_end_subscription_names_address_harness_and_flow_round_trip() {
     }
 }
 
+/// Observe.Metaflows subscribes to the metaflows: as Metaflows lists them
+/// on open, then each one that changes as it now stands, and the Address
+/// of each no longer listed. Datom to rkyv to datom returns the same text.
+#[test]
+fn a_metaflow_subscription_opens_on_the_list_then_names_each_change_round_trip() {
+    let query = Query::Observe(signal_flow::ObserveSelection::Metaflows);
+    let query_text = query.datomize(vec![]).protosize().compact();
+    assert_eq!(query_text, "Observe.Metaflows");
+    assert_eq!(
+        Potential::<Query>::from(query_text)
+            .actualize(&mut budget())
+            .unwrap(),
+        query
+    );
+    for text in [
+        "MetaflowsObserved.[ { { Psyche flow Fable } Awake.f1c841 [ past-1 ] [] } { { Mind topics Astra } Asleep [] [] } ]",
+        "MetaflowsObserved.[]",
+        "MetaflowChanged.{ { Psyche flow Fable } Asleep [ f1c841 past-1 ] [] }",
+        "MetaflowGone.{ Mind topics Astra }",
+    ] {
+        let value = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&value).unwrap();
+        let read = rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap();
+        assert_eq!(read, value);
+        assert_eq!(read.datomize(vec![]).protosize().compact(), text);
+    }
+}
+
 /// Restart names the flow alone; each answer names the flow again, and a
 /// resume refused carries its fixed category. The concrete text is the
 /// specification.

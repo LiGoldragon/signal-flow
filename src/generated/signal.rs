@@ -761,6 +761,7 @@ pub enum ObserveSelection {
     Retirement(flow_ethos::Address),
     Undecodable,
     TurnEnds,
+    Metaflows,
 }
 #[rustfmt::skip]
 pub type HandoverGeneration = i64;
@@ -1701,4 +1702,7 @@ pub enum Response {
     UndecodableObserved(std::vec::Vec<UndecodableFrame>),
     TurnEndsObserved(std::vec::Vec<TurnEnd>),
     TurnEnded(TurnEnd),
+    MetaflowsObserved(std::vec::Vec<flow_ethos::Metaflow>),
+    MetaflowChanged(flow_ethos::Metaflow),
+    MetaflowGone(flow_ethos::Address),
 }
