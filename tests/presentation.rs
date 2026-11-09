@@ -18,7 +18,7 @@ fn budget() -> Budget {
 #[test]
 fn presentation_is_one_title_and_escapes_delimiters() {
     let value = Presentation {
-        title: "A title with » and trailing \\".into(),
+        title: signal_flow::Title("A title with » and trailing \\".to_string()),
     };
     let text = value
         .datomize(vec![1])

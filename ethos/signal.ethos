@@ -306,7 +306,7 @@
 
 Signal
 [
-  flow_ethos:[ Aspect Address FlowId Request Said SentBy QueueEntry NativeInput LogicalDeliveryId Message Lock Sender Process Metaflow Key Recipient Model Topic Subaspect OrdinarySocketPath MetaSocketPath Start ModelName HarnessKind Minutes AnswerableTask RequestId ResultPayload ] ]
+  flow_ethos:[ Aspect Address FlowId Request Said SentBy QueueEntry NativeInput LogicalDeliveryId Message Process Metaflow Key Model Topic Subaspect OrdinarySocketPath MetaSocketPath ModelName HarnessKind Minutes AnswerableTask RequestId ResultPayload ] ]
 [ Start.LaunchProfile
   Refresh.Address
   ResolveRecipient.RecipientResolutionRequest
@@ -316,13 +316,13 @@ Signal
   Observe.ObserveSelection
   ResolveCaller.Option<FlowId>
   Report.{ FlowId Event }
-  Lock.{ Sender Recipient }
+  Lock.{ Address Address }
   Bind.{ Address Process }
   Identify.Process
-  Deliver.{ Lock DeliverKey SendableMessage }
+  Deliver.{ :flow_ethos:Lock DeliverKey SendableMessage }
   Acknowledge.Vector<DeliverKey>
   ArchiveRequest.RequestId
-  Release.Lock
+  Release.:flow_ethos:Lock
   Current.Address
   Metaflows
   IdentifyThread.{ Process NativeSessionId }
@@ -343,7 +343,7 @@ Signal
 [ Started.Launched
   LaunchPending.LaunchAttempt
   StartAmbiguous.PromptDeliveryIntent
-  Refreshed.Refreshed
+  Refreshed
   RecipientResolved.FlowNode
   Stopped.FlowId
   Listed.Vector<Metaflow>
@@ -353,18 +353,18 @@ Signal
   RefreshRejected.RefreshRejection
   RecipientResolutionRejected.RecipientResolutionRejection
   StopRejected.StopRejection
-  Replaced.Replaced
+  Replaced
   ReplaceRejected.ReplaceRejection
   LaunchInspected.LaunchInspection
   LaunchStatusRejected.LaunchStatusRejection
-  CallerResolved.Caller
+  CallerResolved.CallerIdentity
   CallerResolutionRejected.CallerResolutionRejection
   AgentObserved.AgentObservation
   RetirementObserved.RetirementSnapshot
   RetirementChanged.RetirementChange
   RetirementObservationFailed.RetirementObservationFailure
   Reported
-  Locked.Lock
+  Locked.:flow_ethos:Lock
   Bound.FlowId
   Identified.Address
   SendAccepted.VisibleSendAcceptance
@@ -393,7 +393,7 @@ Signal
   ArchiveRejected.ArchiveRejection
   Glanced.Vector<Heading>
   Handover.Vector<Section>
-  RefreshQueued.RefreshQueued
+  RefreshQueued
   FrameRefused.UndecodableFrame
   UndecodableObserved.Vector<UndecodableFrame>
   TurnEndsObserved.Vector<TurnEnd>
@@ -479,7 +479,7 @@ Signal
                          Ambiguous.PromptDeliveryIntent ]
   LaunchAttemptPhase.[ Reserved NativeLaunchIntentRecorded NativeBound RegistrationAcknowledged PromptIntentRecorded PromptObserved PromptAmbiguous ]
   LaunchAttempt.{ LaunchRequestId LaunchProfile PromptSha256 Origin LaunchAttemptPhase Option<NativeLaunchIntent> Option<NativeLaunchBinding> Option<RegistrationAcknowledgement> Option<PromptDeliveryIntent> Option<PromptDeliveryResult> }
-  LaunchStatusOutcome.[ Started.Launched Replaced.Replaced StartRejected.StartRejection ReplaceRejected.ReplaceRejection ]
+  LaunchStatusOutcome.[ Started.Launched Replaced StartRejected.StartRejection ReplaceRejected.ReplaceRejection ]
   LaunchInspection.{ LaunchAttempt Option<LaunchStatusOutcome> Option<FlowNode> }
   LaunchAttemptReservation.[ Reserved.LaunchAttempt
                              Existing.LaunchAttempt
@@ -687,9 +687,9 @@ Signal
   AgentState.[ Idle Working Blocked Done Unknown Gone ]
   AgentObservation.{ FlowId AgentState }
   LaunchStatusRejection.[ UnknownLaunchRequest PersistenceRefused ReadViewChanged InconsistentRecords ]
-  Caller.{ FlowId Aspect ModelName }
+  CallerIdentity.{ FlowId Aspect ModelName }
   CallerResolutionRejection.[ CallerUnknown
-                              CallerMismatch.Caller ]
+                              CallerMismatch.CallerIdentity ]
   Title.String
   Presentation.{ Title }
   TranscriptPath.String
@@ -713,11 +713,11 @@ Signal
   ; Awake as, its harness, the flow, and when Flow observed the end.
   TurnEnd.{ Address HarnessKind FlowId ObservedAt }
   Refusal.[ Locked
-            Held.Lock
+            Held.:flow_ethos:Lock
             Awake.FlowId
             Asleep
             Lapsed
-            Unknown.[ Address.Address Lock.Lock FlowId.FlowId Key.Key ]
+            Unknown.[ Address Lock.:flow_ethos:Lock FlowId Key ]
             NotConfigured
             NotMessage
             Taken.Address
@@ -795,7 +795,7 @@ Signal
                    Reminder.{ RequestId String } ]
   VisibleSender.[ Sender.Address Unknown Notification ]
   VisibleNativeInput.{ VisibleSender DeliveredMessage }
-  SendRequest.{ Recipient SendableMessage }
+  SendRequest.{ Address SendableMessage }
   DeliveryCursor.Integer
   Namespace.String
   Counter.Integer
@@ -836,7 +836,7 @@ Signal
   ; Unresolved and Ambiguous preserve every open task and name why no answer
   ; was admitted.
   VisibleRefusal.[ Locked
-                   Held.Lock
+                   Held.:flow_ethos:Lock
                    Awake
                    Asleep
                    Lapsed
@@ -854,7 +854,7 @@ Signal
                    RequestIdSpaceFull
                    RequestIdDrawsCollided
                    MinutesRefused.MinutesRefusal ]
-  VisibleUnknown.[ Address.Address Lock.Lock Flow Key.Key ]
+  VisibleUnknown.[ Address Lock.:flow_ethos:Lock Flow Key ]
   VisibleDeliveryState.[ Queued
                          Attempting
                          Retryable.RetryCause

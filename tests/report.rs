@@ -8,61 +8,69 @@ use signal_flow::{
 
 fn reports() -> Vec<Query> {
     [
-        Event::Started(Some("s2".into())),
+        Event::Started(Some(signal_flow::NativeSessionId("s2".to_string()))),
         Event::Started(None),
         Event::ToolUsed("Bash".into()),
         Event::Stopped(NativeStop {
-            native_session_id_option: Some("s1".into()),
-            transcript_path_option: Some("/p/s1.jsonl".into()),
-            last_assistant_message_option: None,
-            background_work: vec![],
+            native_session_id_option: Some(signal_flow::NativeSessionId("s1".to_string())),
+            transcript_path_option: Some(signal_flow::TranscriptPath("/p/s1.jsonl".to_string())),
+            last_assistant_message_option: signal_flow::LastAssistantMessageOption(None),
+            background_work: signal_flow::BackgroundWork(vec![]),
         }),
         Event::Stopped(NativeStop {
             native_session_id_option: None,
             transcript_path_option: None,
-            last_assistant_message_option: None,
-            background_work: vec![],
+            last_assistant_message_option: signal_flow::LastAssistantMessageOption(None),
+            background_work: signal_flow::BackgroundWork(vec![]),
         }),
         // A turn that ended with a subagent and a monitor still in flight.
         Event::Stopped(NativeStop {
-            native_session_id_option: Some("s1".into()),
-            transcript_path_option: Some("/p/s1.jsonl".into()),
-            last_assistant_message_option: Some("waiting".into()),
-            background_work: vec![
+            native_session_id_option: Some(signal_flow::NativeSessionId("s1".to_string())),
+            transcript_path_option: Some(signal_flow::TranscriptPath("/p/s1.jsonl".to_string())),
+            last_assistant_message_option: signal_flow::LastAssistantMessageOption(Some(
+                "waiting".to_string(),
+            )),
+            background_work: signal_flow::BackgroundWork(vec![
                 BackgroundTask {
-                    background_task_id: "a1".into(),
+                    background_task_id: signal_flow::BackgroundTaskId("a1".to_string()),
                     background_task_kind: BackgroundTaskKind::Subagent,
-                    background_task_status: "running".into(),
-                    description: "review".into(),
+                    background_task_status: signal_flow::BackgroundTaskStatus(
+                        "running".to_string(),
+                    ),
+                    description: signal_flow::Description("review".to_string()),
                 },
                 BackgroundTask {
-                    background_task_id: "m1".into(),
+                    background_task_id: signal_flow::BackgroundTaskId("m1".to_string()),
                     background_task_kind: BackgroundTaskKind::Monitor,
-                    background_task_status: "running".into(),
-                    description: "watch".into(),
+                    background_task_status: signal_flow::BackgroundTaskStatus(
+                        "running".to_string(),
+                    ),
+                    description: signal_flow::Description("watch".to_string()),
                 },
                 BackgroundTask {
-                    background_task_id: "c1".into(),
+                    background_task_id: signal_flow::BackgroundTaskId("c1".to_string()),
                     background_task_kind: BackgroundTaskKind::Other("cron".into()),
-                    background_task_status: "pending".into(),
-                    description: "later".into(),
+                    background_task_status: signal_flow::BackgroundTaskStatus(
+                        "pending".to_string(),
+                    ),
+                    description: signal_flow::Description("later".to_string()),
                 },
-            ],
+            ]),
         }),
         Event::PromptSubmitted(NativePrompt {
-            native_session_id_option: Some("s1".into()),
-            prompt_id_option: Some("p1".into()),
-            prompt_sha256: "ab12".into(),
+            native_session_id_option: Some(signal_flow::NativeSessionId("s1".to_string())),
+            prompt_id_option: Some(signal_flow::PromptId("p1".to_string())),
+            prompt_sha256: signal_flow::PromptSha256("ab12".to_string()),
         }),
-        Event::Ended(Some("s1".into())),
+        Event::Ended(Some(signal_flow::NativeSessionId("s1".to_string()))),
         Event::Ended(None),
-        Event::Cleared(Some("s1".into())),
+        Event::Cleared(Some(signal_flow::NativeSessionId("s1".to_string()))),
         Event::Cleared(None),
     ]
     .into_iter()
     .map(|event| {
         Query::Report(Report_Data {
-            flow_id: "f1c841".into(),
+            flow_id: signal_flow::FlowId("f1c841".to_string()),
             event,
         })
     })
@@ -74,7 +82,7 @@ fn replies() -> Vec<Response> {
         Response::Reported,
         Response::SendRefused(VisibleRefusal::Unknown(VisibleUnknown::Address(Address {
             aspect: Aspect::Mind,
-            topic: Topic::from("core"),
+            topic: Topic("core".to_string()),
             model: Model::Sol,
         }))),
     ]

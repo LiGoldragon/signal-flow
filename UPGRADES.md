@@ -1,5 +1,22 @@
 # Upgrades
 
+## 58.0.0: ethos-zero 1976e45, flow-ethos d1effd4b, datom-codec 09a0526, protos c93b598, signal d77169d
+
+Built on 57.0.0. Every datom text form is unchanged.
+
+- ethos-zero 22 makes each one-type head a newtype: FlowId, Title,
+  NativeSessionId and the other scalar heads are tuple structs, so a consumer
+  wraps a value with the constructor and reads it with `.0`.
+- Recipient and Sender are gone; a Lock holds two Addresses and Lock.{ Address
+  Address } is the Lock input; SendRequest holds an Address. Caller is renamed
+  CallerIdentity. VisibleSendReceipt, StopRequest, RecipientResolutionRequest
+  and the other heads over a single named type are that type.
+- The pins are datom-codec 09a0526, protos c93b598, ethos-zero 1976e45,
+  signal d77169d and flow-ethos d1effd4b, so one source of each sits in a
+  consumer's graph.
+- Built on build-base d7ce205: one derivation per crate from the committed
+  Cargo.nix.
+
 How to deploy each breaking change of signal-flow.
 
 ## 57.0.0: a Stop carries its background work; a refresh waits for rest

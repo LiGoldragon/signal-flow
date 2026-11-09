@@ -47,7 +47,7 @@ fn earlier() -> Vec<ReplaceRejection> {
         StartRejection::ContextRefused(ContextRefusal::ComposerRejected("missing".into())),
     ));
     values.push(ReplaceRejection::LaunchRefused(
-        StartRejection::TopicRefused("topic".into()),
+        StartRejection::TopicRefused(signal_flow::Topic("topic".to_string())),
     ));
     values
 }
@@ -72,7 +72,7 @@ fn a_rejection_51_archived_reads_the_same() {
 fn a_handover_refusal_archives_and_reads_back() {
     let refusal = ReplaceRejection::LaunchRefused(StartRejection::CompositionRefused(
         CompositionRefusal::HandoverUnreadable(signal_flow::HandoverUnreadable_Data {
-            flow_id: "abc123".into(),
+            flow_id: signal_flow::FlowId("abc123".to_string()),
             handover_fault: signal_flow::HandoverFault::Unreadable(
                 "flows/abc123/handover.md: Permission denied (os error 13)".into(),
             ),

@@ -18,7 +18,9 @@ fn missing_module_refusal_carries_known_or_historical_identity() {
     for (text, expected) in [
         (
             "ModuleMissing.Some.vision:absent",
-            signal_flow::ContextRefusal::ModuleMissing(Some("vision:absent".into())),
+            signal_flow::ContextRefusal::ModuleMissing(Some(signal_flow::ModuleIdentity(
+                "vision:absent".to_string(),
+            ))),
         ),
         (
             "ModuleMissing.None",
@@ -52,26 +54,26 @@ fn every_ordinary_request_has_a_concrete_datom() {
 #[test]
 fn flow_node_round_trips_over_signal_and_datom() {
     let reply = Response::RecipientResolved(signal_flow::FlowNode {
-        flow_id: "fac697".into(),
-        session_id: "session-1".into(),
+        flow_id: signal_flow::FlowId("fac697".to_string()),
+        session_id: signal_flow::SessionId("session-1".to_string()),
         harness_kind: signal_flow::HarnessKind::Codex,
         endpoint_selection: signal_flow::EndpointSelection::Available(
             signal_flow::Available_Data {
-                endpoint_path: "/run/user/1001/codex.sock".into(),
+                endpoint_path: signal_flow::EndpointPath("/run/user/1001/codex.sock".to_string()),
                 route_readiness: signal_flow::RouteReadiness::Ready,
             },
         ),
         herdr_route_selection: signal_flow::HerdrRouteSelection::Available(
             signal_flow::HerdrRoute {
-                herdr_session_name: "messaging-build".into(),
-                herdr_agent_name: "psyche-mind-astra".into(),
-                herdr_pane_id: "w1:p3".into(),
-                herdr_terminal_id: "term-fixture".into(),
+                herdr_session_name: signal_flow::HerdrSessionName("messaging-build".to_string()),
+                herdr_agent_name: signal_flow::HerdrAgentName("psyche-mind-astra".to_string()),
+                herdr_pane_id: signal_flow::HerdrPaneId("w1:p3".to_string()),
+                herdr_terminal_id: signal_flow::HerdrTerminalId("term-fixture".to_string()),
             },
         ),
         origin: signal_flow::Origin::Flow(signal_flow::FlowOrigin {
-            flow_id: "parent".into(),
-            session_id: "session-0".into(),
+            flow_id: signal_flow::FlowId("parent".to_string()),
+            session_id: signal_flow::SessionId("session-0".to_string()),
         }),
         flow_lifecycle: signal_flow::FlowLifecycle::Active,
     });
@@ -90,52 +92,64 @@ fn flow_node_round_trips_over_signal_and_datom() {
 #[test]
 fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
     let profile = signal_flow::LaunchProfile {
-        launch_request_id: "request-7".into(),
-        system_modules: vec!["spirit:core".into()],
-        user_modules: vec!["compensation:main-flow".into(), "knowledge:flow".into()],
-        remembering: signal_flow::Remembering::Custom(vec!["4e1d2a".into()]),
+        launch_request_id: signal_flow::LaunchRequestId("request-7".to_string()),
+        system_modules: signal_flow::SystemModules(vec![signal_flow::ModuleIdentity(
+            "spirit:core".to_string(),
+        )]),
+        user_modules: signal_flow::UserModules(vec![
+            signal_flow::ModuleIdentity("compensation:main-flow".to_string()),
+            signal_flow::ModuleIdentity("knowledge:flow".to_string()),
+        ]),
+        remembering: signal_flow::Remembering::Custom(vec![signal_flow::FlowId(
+            "4e1d2a".to_string(),
+        )]),
         address: signal_flow::Address {
             aspect: signal_flow::Aspect::Field,
-            topic: "flow".into(),
+            topic: signal_flow::Topic("flow".to_string()),
             model: signal_flow::Model::Fable,
         },
-        model_name: "gpt-6-astra".into(),
-        effort: "medium".into(),
-        flow_id_option: Some("836818".into()),
-        herdr_session_name: "messaging-build".into(),
-        leave_outs_option: Some(vec![
+        model_name: signal_flow::ModelName("gpt-6-astra".to_string()),
+        effort: signal_flow::Effort("medium".to_string()),
+        flow_id_option: Some(signal_flow::FlowId("836818".to_string())),
+        herdr_session_name: signal_flow::HerdrSessionName("messaging-build".to_string()),
+        leave_outs_option: Some(signal_flow::LeaveOuts(vec![
             signal_flow::LeaveOut::SkillTool,
             signal_flow::LeaveOut::WorkflowTool,
-        ]),
+        ])),
         flow_kind: signal_flow::FlowKind::Regular,
         tool_set: signal_flow::ToolSet::Default,
-        instruction_prompt: "Carry this bounded launch request.".into(),
+        instruction_prompt: signal_flow::InstructionPrompt(
+            "Carry this bounded launch request.".to_string(),
+        ),
     };
     let receipt_request = signal_flow::TargetReceiptRequest {
         launch_request_id: profile.launch_request_id.clone(),
-        prompt_sha256: "0286307646b3fb93a6e70d7012eaa2d07239bb1eb7c81a668fe1d4b6f3d97b3b".into(),
+        prompt_sha256: signal_flow::PromptSha256(
+            "0286307646b3fb93a6e70d7012eaa2d07239bb1eb7c81a668fe1d4b6f3d97b3b".to_string(),
+        ),
     };
     let composed = signal_flow::ComposedLaunch {
         launch_profile: profile,
         harness_kind: signal_flow::HarnessKind::Codex,
         system_prompt: signal_flow::SystemPrompt {
-            system_prompt_text: "system text".into(),
-            system_prompt_sha256:
-                "1b8d0b2e3f3a6bd7c4bd3d3a5c8f1b5f2c1f6c7fd0a8e1f6f0b0c9d4e2a7b3c1".into(),
+            system_prompt_text: signal_flow::SystemPromptText("system text".to_string()),
+            system_prompt_sha256: signal_flow::SystemPromptSha256(
+                "1b8d0b2e3f3a6bd7c4bd3d3a5c8f1b5f2c1f6c7fd0a8e1f6f0b0c9d4e2a7b3c1".to_string(),
+            ),
         },
         first_prompt_payload: signal_flow::FirstPromptPayload {
-            first_prompt_body: "prompt body".into(),
+            first_prompt_body: signal_flow::FirstPromptBody("prompt body".to_string()),
             prompt_sha256: receipt_request.prompt_sha256.clone(),
             prompt_part_vector: vec![signal_flow::PromptPart {
-                prompt_part_text: "prompt body".into(),
+                prompt_part_text: signal_flow::PromptPartText("prompt body".to_string()),
                 prompt_sha256: receipt_request.prompt_sha256.clone(),
             }],
         },
         target_receipt_request: receipt_request,
-        leave_outs: vec![
+        leave_outs: signal_flow::LeaveOuts(vec![
             signal_flow::LeaveOut::SkillTool,
             signal_flow::LeaveOut::WorkflowTool,
-        ],
+        ]),
     };
 
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&composed).unwrap();
@@ -148,38 +162,45 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
 #[test]
 fn launch_attempt_journal_round_trips_with_one_shot_intent() {
     let binding = signal_flow::HerdrPaneBinding {
-        launch_request_id: "request-7".into(),
-        herdr_session_name: "messaging-build".into(),
-        herdr_agent_name: "field-high-of-836818".into(),
-        herdr_workspace_id: "workspace-1".into(),
-        herdr_pane_id: "w1:p4".into(),
-        herdr_terminal_id: "term-4".into(),
+        launch_request_id: signal_flow::LaunchRequestId("request-7".to_string()),
+        herdr_session_name: signal_flow::HerdrSessionName("messaging-build".to_string()),
+        herdr_agent_name: signal_flow::HerdrAgentName("field-high-of-836818".to_string()),
+        herdr_workspace_id: signal_flow::HerdrWorkspaceId("workspace-1".to_string()),
+        herdr_pane_id: signal_flow::HerdrPaneId("w1:p4".to_string()),
+        herdr_terminal_id: signal_flow::HerdrTerminalId("term-4".to_string()),
     };
     let intent = signal_flow::PromptDeliveryIntent {
-        launch_request_id: "request-7".into(),
-        prompt_sha256: "0286307646b3fb93a6e70d7012eaa2d07239bb1eb7c81a668fe1d4b6f3d97b3b".into(),
-        flow_id: "908786".into(),
-        native_session_id: "native-session-1".into(),
+        launch_request_id: signal_flow::LaunchRequestId("request-7".to_string()),
+        prompt_sha256: signal_flow::PromptSha256(
+            "0286307646b3fb93a6e70d7012eaa2d07239bb1eb7c81a668fe1d4b6f3d97b3b".to_string(),
+        ),
+        flow_id: signal_flow::FlowId("908786".to_string()),
+        native_session_id: signal_flow::NativeSessionId("native-session-1".to_string()),
         harness_kind: signal_flow::HarnessKind::Codex,
-        model_name: "gpt-6-astra".into(),
-        effort: "medium".into(),
+        model_name: signal_flow::ModelName("gpt-6-astra".to_string()),
+        effort: signal_flow::Effort("medium".to_string()),
         prompt_sha256_vector: vec![
-            "b2149f4ce39c3ec8984ca8e671514900470eaca3f132c30c89c12980f3ac3b08".into(),
-            "c2149f4ce39c3ec8984ca8e671514900470eaca3f132c30c89c12980f3ac3b08".into(),
+            signal_flow::PromptSha256(
+                "b2149f4ce39c3ec8984ca8e671514900470eaca3f132c30c89c12980f3ac3b08".to_string(),
+            ),
+            signal_flow::PromptSha256(
+                "c2149f4ce39c3ec8984ca8e671514900470eaca3f132c30c89c12980f3ac3b08".to_string(),
+            ),
         ],
-        parts_submitted: 1,
-        stops_reported: 0,
-        leave_outs: Vec::new(),
+        parts_submitted: signal_flow::PartsSubmitted(1),
+        stops_reported: signal_flow::StopsReported(0),
+        leave_outs: signal_flow::LeaveOuts(Vec::new()),
         herdr_pane_binding: binding,
         native_transcript_boundary: signal_flow::NativeTranscriptBoundary::Existing(
             signal_flow::NativeTranscriptCursor {
-                native_session_id: "native-session-1".into(),
+                native_session_id: signal_flow::NativeSessionId("native-session-1".to_string()),
                 harness_kind: signal_flow::HarnessKind::Codex,
-                transcript_device: "2049".into(),
-                transcript_inode: "99142".into(),
-                transcript_byte_offset: 4096,
-                transcript_prefix_sha256:
-                    "a2149f4ce39c3ec8984ca8e671514900470eaca3f132c30c89c12980f3ac3b07".into(),
+                transcript_device: signal_flow::TranscriptDevice("2049".to_string()),
+                transcript_inode: signal_flow::TranscriptInode("99142".to_string()),
+                transcript_byte_offset: signal_flow::TranscriptByteOffset(4096),
+                transcript_prefix_sha256: signal_flow::TranscriptPrefixSha256(
+                    "a2149f4ce39c3ec8984ca8e671514900470eaca3f132c30c89c12980f3ac3b07".to_string(),
+                ),
             },
         ),
     };
@@ -187,34 +208,41 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
         launch_request_id: intent.launch_request_id.clone(),
         launch_profile: signal_flow::LaunchProfile {
             launch_request_id: intent.launch_request_id.clone(),
-            system_modules: vec!["spirit:core".into()],
-            user_modules: vec!["compensation:main-flow".into()],
-            remembering: signal_flow::Remembering::Predecessors(0),
+            system_modules: signal_flow::SystemModules(vec![signal_flow::ModuleIdentity(
+                "spirit:core".to_string(),
+            )]),
+            user_modules: signal_flow::UserModules(vec![signal_flow::ModuleIdentity(
+                "compensation:main-flow".to_string(),
+            )]),
+            remembering: signal_flow::Remembering::Predecessors(signal_flow::RememberingDepth(0)),
             address: signal_flow::Address {
                 aspect: signal_flow::Aspect::Field,
-                topic: "flow".into(),
+                topic: signal_flow::Topic("flow".to_string()),
                 model: signal_flow::Model::Fable,
             },
             model_name: intent.model_name.clone(),
             effort: intent.effort.clone(),
             flow_id_option: None,
-            herdr_session_name: "messaging-build".into(),
+            herdr_session_name: signal_flow::HerdrSessionName("messaging-build".to_string()),
             leave_outs_option: None,
             flow_kind: signal_flow::FlowKind::Regular,
             tool_set: signal_flow::ToolSet::Default,
-            instruction_prompt: "Carry this bounded launch request.".into(),
+            instruction_prompt: signal_flow::InstructionPrompt(
+                "Carry this bounded launch request.".to_string(),
+            ),
         },
         prompt_sha256: intent.prompt_sha256.clone(),
         origin: signal_flow::Origin::Flow(signal_flow::FlowOrigin {
-            flow_id: "fac697".into(),
-            session_id: "caller-session".into(),
+            flow_id: signal_flow::FlowId("fac697".to_string()),
+            session_id: signal_flow::SessionId("caller-session".to_string()),
         }),
         launch_attempt_phase: signal_flow::LaunchAttemptPhase::PromptIntentRecorded,
         native_launch_intent_option: Some(signal_flow::NativeLaunchIntent {
             launch_request_id: intent.launch_request_id.clone(),
             prompt_sha256: intent.prompt_sha256.clone(),
-            system_prompt_sha256:
-                "1b8d0b2e3f3a6bd7c4bd3d3a5c8f1b5f2c1f6c7fd0a8e1f6f0b0c9d4e2a7b3c1".into(),
+            system_prompt_sha256: signal_flow::SystemPromptSha256(
+                "1b8d0b2e3f3a6bd7c4bd3d3a5c8f1b5f2c1f6c7fd0a8e1f6f0b0c9d4e2a7b3c1".to_string(),
+            ),
             harness_kind: signal_flow::HarnessKind::Codex,
             model_name: intent.model_name.clone(),
             effort: intent.effort.clone(),
@@ -234,10 +262,10 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
 
     let absent =
         signal_flow::NativeTranscriptBoundary::Absent(signal_flow::NativeTranscriptAbsence {
-            native_session_id: "native-session-2".into(),
+            native_session_id: signal_flow::NativeSessionId("native-session-2".to_string()),
             harness_kind: signal_flow::HarnessKind::Claude,
-            transcript_root_device: "2049".into(),
-            transcript_root_inode: "99143".into(),
+            transcript_root_device: signal_flow::TranscriptRootDevice("2049".to_string()),
+            transcript_root_inode: signal_flow::TranscriptRootInode("99143".to_string()),
         });
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&absent).unwrap();
     assert_eq!(
@@ -249,7 +277,9 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
 
 #[test]
 fn agent_observation_carries_the_flow_and_its_herdr_state() {
-    let query = Query::Observe(signal_flow::ObserveSelection::Agent("7d41e0".into()));
+    let query = Query::Observe(signal_flow::ObserveSelection::Agent(signal_flow::FlowId(
+        "7d41e0".to_string(),
+    )));
     let query_text = query.datomize(vec![]).protosize().compact();
     assert_eq!(query_text, "Observe.Agent.7d41e0");
     assert_eq!(
@@ -285,7 +315,7 @@ fn agent_observation_carries_the_flow_and_its_herdr_state() {
         ),
     ] {
         let response = Response::AgentObserved(signal_flow::AgentObservation {
-            flow_id: "7d41e0".into(),
+            flow_id: signal_flow::FlowId("7d41e0".to_string()),
             agent_state: state,
         });
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
@@ -312,14 +342,14 @@ fn retirement_observation_carries_exact_generation_and_archive_identity() {
     };
     let address = Address {
         aspect: Aspect::Mind,
-        topic: "flowNexus".into(),
+        topic: signal_flow::Topic("flowNexus".to_string()),
         model: Model::Sol,
     };
     let key = HandoverGenerationKey {
         address: address.clone(),
-        handover_generation: 7,
-        predecessor: "abc123".into(),
-        successor: "def456".into(),
+        handover_generation: signal_flow::HandoverGeneration(7),
+        predecessor: signal_flow::Predecessor(signal_flow::FlowId("abc123".to_string())),
+        successor: signal_flow::Successor(signal_flow::FlowId("def456".to_string())),
     };
     let values = [
         Query::Observe(ObserveSelection::Retirement(address.clone()))
@@ -336,9 +366,11 @@ fn retirement_observation_carries_exact_generation_and_archive_identity() {
         Response::RetirementChanged(RetirementChange::ArchiveCommitted(ArchiveCommitted {
             handover_generation_key: key,
             handover_archive_identity: HandoverArchiveIdentity {
-                git_commit: "commit".into(),
-                archive_document_path: "Mind/flowNexus/Sol/abc123.md".into(),
-                git_blob: "blob".into(),
+                git_commit: signal_flow::GitCommit("commit".to_string()),
+                archive_document_path: signal_flow::ArchiveDocumentPath(
+                    "Mind/flowNexus/Sol/abc123.md".to_string(),
+                ),
+                git_blob: signal_flow::GitBlob("blob".to_string()),
             },
         }))
         .datomize(vec![])
@@ -441,7 +473,10 @@ fn replace_carries_the_predecessor_in_its_launch_profile() {
     else {
         panic!("Replace");
     };
-    assert_eq!(profile.flow_id_option, Some("fac697".to_string()));
+    assert_eq!(
+        profile.flow_id_option,
+        Some(signal_flow::FlowId("fac697".to_string()))
+    );
 }
 
 #[test]
@@ -529,8 +564,10 @@ fn a_refused_harness_start_carries_its_cause_and_its_opened_thread() {
     assert_eq!(
         refusal.spawn_refusal_cause,
         signal_flow::SpawnRefusalCause::Herdr(signal_flow::HerdrRefusal {
-            herdr_error_code_option: Some("timeout".into()),
-            herdr_error_message: "timed out waiting for agent startup".into(),
+            herdr_error_code_option: Some(signal_flow::HerdrErrorCode("timeout".to_string())),
+            herdr_error_message: signal_flow::HerdrErrorMessage(
+                "timed out waiting for agent startup".to_string()
+            ),
         })
     );
 }
@@ -606,7 +643,7 @@ fn a_start_whose_model_is_not_the_configured_one_is_refused_with_its_reason() {
             .actualize(&mut budget())
             .unwrap(),
         Response::StartRejected(signal_flow::StartRejection::ModelRefused(
-            signal_flow::ModelRefusal::Differs("gpt-6-sol".into())
+            signal_flow::ModelRefusal::Differs(signal_flow::ModelName("gpt-6-sol".to_string()))
         ))
     );
 }
@@ -614,21 +651,21 @@ fn a_start_whose_model_is_not_the_configured_one_is_refused_with_its_reason() {
 #[test]
 fn replaced_names_the_stopped_predecessor_and_the_started_successor() {
     let reply = Response::Replaced(signal_flow::Replaced {
-        flow_id: "fac697".into(),
+        flow_id: signal_flow::FlowId("fac697".to_string()),
         launched: signal_flow::Launched {
-            flow_id: "908786".into(),
-            session_id: "session-2".into(),
+            flow_id: signal_flow::FlowId("908786".to_string()),
+            session_id: signal_flow::SessionId("session-2".to_string()),
             herdr_route_selection: signal_flow::HerdrRouteSelection::Available(
                 signal_flow::HerdrRoute {
-                    herdr_session_name: "default".into(),
-                    herdr_agent_name: "claude-a1".into(),
-                    herdr_pane_id: "w1:p4".into(),
-                    herdr_terminal_id: "term-4".into(),
+                    herdr_session_name: signal_flow::HerdrSessionName("default".to_string()),
+                    herdr_agent_name: signal_flow::HerdrAgentName("claude-a1".to_string()),
+                    herdr_pane_id: signal_flow::HerdrPaneId("w1:p4".to_string()),
+                    herdr_terminal_id: signal_flow::HerdrTerminalId("term-4".to_string()),
                 },
             ),
             origin: signal_flow::Origin::Flow(signal_flow::FlowOrigin {
-                flow_id: "fac697".into(),
-                session_id: "session-1".into(),
+                flow_id: signal_flow::FlowId("fac697".to_string()),
+                session_id: signal_flow::SessionId("session-1".to_string()),
             }),
         },
     });
@@ -706,10 +743,10 @@ fn launch_and_rehearse_share_one_request_and_have_typed_answers() {
 
 #[test]
 fn caller_names_the_flow_its_aspect_and_model() {
-    let reply = Response::CallerResolved(signal_flow::Caller {
-        flow_id: "38de5b".into(),
+    let reply = Response::CallerResolved(signal_flow::CallerIdentity {
+        flow_id: signal_flow::FlowId("38de5b".to_string()),
         aspect: signal_flow::Aspect::Psyche,
-        model_name: "claude-opus-5-5".into(),
+        model_name: signal_flow::ModelName("claude-opus-5-5".to_string()),
     });
     assert_eq!(
         reply.datomize(vec![]).protosize().compact(),
@@ -741,10 +778,19 @@ fn metaflows_query_and_listed_metaflow_roundtrip() {
     };
     assert_eq!(rows.len(), 1);
     assert_eq!(rows[0].address.aspect, Aspect::Psyche);
-    assert_eq!(rows[0].address.topic, "flow");
-    assert_eq!(rows[0].state, flow_ethos::State::Awake("f1c841".into()));
-    assert_eq!(rows[0].past, vec!["past-1".to_owned()]);
-    assert!(rows[0].queue.is_empty());
+    assert_eq!(
+        rows[0].address.topic,
+        signal_flow::Topic("flow".to_string())
+    );
+    assert_eq!(
+        rows[0].state,
+        flow_ethos::State::Awake(signal_flow::FlowId("f1c841".to_string()))
+    );
+    assert_eq!(
+        rows[0].past,
+        flow_ethos::Past(vec![signal_flow::FlowId("past-1".to_string())])
+    );
+    assert!(rows[0].queue.0.is_empty());
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&restored).unwrap();
     assert_eq!(
         rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
@@ -800,12 +846,15 @@ fn start_names_the_address_of_the_seat_it_launches() {
         profile.address,
         signal_flow::Address {
             aspect: Aspect::Field,
-            topic: "flow".into(),
+            topic: signal_flow::Topic("flow".to_string()),
             model: signal_flow::Model::Haiku,
         }
     );
-    assert_eq!(profile.model_name, "haiku");
-    assert_eq!(profile.effort, "medium");
+    assert_eq!(
+        profile.model_name,
+        signal_flow::ModelName("haiku".to_string())
+    );
+    assert_eq!(profile.effort, signal_flow::Effort("medium".to_string()));
     for text in [
         "StartRejected.AddressAwake",
         "StartRejected.TopicRefused.FlowRepair",
@@ -893,10 +942,12 @@ fn identify_thread_and_its_refusal_have_concrete_datoms() {
         query,
         Query::IdentifyThread(signal_flow::IdentifyThread_Data {
             process: signal_flow::Process {
-                pid: 4242,
-                started: 987654,
+                pid: flow_ethos::Pid(4242),
+                started: flow_ethos::Started(987654),
             },
-            native_session_id: "01a0fdcc-c1a1-7f43-8c23-06d41fa34438".into(),
+            native_session_id: signal_flow::NativeSessionId(
+                "01a0fdcc-c1a1-7f43-8c23-06d41fa34438".to_string()
+            ),
         })
     );
     assert_eq!(query.datomize(vec![]).protosize().compact(), text);
@@ -952,7 +1003,9 @@ fn durable_admission_and_resumable_sender_outcomes_round_trip() {
 fn direct_send_replies_carry_receipt_or_failure_never_queue_state() {
     use signal_flow::{VisibleSendFailure, VisibleSendFailureReason};
     let replies = [
-        Response::Sent("direct1".into()),
+        Response::Sent(signal_flow::VisibleSendReceipt(signal_flow::RequestId(
+            "direct1".to_string(),
+        ))),
         Response::Failed(VisibleSendFailure::Unadmitted(
             VisibleSendFailureReason::QueueNotPermitted,
         )),
@@ -987,7 +1040,7 @@ fn topic_refused_start_rejection_round_trips() {
     assert_eq!(
         response,
         Response::StartRejected(signal_flow::StartRejection::TopicRefused(
-            "PrimaryCommitting".into()
+            signal_flow::Topic("PrimaryCommitting".to_string())
         ))
     );
     assert_eq!(response.datomize(vec![]).protosize().compact(), text);
@@ -1244,22 +1297,30 @@ fn a_restart_and_each_of_its_answers_round_trip_as_text() {
     let query = Potential::<Query>::from("Restart.c1a0de")
         .actualize(&mut budget())
         .unwrap();
-    assert_eq!(query, Query::Restart("c1a0de".into()));
+    assert_eq!(
+        query,
+        Query::Restart(signal_flow::FlowId("c1a0de".to_string()))
+    );
     assert_eq!(
         query.datomize(vec![]).protosize().compact(),
         "Restart.c1a0de"
     );
     for (text, expected) in [
-        ("Restarted.c1a0de", Response::Restarted("c1a0de".into())),
+        (
+            "Restarted.c1a0de",
+            Response::Restarted(signal_flow::FlowId("c1a0de".to_string())),
+        ),
         (
             "RestartRefused.Busy.c1a0de",
-            Response::RestartRefused(signal_flow::RestartRefusal::Busy("c1a0de".into())),
+            Response::RestartRefused(signal_flow::RestartRefusal::Busy(signal_flow::FlowId(
+                "c1a0de".to_string(),
+            ))),
         ),
         (
             "RestartRefused.ResumeRefused.{ c1a0de BindMismatch }",
             Response::RestartRefused(signal_flow::RestartRefusal::ResumeRefused(
                 signal_flow::ResumeRefused_Data {
-                    flow_id: "c1a0de".into(),
+                    flow_id: signal_flow::FlowId("c1a0de".to_string()),
                     string: "BindMismatch".into(),
                 },
             )),
@@ -1285,7 +1346,9 @@ fn each_protected_refusal_round_trips_as_text() {
     for (text, expected) in [
         (
             "RestartRefused.Protected.c1a0de",
-            Response::RestartRefused(signal_flow::RestartRefusal::Protected("c1a0de".into())),
+            Response::RestartRefused(signal_flow::RestartRefusal::Protected(signal_flow::FlowId(
+                "c1a0de".to_string(),
+            ))),
         ),
         (
             "RefreshRejected.Protected",
@@ -1385,7 +1448,7 @@ fn a_handover_refusal_carries_its_predecessor_and_fault() {
             Response::StartRejected(signal_flow::StartRejection::CompositionRefused(
                 signal_flow::CompositionRefusal::HandoverUnreadable(
                     signal_flow::HandoverUnreadable_Data {
-                        flow_id: "abc123".into(),
+                        flow_id: signal_flow::FlowId("abc123".to_string()),
                         handover_fault: fault,
                     }
                 )
