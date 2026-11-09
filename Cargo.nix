@@ -168,7 +168,7 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 3.0.6";
+            packageId = "syn 3.0.5";
             usesDefaultFeatures = false;
             features = [ "clone-impls" "derive" "full" "parsing" "printing" "proc-macro" ];
           }
@@ -193,9 +193,9 @@ rec {
       };
       "cfg-if" = rec {
         crateName = "cfg-if";
-        version = "1.0.5";
+        version = "1.0.4";
         edition = "2018";
-        sha256 = "0026j56901nzjraap3da0a8njw42j66zcxnn6s2s9aa5bcblhxjf";
+        sha256 = "008q28ajc546z5p2hcwdnckmg0hia7rnx52fni04bwqkzyrghc4k";
         libName = "cfg_if";
         authors = [
           "Alex Crichton <alex@alexcrichton.com>"
@@ -318,7 +318,7 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 3.0.6";
+            packageId = "syn 3.0.5";
             features = [ "full" ];
           }
         ];
@@ -617,7 +617,7 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 3.0.6";
+            packageId = "syn 3.0.5";
             usesDefaultFeatures = false;
             features = [ "full" ];
           }
@@ -630,7 +630,7 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 3.0.6";
+            packageId = "syn 3.0.5";
             usesDefaultFeatures = false;
             features = [ "clone-impls" "extra-traits" "parsing" "printing" "visit-mut" ];
           }
@@ -731,7 +731,7 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 3.0.6";
+            packageId = "syn 3.0.5";
             usesDefaultFeatures = false;
             features = [ "clone-impls" "derive" "full" "parsing" "printing" "proc-macro" ];
           }
@@ -925,7 +925,7 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 3.0.6";
+            packageId = "syn 3.0.5";
             usesDefaultFeatures = false;
             features = [ "clone-impls" "derive" "parsing" "printing" "proc-macro" ];
           }
@@ -1095,11 +1095,11 @@ rec {
         };
         resolvedDefaultFeatures = [ "clone-impls" "default" "derive" "full" "parsing" "printing" "proc-macro" ];
       };
-      "syn 3.0.6" = rec {
+      "syn 3.0.5" = rec {
         crateName = "syn";
-        version = "3.0.6";
+        version = "3.0.5";
         edition = "2021";
-        sha256 = "1vmw7s58rzrs926nv5m06x7qbgswm1aa9iw3s1bj5var47kyi4w5";
+        sha256 = "1yc9vbm1wqs68fyj5f1f3f9isyh6i7wpxccvfrgpfnzn200jxpqj";
         authors = [
           "David Tolnay <dtolnay@gmail.com>"
         ];
@@ -1130,9 +1130,9 @@ rec {
       };
       "thiserror" = rec {
         crateName = "thiserror";
-        version = "2.0.20";
+        version = "2.0.21";
         edition = "2021";
-        sha256 = "0kxs6p295jffxhzaxpxv1dwaaf5iqlm6sx8h0djp6ancbxgj71pc";
+        sha256 = "17hq1lh5dyr3bkc7zzjrbrp4qgkvhc48kgq1n5fdxkindaw2rr89";
         authors = [
           "David Tolnay <dtolnay@gmail.com>"
         ];
@@ -1149,9 +1149,9 @@ rec {
       };
       "thiserror-impl" = rec {
         crateName = "thiserror-impl";
-        version = "2.0.20";
+        version = "2.0.21";
         edition = "2021";
-        sha256 = "1bwjc94gi0xn5jz26h1a8bjj1wdkvvr6jifamyc4mp9n28zcs15w";
+        sha256 = "0945n8agp7kg6n6b35yyjb4g5xv2q22vrw15h6jj1nw76a99flgy";
         procMacro = true;
         libName = "thiserror_impl";
         authors = [
@@ -1168,20 +1168,28 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 3.0.6";
+            packageId = "syn 3.0.5";
           }
         ];
 
       };
       "tinyvec" = rec {
         crateName = "tinyvec";
-        version = "1.13.3";
+        version = "1.13.2";
         edition = "2018";
-        sha256 = "1vphg4gnlpykjy5h4v7r8nl38ij4zr9qyh7qd34ddvwjyqaa6g7x";
+        sha256 = "16yy9hpbl5a0j03w8jhldnyd6f6hcyxy2fd3z3c1hsg5qkaxxw2c";
         authors = [
           "Lokathor <zefria@gmail.com>"
         ];
+        dependencies = [
+          {
+            name = "tinyvec_macros";
+            packageId = "tinyvec_macros";
+            optional = true;
+          }
+        ];
         features = {
+          "alloc" = [ "tinyvec_macros" ];
           "arbitrary" = [ "dep:arbitrary" ];
           "bin-proto" = [ "dep:bin-proto" ];
           "borsh" = [ "dep:borsh" ];
@@ -1193,14 +1201,25 @@ rec {
           "schemars" = [ "dep:schemars" "alloc" ];
           "serde" = [ "dep:serde_core" ];
           "std" = [ "alloc" ];
+          "tinyvec_macros" = [ "dep:tinyvec_macros" ];
         };
-        resolvedDefaultFeatures = [ "alloc" ];
+        resolvedDefaultFeatures = [ "alloc" "tinyvec_macros" ];
+      };
+      "tinyvec_macros" = rec {
+        crateName = "tinyvec_macros";
+        version = "0.1.1";
+        edition = "2018";
+        sha256 = "081gag86208sc3y6sdkshgw3vysm5d34p431dzw0bshz66ncng0z";
+        authors = [
+          "Soveu <marx.tomasz@gmail.com>"
+        ];
+
       };
       "unicode-ident" = rec {
         crateName = "unicode-ident";
-        version = "1.0.26";
+        version = "1.0.24";
         edition = "2021";
-        sha256 = "0m3915ipi4zz7isncf5k1dz47ys0nq9j7l4l2n2rm03zaxwg8ifj";
+        sha256 = "0xfs8y1g7syl2iykji8zk5hgfi5jw819f5zsrbaxmlzwsly33r76";
         libName = "unicode_ident";
         authors = [
           "David Tolnay <dtolnay@gmail.com>"
@@ -1366,7 +1385,7 @@ rec {
           }
           {
             name = "syn";
-            packageId = "syn 3.0.6";
+            packageId = "syn 3.0.5";
             features = [ "visit" "visit-mut" "full" "extra-traits" ];
           }
           {
