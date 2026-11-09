@@ -1,39 +1,37 @@
 {
-  description = "signal-flow ordinary wire contract and generated ethos checks";
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
-    rust-build = {
-      url = "github:LiGoldragon/rust-build";
-      inputs.nixpkgs.follows = "nixpkgs";
+  description = "signal-flow ordinary wire contract";
+
+  inputs.base.url = "github:LiGoldragon/build-base";
+
+  # Cargo.nix is generated from Cargo.lock by the build base's crate2nix and
+  # committed, so evaluation imports no derivation:
+  #   nix shell github:LiGoldragon/build-base#toolchain github:LiGoldragon/build-base#crate2nix -c crate2nix generate
+  outputs =
+    { self, base }:
+    base.lib.workspaceOutputs {
+      cargoNix = ./Cargo.nix;
+
+      # Every test runs with every feature on.
+      memberChecks = { check, ... }: { signal-flow = check "signal-flow" [ "default" "datom" ]; };
+
+      extraChecks =
+        { pkgs, toolchain, check, doc, clippy, ... }:
+        let
+          manifest = builtins.fromTOML (builtins.readFile ./Cargo.toml);
+          rust = pkgs.lib.fileset.toSource {
+            root = ./.;
+            fileset = pkgs.lib.fileset.unions [ ./src ./tests ];
+          };
+        in
+        {
+          # The tests under the default feature set alone.
+          test-default = check "signal-flow" [ "default" ];
+          fmt = pkgs.runCommand "signal-flow-fmt" { nativeBuildInputs = [ toolchain ]; } ''
+            rustfmt --check --edition ${manifest.package.edition} ${rust}/src/lib.rs ${rust}/tests/*.rs
+            touch $out
+          '';
+          clippy = clippy "signal-flow" [ "default" "datom" ] [ "-D" "warnings" ];
+          doc = doc "signal-flow" [ "default" "datom" ] [ "-D" "warnings" ];
+        };
     };
-  };
-  outputs = { nixpkgs, flake-utils, rust-build, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = import nixpkgs { inherit system; };
-        rust = rust-build.lib.${system}.fromToolchainFile pkgs {
-          file = ./rust-toolchain.toml;
-          sha256 = "sha256-gh/xTkxKHL4eiRXzWv8KP7vfjSk61Iq48x47BEDFgfk=";
-        };
-        contractFilter = path: type:
-          type == "regular" && (
-            pkgs.lib.hasSuffix ".ethos" path ||
-            pkgs.lib.hasSuffix "/build.rs" path ||
-            builtins.match ".*/src/generated(/.*)?$" path != null
-          );
-        src = rust.cleanSource { root = ./.; extraFilters = [ contractFilter ]; };
-        commonArgs = { inherit src; strictDeps = true; };
-        cargoArtifacts = rust.craneLib.buildDepsOnly commonArgs;
-      in {
-        packages.default = rust.craneLib.buildPackage (commonArgs // { inherit cargoArtifacts; });
-        checks = {
-          test = rust.craneLib.cargoTest (commonArgs // { inherit cargoArtifacts; });
-          test-datom = rust.craneLib.cargoTest (commonArgs // {
-            inherit cargoArtifacts;
-            cargoTestExtraArgs = "--all-features";
-          });
-          fmt = rust.craneLib.cargoFmt { inherit src; };
-        };
-      });
 }
