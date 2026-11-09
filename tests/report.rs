@@ -2,8 +2,8 @@
 //! it, and a FlowId Flow does not hold is refused as Refused.Unknown.FlowId.
 
 use signal_flow::{
-    Address, Aspect, Event, Model, NativePrompt, NativeStop, Query, Report_Data, Response, Topic,
-    VisibleRefusal, VisibleUnknown,
+    Address, Aspect, BackgroundTask, BackgroundTaskKind, Event, Model, NativePrompt, NativeStop,
+    Query, Report_Data, Response, Topic, VisibleRefusal, VisibleUnknown,
 };
 
 fn reports() -> Vec<Query> {
@@ -15,11 +15,39 @@ fn reports() -> Vec<Query> {
             native_session_id_option: Some("s1".into()),
             transcript_path_option: Some("/p/s1.jsonl".into()),
             last_assistant_message_option: None,
+            background_work: vec![],
         }),
         Event::Stopped(NativeStop {
             native_session_id_option: None,
             transcript_path_option: None,
             last_assistant_message_option: None,
+            background_work: vec![],
+        }),
+        // A turn that ended with a subagent and a monitor still in flight.
+        Event::Stopped(NativeStop {
+            native_session_id_option: Some("s1".into()),
+            transcript_path_option: Some("/p/s1.jsonl".into()),
+            last_assistant_message_option: Some("waiting".into()),
+            background_work: vec![
+                BackgroundTask {
+                    background_task_id: "a1".into(),
+                    background_task_kind: BackgroundTaskKind::Subagent,
+                    background_task_status: "running".into(),
+                    description: "review".into(),
+                },
+                BackgroundTask {
+                    background_task_id: "m1".into(),
+                    background_task_kind: BackgroundTaskKind::Monitor,
+                    background_task_status: "running".into(),
+                    description: "watch".into(),
+                },
+                BackgroundTask {
+                    background_task_id: "c1".into(),
+                    background_task_kind: BackgroundTaskKind::Other("cron".into()),
+                    background_task_status: "pending".into(),
+                    description: "later".into(),
+                },
+            ],
         }),
         Event::PromptSubmitted(NativePrompt {
             native_session_id_option: Some("s1".into()),
@@ -91,8 +119,9 @@ mod datom {
             "Report.{ f1c841 Started.Some.s2 }",
             "Report.{ f1c841 Started.None }",
             "Report.{ f1c841 ToolUsed.Bash }",
-            "Report.{ f1c841 Stopped.{ Some.s1 Some./p/s1.jsonl None } }",
-            "Report.{ f1c841 Stopped.{ None None None } }",
+            "Report.{ f1c841 Stopped.{ Some.s1 Some./p/s1.jsonl None [] } }",
+            "Report.{ f1c841 Stopped.{ None None None [] } }",
+            "Report.{ f1c841 Stopped.{ Some.s1 Some./p/s1.jsonl Some.waiting [ { a1 Subagent running review } { m1 Monitor running watch } { c1 Other.cron pending later } ] } }",
             "Report.{ f1c841 PromptSubmitted.{ Some.s1 Some.p1 ab12 } }",
             "Report.{ f1c841 Ended.Some.s1 }",
             "Report.{ f1c841 Ended.None }",
@@ -115,6 +144,8 @@ mod datom {
             "Report.{ f1c841 Paused }",
             "Report.{ f1c841 Stopped }",
             "Report.{ f1c841 Stopped.{ Some.s1 } }",
+            // A Stop without its background work, as signal-flow 56 wrote it.
+            "Report.{ f1c841 Stopped.{ None None None } }",
             "Report.{ f1c841 PromptSubmitted.{ Some.s1 None } }",
         ] {
             assert!(

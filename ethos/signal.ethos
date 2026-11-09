@@ -22,12 +22,21 @@
 ; the native model configured for its Address's Model, the effort its
 ; Model runs at, and its default leave-outs. The InstructionPrompt is the brief, the
 ; one string given that flow alone. A Launch addressed to a metaflow Awake
-; as a live flow, whoever sends it, is a Refresh of that metaflow whose
-; successor is the Launch's: under the metaflow's lock the successor is
-; started with the Launch's brief and confirmed, then the flow it replaces
-; ends, given no turn, and the queue goes to the successor, oldest first;
-; it answers Replaced. Any other Launch is a Start. An Address with no
-; declaration is refused, StartRejected.Undeclared.
+; as a live flow, whoever sends it, is a Replace of that flow whose
+; successor is the Launch's, and it waits for the flow's idle event. A flow
+; that rests now is replaced at once. A working one answers LaunchPending
+; at once: the replacement is recorded with the Launch's profile, kept by a
+; Nexus that starts again, and Observe.Launch follows it to its outcome.
+; Until the flow rests it still receives what is sent to it; then, under
+; the metaflow's lock, the successor is started with the Launch's brief and
+; confirmed, the flow it replaces ends, given no turn, and the queue goes
+; to the successor, oldest first; the outcome is Replaced. Any other Launch
+; is a Start. An Address with no declaration is refused,
+; StartRejected.Undeclared.
+;
+; A flow rests when its turn has ended and no work it started is in
+; flight: a Claude flow at a Stop whose BackgroundWork is empty, its turn
+; shown ended; a Codex flow when its app-server's thread rests.
 ;
 ; BindSeat binds the seat the calling process runs in to Address. The seat
 ; is read from the caller's Herdr pane: its harness and native session.
@@ -41,7 +50,12 @@
 ; caller supplies no FlowId: Flow derives it from the verified native session.
 ;
 ; Refresh ends the flow the metaflow at Address is Awake as. Anybody may
-; refresh a metaflow but a protected one (below). Flow takes the metaflow's lock: from then nothing is
+; refresh a metaflow but a protected one (below), the flow itself included.
+; A refresh waits for the flow's idle event: a flow that rests now is
+; refreshed at once; a working one answers RefreshQueued at once, the
+; refresh recorded and kept by a Nexus that starts again, and it is
+; refreshed when it rests, receiving until then what is sent to it. At
+; its rest Flow takes the metaflow's lock: from then nothing is
 ; delivered to it, and a Send that arrives queues on the metaflow. A
 ; metaflow whose declaration is Maintained, or whose queue holds a request
 ; that asks for a wake, has its successor started in the same event: the
@@ -114,8 +128,10 @@
 ; ReplaceRejection names why no replacement took place; after
 ; ReapRefused the successor is not routable. A Replace runs under its
 ; metaflow's lock, and one whose metaflow a refresh or a waking holds is
-; refused Locked. Its successor is owed, as a Refresh's is, until it is
-; confirmed.
+; refused Locked. A Replace asked from outside waits for its
+; predecessor's idle event as a Launch does, answering LaunchPending while
+; its predecessor works. Its successor is owed, as a Refresh's is, until it
+; is confirmed.
 ;
 ; LaunchStatus answers a known LaunchRequestId with one LaunchInspected
 ; snapshot: its LaunchAttempt, its optional settled outcome, and the
@@ -209,6 +225,11 @@
 ; launched with. Flow stores the event in that flow's Memory and answers
 ; Reported. A FlowId Flow does not hold is refused, Refused.Unknown.FlowId,
 ; never adopted: a flow Flow did not launch is a flow Flow does not know.
+;
+; Stopped carries the BackgroundWork its hook was given: a Claude flow
+; whose Stop names work in flight has not rested, and the Stop its turn
+; ends with when that work has ended, Claude waking it for that, is its
+; rest.
 ;
 ; Stopped and PromptSubmitted carry the native identity the harness gave
 ; its hook: the session, and for a Stop the transcript it writes. Flow
@@ -339,7 +360,8 @@ Signal
   RequestArchived.RequestId
   ArchiveRejected.ArchiveRejection
   Glanced.Vector<Heading>
-  Handover.Vector<Section> ]
+  Handover.Vector<Section>
+  RefreshQueued.RefreshQueued ]
 [
   SessionId.String
   Tokens.Integer
@@ -440,6 +462,9 @@ Signal
   Launched.{ FlowId SessionId HerdrRouteSelection Origin }
   ; Refreshed names the metaflow refreshed and the flow that ended.
   Refreshed.{ Address FlowId }
+  ; RefreshQueued names the metaflow whose working flow is refreshed at its
+  ; idle event, and that flow.
+  RefreshQueued.{ Address FlowId }
   ; BindingRefusal names one checked native-binding failure without raw adapter text.
   ; PaneMismatch covers the agent name, workspace, or pane check.
   ; TerminalMismatch covers the terminal check.
@@ -667,7 +692,18 @@ Signal
   SendPayloadSize.{ ActualBytes MaximumBytes }
   PromptId.String
   LastAssistantMessageOption.Option<String>
-  NativeStop.{ Option<NativeSessionId> Option<TranscriptPath> LastAssistantMessageOption }
+  ; BackgroundWork is the work a Claude session started and has in flight
+  ; when its turn ends, one BackgroundTask each, as its Stop hook was given
+  ; it (Claude Code's background_tasks): the task's id, the feature that
+  ; created it, its status and its description, as Claude Code wrote them.
+  ; A monitor is work in flight as any other. Other carries a type label
+  ; Claude Code names that is none of these. Empty: nothing is in flight.
+  BackgroundTaskId.String
+  BackgroundTaskKind.[ Shell Subagent Monitor Workflow Teammate CloudSession McpTask Other.String ]
+  BackgroundTaskStatus.String
+  BackgroundTask.{ BackgroundTaskId BackgroundTaskKind BackgroundTaskStatus Description }
+  BackgroundWork.Vector<BackgroundTask>
+  NativeStop.{ Option<NativeSessionId> Option<TranscriptPath> LastAssistantMessageOption BackgroundWork }
   NativePrompt.{ Option<NativeSessionId> Option<PromptId> PromptSha256 }
   VisibleResultPayload.[ Answered.{ RequestId String }
                          Historical.String ]

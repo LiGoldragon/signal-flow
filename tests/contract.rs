@@ -475,6 +475,7 @@ fn replace_and_launch_status_responses_have_concrete_datoms() {
 fn refresh_answers_have_concrete_datoms() {
     for text in [
         "Refreshed.{ { Psyche core Fable } 74e4d1 }",
+        "RefreshQueued.{ { Psyche core Fable } 74e4d1 }",
         "RefreshRejected.NotAwake",
         "RefreshRejected.Locked",
         "RefreshRejected.CloseRefused",

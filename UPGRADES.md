@@ -2,6 +2,25 @@
 
 How to deploy each breaking change of signal-flow.
 
+## 57.0.0: a Stop carries its background work; a refresh waits for rest
+
+Built on 56.0.0 (be85c63).
+
+- `NativeStop` gains `BackgroundWork.Vector<BackgroundTask>`, last:
+  `BackgroundTask.{ BackgroundTaskId BackgroundTaskKind BackgroundTaskStatus
+  Description }`, `BackgroundTaskKind.[ Shell Subagent Monitor Workflow
+  Teammate CloudSession McpTask Other.String ]`, the work Claude Code's Stop
+  hook names in `background_tasks`, as in `Stopped.{ Some.s1 Some./p/s1.jsonl
+  None [ { m1 Monitor running watch } ] }`. Empty: nothing in flight.
+- A Stop without it (`Stopped.{ None None None }`, 56.0.0's shape) no longer
+  reads.
+- `Response` gains `RefreshQueued.RefreshQueued`, last, with
+  `RefreshQueued.{ Address FlowId }`: a Refresh of a working flow, queued
+  for its idle event. A Launch or Replace of a working flow answers
+  `LaunchPending` and finishes through `Observe.Launch`.
+- Every producer and consumer moves to 57.0.0 together: the hook that
+  writes a Stop, the Nexus that stores it, and a match on `Response`.
+
 ## 52.0.0: a handover that cannot be read refuses the launch
 
 Built on 51.0.0.

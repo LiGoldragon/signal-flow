@@ -447,6 +447,13 @@ pub struct Refreshed {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct RefreshQueued {
+    pub address: flow_ethos::Address,
+    pub flow_id: flow_ethos::FlowId,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum BindingRefusal {
     PaneMismatch,
     TerminalMismatch,
@@ -941,12 +948,41 @@ pub type PromptId = String;
 #[rustfmt::skip]
 pub type LastAssistantMessageOption = std::option::Option<String>;
 #[rustfmt::skip]
+pub type BackgroundTaskId = String;
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum BackgroundTaskKind {
+    Shell,
+    Subagent,
+    Monitor,
+    Workflow,
+    Teammate,
+    CloudSession,
+    McpTask,
+    Other(String),
+}
+#[rustfmt::skip]
+pub type BackgroundTaskStatus = String;
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct BackgroundTask {
+    pub background_task_id: BackgroundTaskId,
+    pub background_task_kind: BackgroundTaskKind,
+    pub background_task_status: BackgroundTaskStatus,
+    pub description: Description,
+}
+#[rustfmt::skip]
+pub type BackgroundWork = std::vec::Vec<BackgroundTask>;
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct NativeStop {
     pub native_session_id_option: std::option::Option<NativeSessionId>,
     pub transcript_path_option: std::option::Option<TranscriptPath>,
     pub last_assistant_message_option: LastAssistantMessageOption,
+    pub background_work: BackgroundWork,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1642,4 +1678,5 @@ pub enum Response {
     ArchiveRejected(ArchiveRejection),
     Glanced(std::vec::Vec<Heading>),
     Handover(std::vec::Vec<Section>),
+    RefreshQueued(RefreshQueued),
 }
