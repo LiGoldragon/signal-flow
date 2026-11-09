@@ -1176,6 +1176,36 @@ fn an_undecodable_frame_is_refused_with_its_caller_and_observed() {
     }
 }
 
+/// Observe.TurnEnds subscribes to turn ends: the last of each harness on
+/// open, then each one as it comes, naming the metaflow's Address, the
+/// harness, the flow and when Flow observed it. Datom to rkyv to datom
+/// returns the same text.
+#[test]
+fn a_turn_end_subscription_names_address_harness_and_flow_round_trip() {
+    let query = Query::Observe(signal_flow::ObserveSelection::TurnEnds);
+    let query_text = query.datomize(vec![]).protosize().compact();
+    assert_eq!(query_text, "Observe.TurnEnds");
+    assert_eq!(
+        Potential::<Query>::from(query_text)
+            .actualize(&mut budget())
+            .unwrap(),
+        query
+    );
+    for text in [
+        "TurnEndsObserved.[ { { Psyche core Opus } Claude 7d41e0 1761800000 } { { Mind flow Sol } Codex 01a0fd 1761800100 } ]",
+        "TurnEndsObserved.[]",
+        "TurnEnded.{ { Field message Luna } Codex 74e4d1 1761800200 }",
+    ] {
+        let value = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&value).unwrap();
+        let read = rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap();
+        assert_eq!(read, value);
+        assert_eq!(read.datomize(vec![]).protosize().compact(), text);
+    }
+}
+
 /// Restart names the flow alone; each answer names the flow again, and a
 /// resume refused carries its fixed category. The concrete text is the
 /// specification.

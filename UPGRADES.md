@@ -25,6 +25,12 @@ Built on 56.0.0 (be85c63).
   `ObserveSelection` gains `Undecodable`, last: `Observe.Undecodable` answers
   `UndecodableObserved.Vector<UndecodableFrame>`, every record on open, then
   each new one. `Response` gains both, after `RefreshQueued`.
+- `ObserveSelection` gains `TurnEnds`, after `Undecodable`:
+  `Observe.TurnEnds` answers `TurnEndsObserved.Vector<TurnEnd>` on open, the
+  last turn end of each harness, then `TurnEnded.TurnEnd` for each turn end,
+  with `TurnEnd.{ Address HarnessKind FlowId ObservedAt }`, as in
+  `TurnEnded.{ { Psyche core Opus } Claude 7d41e0 1761800000 }`. `Response`
+  gains both, after `UndecodableObserved`.
 - Every producer and consumer moves to 57.0.0 together: the hook that
   writes a Stop, the Nexus that stores it, and a match on `Response`.
 
