@@ -759,6 +759,7 @@ pub enum ObserveSelection {
     Launch(LaunchRequestId),
     Agent(flow_ethos::FlowId),
     Retirement(flow_ethos::Address),
+    Undecodable,
 }
 #[rustfmt::skip]
 pub type HandoverGeneration = i64;
@@ -890,6 +891,13 @@ pub struct SeatEvidence {
     pub native_session_id_option: std::option::Option<NativeSessionId>,
     pub observed_at: ObservedAt,
     pub process: flow_ethos::Process,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct UndecodableFrame {
+    pub flow_id_option: std::option::Option<flow_ethos::FlowId>,
+    pub seat_evidence: SeatEvidence,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1679,4 +1687,6 @@ pub enum Response {
     Glanced(std::vec::Vec<Heading>),
     Handover(std::vec::Vec<Section>),
     RefreshQueued(RefreshQueued),
+    FrameRefused(UndecodableFrame),
+    UndecodableObserved(std::vec::Vec<UndecodableFrame>),
 }

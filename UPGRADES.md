@@ -18,6 +18,13 @@ Built on 56.0.0 (be85c63).
   `RefreshQueued.{ Address FlowId }`: a Refresh of a working flow, queued
   for its idle event. A Launch or Replace of a working flow answers
   `LaunchPending` and finishes through `Observe.Launch`.
+- A frame that decodes as no Query, an earlier hook's Report among them,
+  is answered `FrameRefused.UndecodableFrame` and recorded, with
+  `UndecodableFrame.{ Option<FlowId> SeatEvidence }`: the flow bound to the
+  caller's seat, if any, and the caller's seat and process.
+  `ObserveSelection` gains `Undecodable`, last: `Observe.Undecodable` answers
+  `UndecodableObserved.Vector<UndecodableFrame>`, every record on open, then
+  each new one. `Response` gains both, after `RefreshQueued`.
 - Every producer and consumer moves to 57.0.0 together: the hook that
   writes a Stop, the Nexus that stores it, and a match on `Response`.
 

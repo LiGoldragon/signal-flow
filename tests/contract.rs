@@ -1145,6 +1145,37 @@ fn an_unidentified_refusal_carries_its_seat_evidence_round_trip() {
     assert!(matches!(refusal, Refusal::Unidentified(_)));
 }
 
+/// A frame that decodes as no Query is refused with what Flow read of its
+/// caller, the flow bound to the caller's seat and the seat's evidence, and
+/// Observe.Undecodable shows every such record. Datom to rkyv to datom
+/// returns the same text.
+#[test]
+fn an_undecodable_frame_is_refused_with_its_caller_and_observed() {
+    let query = Query::Observe(signal_flow::ObserveSelection::Undecodable);
+    let query_text = query.datomize(vec![]).protosize().compact();
+    assert_eq!(query_text, "Observe.Undecodable");
+    assert_eq!(
+        Potential::<Query>::from(query_text)
+            .actualize(&mut budget())
+            .unwrap(),
+        query
+    );
+    for text in [
+        "FrameRefused.{ Some.7d41e0 { Some.{ herdr-1 w1-2 } Some.«Claude research» Some.01a0fdcc-c1a1 1761800000 { 4242 987654 } } }",
+        "FrameRefused.{ None { None None None 1761800000 { 4242 987654 } } }",
+        "UndecodableObserved.[ { Some.7d41e0 { Some.{ herdr-1 w1-2 } None None 1761800000 { 4242 987654 } } } ]",
+        "UndecodableObserved.[]",
+    ] {
+        let value = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&value).unwrap();
+        let read = rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap();
+        assert_eq!(read, value);
+        assert_eq!(read.datomize(vec![]).protosize().compact(), text);
+    }
+}
+
 /// Restart names the flow alone; each answer names the flow again, and a
 /// resume refused carries its fixed category. The concrete text is the
 /// specification.

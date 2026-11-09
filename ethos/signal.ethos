@@ -161,6 +161,19 @@
 ; flow Flow does not hold answers one Gone frame. Unknown is Herdr's own
 ; word for an agent it cannot read.
 ;
+; A frame on this socket that does not decode as a Query of this contract,
+; the Report of a hook built on an earlier one among them, is answered
+; FrameRefused and recorded. Its UndecodableFrame names the calling process
+; and its seat as Flow read them, from the kernel and from Herdr
+; (SeatEvidence), and the flow bound to that seat when there is one; nothing
+; in the frame is read. An earlier client cannot read the answer, so the
+; record is how its refusal is seen.
+;
+; Observe.Undecodable opens an exchange that goes on answering: on open it
+; sends every UndecodableFrame Flow recorded, oldest first, then one
+; UndecodableObserved frame for each it records later, and it ends when the
+; observer goes. Nothing is re-read on a timer.
+;
 ; A Pending flow becomes Active when it is witnessed live: on a
 ; Presented Deliver, or when List finds its bound pane present in Herdr.
 ; Nothing else promotes it.
@@ -361,7 +374,9 @@ Signal
   ArchiveRejected.ArchiveRejection
   Glanced.Vector<Heading>
   Handover.Vector<Section>
-  RefreshQueued.RefreshQueued ]
+  RefreshQueued.RefreshQueued
+  FrameRefused.UndecodableFrame
+  UndecodableObserved.Vector<UndecodableFrame> ]
 [
   SessionId.String
   Tokens.Integer
@@ -625,7 +640,8 @@ Signal
                      Protected ]                  ; the predecessor's Address is protected and its own seat did not ask
   ObserveSelection.[ Launch.LaunchRequestId
                      Agent.FlowId
-                     Retirement.Address ]
+                     Retirement.Address
+                     Undecodable ]
   ; RetirementObserved is the closed-generation state when an ordinary
   ; Observe.Retirement subscription attaches. It carries no claim about
   ; changes before attachment. Later committed changes are pushed in FIFO
@@ -663,6 +679,10 @@ Signal
   ; no identity is invented from it. A caller in no pane Flow reads has no
   ; pane and no label.
   SeatEvidence.{ Option<SeatPane> Option<PaneLabel> Option<NativeSessionId> ObservedAt Process }
+  ; UndecodableFrame is a frame on the ordinary socket that decoded as no
+  ; Query: the flow bound to the caller's seat, if one is, and what Flow read
+  ; of the caller's seat and process.
+  UndecodableFrame.{ Option<FlowId> SeatEvidence }
   Refusal.[ Locked
             Held.Lock
             Awake.FlowId
