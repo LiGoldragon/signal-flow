@@ -1,5 +1,12 @@
 # Upgrades
 
+## 58.0.1: signal 6d4eb74 (11.0.0), on build-base d5ad91d
+
+Only the signal pin moves, from d77169d (10.4.1) to 6d4eb74 (11.0.0): signal
+carries no transport feature and no tokio, and datom is unchanged. The
+contract and every datom form are unchanged. A consumer repins signal to
+6d4eb74.
+
 ## 58.0.0: ethos-zero 1976e45, flow-ethos d1effd4b, datom-codec 09a0526, protos c93b598, signal d77169d
 
 Built on 57.0.0. Every datom text form is unchanged.
