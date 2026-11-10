@@ -329,13 +329,13 @@ rec {
       };
       "flow-ethos" = rec {
         crateName = "flow-ethos";
-        version = "0.53.3";
+        version = "0.54.0";
         edition = "2024";
         workspace_member = null;
         src = pkgs.fetchgit {
           url = "https://github.com/LiGoldragon/flow";
-          rev = "d1effd4b53ba895f08949ea5cf32f91f63f909bb";
-          sha256 = "0mak7mrvq45fmppfgyzbb8r192jw3ivk1hdjrhmpsj2cpdvwi7yj";
+          rev = "5c61d66648a17a218147f3ec11dd995847c8303d";
+          sha256 = "00c2qq5kbxn6zlbb2b4pyrp862yjsck187i707d3gizffc90zq6d";
         };
         libName = "flow_ethos";
         dependencies = [
@@ -992,7 +992,7 @@ rec {
       };
       "signal-flow" = rec {
         crateName = "signal-flow";
-        version = "58.0.1";
+        version = "58.0.2";
         edition = "2024";
         src = lib.cleanSourceWith { filter = sourceFilter;  src = ./.; };
         libName = "signal_flow";

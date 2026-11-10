@@ -85,8 +85,8 @@ dependencies = [
 
 [[package]]
 name = "flow-ethos"
-version = "0.53.3"
-source = "git+https://github.com/LiGoldragon/flow?rev=d1effd4b#d1effd4b53ba895f08949ea5cf32f91f63f909bb"
+version = "0.54.0"
+source = "git+https://github.com/LiGoldragon/flow?rev=5c61d666#5c61d66648a17a218147f3ec11dd995847c8303d"
 dependencies = [
  "datom-codec",
  "ethos-zero",
@@ -301,7 +301,7 @@ dependencies = [
 
 [[package]]
 name = "signal-flow"
-version = "58.0.1"
+version = "58.0.2"
 dependencies = [
  "datom-codec",
  "ethos-zero",
