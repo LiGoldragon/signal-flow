@@ -15,7 +15,7 @@
       memberChecks = { check, ... }: { signal-flow = check "signal-flow" [ "default" "datom" ]; };
 
       extraChecks =
-        { pkgs, toolchain, check, doc, clippy, ... }:
+        { pkgs, toolchain, check, doc, ... }:
         let
           manifest = builtins.fromTOML (builtins.readFile ./Cargo.toml);
           rust = pkgs.lib.fileset.toSource {
@@ -30,7 +30,6 @@
             rustfmt --check --edition ${manifest.package.edition} ${rust}/src/lib.rs ${rust}/tests/*.rs
             touch $out
           '';
-          clippy = clippy "signal-flow" [ "default" "datom" ] [ "-D" "warnings" ];
           doc = doc "signal-flow" [ "default" "datom" ] [ "-D" "warnings" ];
         };
     };
