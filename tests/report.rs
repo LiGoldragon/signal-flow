@@ -71,6 +71,7 @@ fn reports() -> Vec<Query> {
     .map(|event| {
         Query::Report(Report_Data {
             flow_id: signal_flow::FlowId("f1c841".to_string()),
+            process_option: None,
             event,
         })
     })
@@ -124,17 +125,17 @@ mod datom {
     #[test]
     fn report_has_exact_inline_datoms() {
         for (query, expected) in super::reports().into_iter().zip([
-            "Report.{ f1c841 Started.Some.s2 }",
-            "Report.{ f1c841 Started.None }",
-            "Report.{ f1c841 ToolUsed.Bash }",
-            "Report.{ f1c841 Stopped.{ Some.s1 Some./p/s1.jsonl None [] } }",
-            "Report.{ f1c841 Stopped.{ None None None [] } }",
-            "Report.{ f1c841 Stopped.{ Some.s1 Some./p/s1.jsonl Some.waiting [ { a1 Subagent running review } { m1 Monitor running watch } { c1 Other.cron pending later } ] } }",
-            "Report.{ f1c841 PromptSubmitted.{ Some.s1 Some.p1 ab12 } }",
-            "Report.{ f1c841 Ended.Some.s1 }",
-            "Report.{ f1c841 Ended.None }",
-            "Report.{ f1c841 Cleared.Some.s1 }",
-            "Report.{ f1c841 Cleared.None }",
+            "Report.{ f1c841 None Started.Some.s2 }",
+            "Report.{ f1c841 None Started.None }",
+            "Report.{ f1c841 None ToolUsed.Bash }",
+            "Report.{ f1c841 None Stopped.{ Some.s1 Some./p/s1.jsonl None [] } }",
+            "Report.{ f1c841 None Stopped.{ None None None [] } }",
+            "Report.{ f1c841 None Stopped.{ Some.s1 Some./p/s1.jsonl Some.waiting [ { a1 Subagent running review } { m1 Monitor running watch } { c1 Other.cron pending later } ] } }",
+            "Report.{ f1c841 None PromptSubmitted.{ Some.s1 Some.p1 ab12 } }",
+            "Report.{ f1c841 None Ended.Some.s1 }",
+            "Report.{ f1c841 None Ended.None }",
+            "Report.{ f1c841 None Cleared.Some.s1 }",
+            "Report.{ f1c841 None Cleared.None }",
         ]) {
             let text = query.datomize(vec![]).protosize().compact();
             assert_eq!(text, expected);
@@ -147,14 +148,17 @@ mod datom {
         }
         for refused in [
             "Report.{ f1c841 }",
-            "Report.{ f1c841 Started }",
-            "Report.{ f1c841 Started.Some.s2 extra }",
+            "Report.{ f1c841 None }",
+            "Report.{ f1c841 None Started }",
+            "Report.{ f1c841 None Started.Some.s2 extra }",
             "Report.{ f1c841 Paused }",
-            "Report.{ f1c841 Stopped }",
-            "Report.{ f1c841 Stopped.{ Some.s1 } }",
+            "Report.{ f1c841 None Stopped }",
+            "Report.{ f1c841 None Stopped.{ Some.s1 } }",
             // A Stop without its background work, as signal-flow 56 wrote it.
-            "Report.{ f1c841 Stopped.{ None None None } }",
-            "Report.{ f1c841 PromptSubmitted.{ Some.s1 None } }",
+            "Report.{ f1c841 None Stopped.{ None None None } }",
+            "Report.{ f1c841 None PromptSubmitted.{ Some.s1 None } }",
+            // A Report without its harness's birth, as signal-flow 59 wrote it.
+            "Report.{ f1c841 Ended.Some.s1 }",
         ] {
             assert!(
                 Potential::<Query>::from(refused)

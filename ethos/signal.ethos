@@ -17,7 +17,15 @@
 ; every priority immediately and HardAbrupt alone interrupts; an Asleep
 ; recipient queues Soft and is woken by MiddleAbrupt or HardAbrupt. A native
 ; receipt settles a Send as Delivered; submission without that receipt remains
-; Attempting or Uncertain and is never retried blindly.
+; Attempting or Uncertain and is never retried blindly. Living carries the
+; living's words, one saying; several of his sayings are several Sends.
+;
+; A Result or a Done goes to the sender of the request it names, whatever
+; Address the Send writes: the Nexus routes it. A request whose sender is
+; no Address (Unbound, Flow, Unknown) keeps its answer with it, and Answer
+; reads it by the request's id: Answered with the answer as it would land
+; in a prompt, its sender and priority with it, or AnswerRejected.
+;
 ; DeliverAll asks Flow to deliver every queued message for an Address and does
 ; not insert a prompt when that queue is empty.
 ;
@@ -30,8 +38,15 @@
 ; queue, each answering the ids that left. Push delivers an Address's whole
 ; queue now, as one message at the Priority named, waking an Asleep
 ; metaflow, and answers the ids delivered. Queues answers every queue that
-; holds something; Hot every live flow's Address by the minutes since its
+; holds something, each message as it would land in the prompt, its sender
+; and priority with it; Hot every live flow's Address by the minutes since its
 ; last turn ended, None for a flow none of whose turns has ended yet.
+; Remind asks Flow to remind the Address it names, after Minutes, with
+; the String: Reminded names the request, and when the minutes lapse the
+; Address is sent Reminder.{ RequestId String } at MiddleAbrupt, from the
+; caller as it was named when it asked. Its Minutes meets a Task's rule. A
+; reminder is a request like any other: Cancel ends it before it is sent.
+;
 ; RequestRejection names why a Cancel or Silence changed nothing:
 ; UnknownRequest, no request holds the id; NotYet, a delivery of it is
 ; still being settled; Closed, it is already answered; NotTask, a Silence
@@ -41,7 +56,9 @@
 ; configuration (the meta Metaflows family): its system and user modules,
 ; the native model configured for its Address's Model, the effort its
 ; Model runs at, and its default leave-outs. The InstructionPrompt is the brief, the
-; one string given that flow alone. A Launch addressed to a metaflow Awake
+; one string given that flow alone. Every launch opens its pane in the one
+; Herdr session the meta Configure.Nexus names, whoever asks; a Start's or a
+; Replace's HerdrSessionName is set to it. A Launch addressed to a metaflow Awake
 ; as a live flow, whoever sends it, is a Replace of that flow whose
 ; successor is the Launch's, and it waits for the flow's idle event. A flow
 ; that rests now is replaced at once. A working one answers LaunchPending
@@ -74,8 +91,9 @@
 ; A refresh waits for the flow's idle event: a flow that rests now is
 ; refreshed at once; a working one answers RefreshQueued at once, the
 ; refresh recorded and kept by a Nexus that starts again, and it is
-; refreshed when it rests, receiving until then what is sent to it. At
-; its rest Flow takes the metaflow's lock: from then nothing is
+; refreshed at its next idle event, a Claude flow's Stop or a Codex
+; thread's turn completed, its background work ended, receiving until then
+; what is sent to it. At that event Flow takes the metaflow's lock: from then nothing is
 ; delivered to it, and a Send that arrives queues on the metaflow. A
 ; metaflow whose declaration is Maintained, or whose queue holds a request
 ; that asks for a wake, has its successor started in the same event: the
@@ -110,8 +128,13 @@
 ; in a new pane, keeping its FlowId, session, Model and transcript, with the
 ; current launch configuration, modules and hooks of its Address aimed at
 ; this Nexus, and no prompt typed. Anybody may restart a flow, as anybody
-; may refresh one. Only a Claude flow, Awake and resting, is restarted:
-; Codex, Asleep, a working seat and a past flow are Unsupported.
+; may refresh one. A Claude flow resumes its session with --resume; a Codex
+; flow's TUI resumes its thread through the app-server, which keeps it. A
+; resting seat is restarted at once; a working one answers RestartQueued,
+; the restart recorded and carried out at its next idle event, as a
+; refresh is, its background work ended; Interrupt forces that event. The
+; last flow of an Asleep metaflow has no harness to close: Restart answers
+; Asleep and does nothing. A past flow is Unsupported.
 ; While its restart is under way the flow's Address is held: a Send queues,
 ; and the queue is handed to the resumed seat once it is bound. Restarted
 ; names the flow, resumed and bound. A refusal names why: UnknownFlow,
@@ -253,10 +276,12 @@
 ;
 ; Report carries one harness event of a flow Flow holds, sent by the
 ; harness's hook through the Flow CLI with the FlowId the flow was
-; launched with. Flow stores the event in that flow's Memory and answers
+; launched with and the birth of the harness that ran the hook (its pid and
+; start; None when the hook found none): an event names where it came from
+; in its own data. Flow stores the event in that flow's Memory and answers
 ; Reported, whoever sends it. A seat a restart bound shares its native
-; session with the harness it replaced, so an event of it acts only when
-; the reporting process descends from the resumed harness. A FlowId Flow
+; session with the harness it replaced, so an event of it acts only when it
+; names the resumed harness's birth. A FlowId Flow
 ; does not hold is refused, Refused.Unknown.FlowId, never adopted: a flow
 ; Flow did not launch is a flow Flow does not know.
 ;
@@ -308,7 +333,7 @@
 
 Signal
 [
-  flow_ethos:[ Aspect Address FlowId Request Said SentBy QueueEntry NativeInput LogicalDeliveryId Message Process Metaflow Key Model Topic Subaspect OrdinarySocketPath MetaSocketPath ModelName HarnessKind Minutes AnswerableTask RequestId ResultPayload ] ]
+  flow_ethos:[ Aspect Address FlowId Request Context Verbatim SentBy QueueEntry NativeInput LogicalDeliveryId Message Process Metaflow Key Model Topic Subaspect OrdinarySocketPath MetaSocketPath ModelName HarnessKind Minutes AnswerableTask RequestId ResultPayload ] ]
 [ Start.LaunchProfile
   Refresh.Address
   ResolveRecipient.RecipientResolutionRequest
@@ -317,7 +342,7 @@ Signal
   LaunchStatus.LaunchRequestId
   Observe.ObserveSelection
   ResolveCaller.Option<FlowId>
-  Report.{ FlowId Event }
+  Report.{ FlowId Option<Process> Event }
   Lock.{ Address Address }
   Bind.{ Address Process }
   Identify.Process
@@ -348,7 +373,9 @@ Signal
   ClearAll
   Push.{ Address Priority }
   Queues
-  Hot ]
+  Hot
+  Remind.{ Address Minutes String }
+  Answer.RequestId ]
 [ Started.Launched
   LaunchPending.LaunchAttempt
   StartAmbiguous.PromptDeliveryIntent
@@ -417,7 +444,11 @@ Signal
   Cleared.Vector<RequestId>
   Pushed.Vector<RequestId>
   Queues.Vector<Queue>
-  Hot.Vector<Warmth> ]
+  Hot.Vector<Warmth>
+  Reminded.RequestId
+  Answered.VisibleNativeInput
+  AnswerRejected.AnswerRejection
+  RestartQueued.FlowId ]
 [
   SessionId.String
   Tokens.Integer
@@ -667,7 +698,8 @@ Signal
                    CloseRefused.FlowId
                    ResumeRefused.{ FlowId String }
                    Interrupted.FlowId
-                   Unsupported.FlowId ]
+                   Unsupported.FlowId
+                   Asleep.FlowId ]
   Replaced.{ FlowId Launched }
   ReplaceRejection.[ PredecessorAbsent
                      UnknownPredecessor
@@ -773,8 +805,7 @@ Signal
                        Historical.String ]
   SendableRequest.[ Order.String
                     Question.String
-                    Psyche.Said
-                    Psyches.Vector<Said>
+                    Living.{ Context Verbatim }
                     Result.{ RequestId String }
                     Notice.String
                     Task.AnswerableTask
@@ -784,8 +815,7 @@ Signal
                     Soft.SendableRequest ]
   DeliveredRequest.[ Order.{ RequestId String }
                       Question.{ RequestId String }
-                      Psyche.{ RequestId Said }
-                      Psyches.{ RequestId Vector<Said> }
+                      Living.{ RequestId Context Verbatim }
                       Result.{ RequestId String }
                       Notice.{ RequestId String }
                       Task.{ RequestId Minutes String }
@@ -799,8 +829,7 @@ Signal
   ; Historical evidence retains the public shape that existed before ids.
   VisibleRequest.[ Order.String
                    Question.String
-                   Psyche.Said
-                   Psyches.Vector<Said>
+                   Living.{ Context Verbatim }
                    Result.VisibleResultPayload
                    Notice.String
                    Task.AnswerableTask
@@ -893,8 +922,13 @@ Signal
   RequestRejection.[ UnknownRequest NotYet Closed NotTask StoreRefused ]
   ; The priority a Push delivers a queue at.
   Priority.[ HardAbrupt MiddleAbrupt Soft ]
-  ; One queue that holds something, oldest first.
-  Queue.{ Address Vector<DeliveredRequest> }
+  ; One queue that holds something, oldest first: each message as it would
+  ; land in the prompt, its sender and its priority with the request.
+  Queue.{ Address Vector<VisibleNativeInput> }
+  ; Why an Answer reads no answer: UnknownRequest, no request holds the id;
+  ; Open, it is not answered yet; Routed, its answer went to its sender's
+  ; Address; StoreRefused.
+  AnswerRejection.[ UnknownRequest Open Routed StoreRefused ]
   ; A live flow's Address and the minutes since its last turn ended.
   Warmth.{ Address Option<Minutes> }
   VisibleDrainOutcome.{ Address VisibleDrainState.[ Delivered Held ] }

@@ -1,5 +1,33 @@
 # Upgrades
 
+## 60.0.0: Living, routed answers, Remind, Answer, a Report's birth
+
+Built on 59.0.0 (d2a4ca5), for Flow 0.54.3, on flow-ethos 0.54.3
+(`062ef9e1`).
+
+- The living's words are `Living.{ Context Verbatim }`: `SendableRequest`
+  and `VisibleRequest` carry `Living.{ Context Verbatim }` and
+  `DeliveredRequest` `Living.{ RequestId Context Verbatim }`, in Psyche's
+  place; `Psyches` is gone from all three, so the variants after it move
+  up one. `Said` is gone; `Context` and `Verbatim` are re-exported from
+  flow-ethos. `Send.{ { Psyche core Fable } Soft.Living.{ «the drain»
+  «Fix it today.» } }`.
+- `Report.{ FlowId Option<Process> Event }`: the birth of the harness that
+  ran the hook, `None` when it found none. A hook built on 59.0.0 is
+  answered FrameRefused.
+- `Queue.{ Address Vector<VisibleNativeInput> }`: each queued message with
+  its sender and priority, as it would land in the prompt.
+- `Query` gains, last, `Remind.{ Address Minutes String }` and
+  `Answer.RequestId`; `Response` gains, last, `Reminded.RequestId`,
+  `Answered.VisibleNativeInput`, `AnswerRejected.AnswerRejection` and
+  `RestartQueued.FlowId`, with `AnswerRejection.[ UnknownRequest Open
+  Routed StoreRefused ]`. `RestartRefusal` gains `Asleep.FlowId`, last.
+  The names are tentative.
+- A Result or Done is routed by the Nexus to the sender of the request it
+  names; the Address its Send writes decides nothing. The notes on
+  Refresh, Restart and Launch say what Flow 0.54.3 does.
+- A consumer repins flow-ethos to `062ef9e1`.
+
 ## 59.0.0: every caller is answered alike; queue and request operations
 
 Built on 58.0.2 (15790be), for Flow 0.54.2. Every query gives the same

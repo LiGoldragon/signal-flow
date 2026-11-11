@@ -814,6 +814,7 @@ pub enum RestartRefusal {
     ResumeRefused(ResumeRefused_Data),
     Interrupted(flow_ethos::FlowId),
     Unsupported(flow_ethos::FlowId),
+    Asleep(flow_ethos::FlowId),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1157,6 +1158,13 @@ pub enum VisibleDonePayload {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct SendableRequest_Living_Data {
+    pub context: flow_ethos::Context,
+    pub verbatim: flow_ethos::Verbatim,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct SendableRequest_Result_Data {
     pub request_id: flow_ethos::RequestId,
     pub string: String,
@@ -1174,8 +1182,7 @@ pub struct SendableRequest_Done_Data {
 pub enum SendableRequest {
     Order(String),
     Question(String),
-    Psyche(flow_ethos::Said),
-    Psyches(std::vec::Vec<flow_ethos::Said>),
+    Living(SendableRequest_Living_Data),
     Result(SendableRequest_Result_Data),
     Notice(String),
     Task(flow_ethos::AnswerableTask),
@@ -1206,16 +1213,10 @@ pub struct Question_Data {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct Psyche_Data {
+pub struct DeliveredRequest_Living_Data {
     pub request_id: flow_ethos::RequestId,
-    pub said: flow_ethos::Said,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct Psyches_Data {
-    pub request_id: flow_ethos::RequestId,
-    pub said_vector: std::vec::Vec<flow_ethos::Said>,
+    pub context: flow_ethos::Context,
+    pub verbatim: flow_ethos::Verbatim,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1259,8 +1260,7 @@ pub struct DeliveredRequest_Reminder_Data {
 pub enum DeliveredRequest {
     Order(Order_Data),
     Question(Question_Data),
-    Psyche(Psyche_Data),
-    Psyches(Psyches_Data),
+    Living(DeliveredRequest_Living_Data),
     Result(DeliveredRequest_Result_Data),
     Notice(Notice_Data),
     Task(Task_Data),
@@ -1280,6 +1280,13 @@ pub enum DeliveredMessage {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct VisibleRequest_Living_Data {
+    pub context: flow_ethos::Context,
+    pub verbatim: flow_ethos::Verbatim,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct VisibleRequest_Reminder_Data {
     pub request_id: flow_ethos::RequestId,
     pub string: String,
@@ -1290,8 +1297,7 @@ pub struct VisibleRequest_Reminder_Data {
 pub enum VisibleRequest {
     Order(String),
     Question(String),
-    Psyche(flow_ethos::Said),
-    Psyches(std::vec::Vec<flow_ethos::Said>),
+    Living(VisibleRequest_Living_Data),
     Result(VisibleResultPayload),
     Notice(String),
     Task(flow_ethos::AnswerableTask),
@@ -1594,7 +1600,16 @@ pub enum Priority {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct Queue {
     pub address: flow_ethos::Address,
-    pub delivered_request_vector: std::vec::Vec<DeliveredRequest>,
+    pub visible_native_input_vector: std::vec::Vec<VisibleNativeInput>,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum AnswerRejection {
+    UnknownRequest,
+    Open,
+    Routed,
+    StoreRefused,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1680,6 +1695,7 @@ pub enum Event {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct Report_Data {
     pub flow_id: flow_ethos::FlowId,
+    pub process_option: std::option::Option<flow_ethos::Process>,
     pub event: Event,
 }
 #[rustfmt::skip]
@@ -1758,6 +1774,14 @@ pub struct Push_Data {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Remind_Data {
+    pub address: flow_ethos::Address,
+    pub minutes: flow_ethos::Minutes,
+    pub string: String,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Query {
     Start(LaunchProfile),
     Refresh(flow_ethos::Address),
@@ -1799,6 +1823,8 @@ pub enum Query {
     Push(Push_Data),
     Queues,
     Hot,
+    Remind(Remind_Data),
+    Answer(flow_ethos::RequestId),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1897,4 +1923,8 @@ pub enum Response {
     Pushed(std::vec::Vec<flow_ethos::RequestId>),
     Queues(std::vec::Vec<Queue>),
     Hot(std::vec::Vec<Warmth>),
+    Reminded(flow_ethos::RequestId),
+    Answered(VisibleNativeInput),
+    AnswerRejected(AnswerRejection),
+    RestartQueued(flow_ethos::FlowId),
 }

@@ -1350,6 +1350,9 @@ fn every_queue_and_request_operation_round_trips_as_text() {
         "Push.{ { Mind core Sol } HardAbrupt }",
         "Queues",
         "Hot",
+        "Remind.{ { Mind core Sol } 30 «Check the gate.» }",
+        "Answer.k7ph",
+        "Send.{ { Psyche core Fable } Soft.Living.{ «the drain» «Fix it today.» } }",
     ] {
         let query = Potential::<Query>::from(text)
             .actualize(&mut budget())
@@ -1381,20 +1384,77 @@ fn every_queue_and_request_operation_round_trips_as_text() {
             Response::Pushed(vec![signal_flow::RequestId("p5lg".to_string())]),
         ),
         (
-            "Queues.[ { { Mind core Sol } [ Order.{ k7ph «Review the drain fix.» } ] } ]",
+            "Queues.[ { { Mind core Sol } [ { Sender.{ Psyche core Fable } MiddleAbrupt.Order.{ k7ph «Review the drain fix.» } } { Unbound Soft.Living.{ m2qa «the drain» «Fix it today.» } } ] } ]",
             Response::Queues(vec![signal_flow::Queue {
                 address: signal_flow::Address {
                     aspect: Aspect::Mind,
                     topic: signal_flow::Topic("core".to_string()),
                     model: signal_flow::Model::Sol,
                 },
-                delivered_request_vector: vec![signal_flow::DeliveredRequest::Order(
-                    signal_flow::Order_Data {
-                        request_id: signal_flow::RequestId("k7ph".to_string()),
-                        string: "Review the drain fix.".to_string(),
+                visible_native_input_vector: vec![
+                    signal_flow::VisibleNativeInput {
+                        visible_sender: signal_flow::VisibleSender::Sender(signal_flow::Address {
+                            aspect: Aspect::Psyche,
+                            topic: signal_flow::Topic("core".to_string()),
+                            model: signal_flow::Model::Fable,
+                        }),
+                        delivered_message: signal_flow::DeliveredMessage::MiddleAbrupt(
+                            signal_flow::DeliveredRequest::Order(signal_flow::Order_Data {
+                                request_id: signal_flow::RequestId("k7ph".to_string()),
+                                string: "Review the drain fix.".to_string(),
+                            }),
+                        ),
                     },
-                )],
+                    signal_flow::VisibleNativeInput {
+                        visible_sender: signal_flow::VisibleSender::Unbound,
+                        delivered_message: signal_flow::DeliveredMessage::Soft(
+                            signal_flow::DeliveredRequest::Living(
+                                signal_flow::DeliveredRequest_Living_Data {
+                                    request_id: signal_flow::RequestId("m2qa".to_string()),
+                                    context: signal_flow::Context("the drain".to_string()),
+                                    verbatim: signal_flow::Verbatim("Fix it today.".to_string()),
+                                },
+                            ),
+                        ),
+                    },
+                ],
             }]),
+        ),
+        (
+            "Reminded.k7ph",
+            Response::Reminded(signal_flow::RequestId("k7ph".to_string())),
+        ),
+        (
+            "Answered.{ Sender.{ Mind core Sol } Soft.Result.{ k7ph «Reviewed; green.» } }",
+            Response::Answered(signal_flow::VisibleNativeInput {
+                visible_sender: signal_flow::VisibleSender::Sender(signal_flow::Address {
+                    aspect: Aspect::Mind,
+                    topic: signal_flow::Topic("core".to_string()),
+                    model: signal_flow::Model::Sol,
+                }),
+                delivered_message: signal_flow::DeliveredMessage::Soft(
+                    signal_flow::DeliveredRequest::Result(
+                        signal_flow::DeliveredRequest_Result_Data {
+                            request_id: signal_flow::RequestId("k7ph".to_string()),
+                            string: "Reviewed; green.".to_string(),
+                        },
+                    ),
+                ),
+            }),
+        ),
+        (
+            "AnswerRejected.Open",
+            Response::AnswerRejected(signal_flow::AnswerRejection::Open),
+        ),
+        (
+            "RestartQueued.74e4d1",
+            Response::RestartQueued(signal_flow::FlowId("74e4d1".to_string())),
+        ),
+        (
+            "RestartRefused.Asleep.74e4d1",
+            Response::RestartRefused(signal_flow::RestartRefusal::Asleep(signal_flow::FlowId(
+                "74e4d1".to_string(),
+            ))),
         ),
         (
             "Hot.[ { { Mind core Sol } Some.3 } { { Psyche core Fable } None } ]",
