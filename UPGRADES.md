@@ -1,5 +1,41 @@
 # Upgrades
 
+## 59.0.0: every caller is answered alike; queue and request operations
+
+Built on 58.0.2 (15790be), for Flow 0.54.2. Every query gives the same
+answer to every caller; the calling process only fills in a message's
+sender.
+
+- `VisibleSender` gains `Unbound`, last: a sender in no flow. A
+  consumer reading a snapshot of such a send needs this revision.
+- `BindSeat.{ Address SeatPane }` and `Adopt.{ Address SeatPane
+  NativeSessionId }` name the Herdr pane whose seat they bind, as
+  `BindSeat.{ { Field core Sol } { main w1:p3 } }`; `BindSeat.Address` no
+  longer reads.
+- `Protected` leaves `RefreshRejection`, `StopRejection`,
+  `RestartRefusal` and `ReplaceRejection`; `Caller` leaves
+  `ArchiveRejection`; `UnknownCaller` leaves `HandoverRefusal`. Each was
+  the last variant but `Caller` and `UnknownCaller`, whose types are
+  answers only, never stored.
+- `Query` gains, last: `Cancel.RequestId`, `Silence.RequestId`,
+  `Clear.Address`, `ClearAll`, `Push.{ Address Priority }`, `Queues`,
+  `Hot`. `Response` gains, last: `Cancelled.RequestId`,
+  `CancelRejected.RequestRejection`, `Silenced.RequestId`,
+  `SilenceRejected.RequestRejection`, `Cleared.Vector<RequestId>`,
+  `Pushed.Vector<RequestId>`, `Queues.Vector<Queue>`, `Hot.Vector<Warmth>`,
+  with `RequestRejection.[ UnknownRequest NotYet Closed NotTask
+  StoreRefused ]`, `Priority.[ HardAbrupt MiddleAbrupt Soft ]`,
+  `Queue.{ Address Vector<DeliveredRequest> }` and
+  `Warmth.{ Address Option<Minutes> }`. The names are tentative.
+- Every other variant keeps its place, so a peer on 58.0.2 that sends
+  none of the changed queries (Message's Bind, Identify, IdentifyThread,
+  Lock, Deliver, Release, Acknowledge and its observations; the Energy
+  Nexus's `Observe.TurnEnds`) still reads and is read.
+- `NotMessage` and `NotSendServer` stay in `Refusal`, answered no longer,
+  for the outcomes archived with them. The flow-ethos pin stays at
+  5c61d666; Flow 0.54.2 builds this contract against its own flow-ethos,
+  whose `SentBy` gains `Unbound`.
+
 ## 58.0.2: flow-ethos 5c61d666 (0.54.0)
 
 Only the flow-ethos pin moves, from d1effd4b (0.53.3) to flow main 5c61d666

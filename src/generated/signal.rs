@@ -775,7 +775,6 @@ pub enum RefreshRejection {
     SuccessorRefused(ReplaceRejection),
     Undeclared,
     SuccessorUnconfirmed,
-    Protected,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -795,7 +794,6 @@ pub enum StopRejection {
     PersistenceRefused,
     Restarting,
     SpawnUnproven,
-    Protected,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -816,7 +814,6 @@ pub enum RestartRefusal {
     ResumeRefused(ResumeRefused_Data),
     Interrupted(flow_ethos::FlowId),
     Unsupported(flow_ethos::FlowId),
-    Protected(flow_ethos::FlowId),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -835,7 +832,6 @@ pub enum ReplaceRejection {
     LaunchRefused(StartRejection),
     ReapRefused(StopRejection),
     Locked,
-    Protected,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1309,6 +1305,7 @@ pub enum VisibleSender {
     Sender(flow_ethos::Address),
     Unknown,
     Notification,
+    Unbound,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1570,10 +1567,41 @@ pub struct VisibleSendObservation {
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum ArchiveRejection {
-    Caller(VisibleRefusal),
     UnknownRequest,
     NotYet,
     StoreRefused,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum RequestRejection {
+    UnknownRequest,
+    NotYet,
+    Closed,
+    NotTask,
+    StoreRefused,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum Priority {
+    HardAbrupt,
+    MiddleAbrupt,
+    Soft,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Queue {
+    pub address: flow_ethos::Address,
+    pub delivered_request_vector: std::vec::Vec<DeliveredRequest>,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Warmth {
+    pub address: flow_ethos::Address,
+    pub minutes_option: std::option::Option<flow_ethos::Minutes>,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1633,7 +1661,6 @@ pub enum Touch {
 pub enum HandoverRefusal {
     MissingTitle,
     UnknownFlow,
-    UnknownCaller,
     NotOwner,
     Store(String),
 }
@@ -1695,8 +1722,16 @@ pub struct ObserveSender_Data {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct BindSeat_Data {
+    pub address: flow_ethos::Address,
+    pub seat_pane: SeatPane,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct Adopt_Data {
     pub address: flow_ethos::Address,
+    pub seat_pane: SeatPane,
     pub native_session_id: NativeSessionId,
 }
 #[rustfmt::skip]
@@ -1712,6 +1747,13 @@ pub struct Keep_Data {
 pub struct Drop_Data {
     pub address: flow_ethos::Address,
     pub title: Title,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Push_Data {
+    pub address: flow_ethos::Address,
+    pub priority: Priority,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1743,13 +1785,20 @@ pub enum Query {
     DeliverAll(flow_ethos::Address),
     Launch(LaunchRequest),
     Rehearse(LaunchRequest),
-    BindSeat(flow_ethos::Address),
+    BindSeat(BindSeat_Data),
     Adopt(Adopt_Data),
     Restart(flow_ethos::FlowId),
     Keep(Keep_Data),
     Drop(Drop_Data),
     Glance(flow_ethos::Address),
     Read(flow_ethos::Address),
+    Cancel(flow_ethos::RequestId),
+    Silence(flow_ethos::RequestId),
+    Clear(flow_ethos::Address),
+    ClearAll,
+    Push(Push_Data),
+    Queues,
+    Hot,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1840,4 +1889,12 @@ pub enum Response {
     MetaflowsObserved(std::vec::Vec<flow_ethos::Metaflow>),
     MetaflowChanged(flow_ethos::Metaflow),
     MetaflowGone(flow_ethos::Address),
+    Cancelled(flow_ethos::RequestId),
+    CancelRejected(RequestRejection),
+    Silenced(flow_ethos::RequestId),
+    SilenceRejected(RequestRejection),
+    Cleared(std::vec::Vec<flow_ethos::RequestId>),
+    Pushed(std::vec::Vec<flow_ethos::RequestId>),
+    Queues(std::vec::Vec<Queue>),
+    Hot(std::vec::Vec<Warmth>),
 }

@@ -42,7 +42,7 @@ fn every_ordinary_request_has_a_concrete_datom() {
         "Start.{ field-flow-quaternary-1 [ spirit:core ] [ compensation:main-flow ] Predecessors.0 { Field flow Haiku } haiku medium None fieldFlow None Regular Default «Send the Order through Message.» }",
         "Refresh.{ Psyche core Fable }",
         "ResolveRecipient.fac697",
-        "Adopt.{ { Mind core Sol } 6c9e081f-70b0-4a35-9838-6cc7dca01971 }",
+        "Adopt.{ { Mind core Sol } { main w1:p3 } 6c9e081f-70b0-4a35-9838-6cc7dca01971 }",
     ] {
         let query = Potential::<Query>::from(text)
             .actualize(&mut budget())
@@ -427,7 +427,7 @@ fn a_send_names_its_recipient_and_deliver_all_names_a_metaflow() {
         "DeliverAll.{ Psyche core Opus }",
         "Launch.{ { Mind core Astra } Predecessors.2 brief }",
         "Launch.{ { Mind core Astra } Custom.[ 36b71b e3c8c1 ] brief }",
-        "BindSeat.{ Field core Sol }",
+        "BindSeat.{ { Field core Sol } { main w1:p3 } }",
     ] {
         let query = Potential::<Query>::from(text)
             .actualize(&mut budget())
@@ -1338,34 +1338,89 @@ fn a_restart_and_each_of_its_answers_round_trip_as_text() {
     }
 }
 
-/// A protected Address answers Protected to every caller but its own seat:
-/// a restart names the flow, the other three carry Protected alone. The
-/// concrete text is the specification.
+/// Each operation that ends, empties, forces or reads a request or a queue
+/// has a concrete datom, asked and answered; the text is the specification.
 #[test]
-fn each_protected_refusal_round_trips_as_text() {
+fn every_queue_and_request_operation_round_trips_as_text() {
+    for text in [
+        "Cancel.k7ph",
+        "Silence.k7ph",
+        "Clear.{ Mind core Sol }",
+        "ClearAll",
+        "Push.{ { Mind core Sol } HardAbrupt }",
+        "Queues",
+        "Hot",
+    ] {
+        let query = Potential::<Query>::from(text)
+            .actualize(&mut budget())
+            .unwrap_or_else(|error| panic!("{text}: {error:?}"));
+        assert_eq!(query.datomize(Vec::new()).protosize().compact(), text);
+    }
     for (text, expected) in [
         (
-            "RestartRefused.Protected.c1a0de",
-            Response::RestartRefused(signal_flow::RestartRefusal::Protected(signal_flow::FlowId(
-                "c1a0de".to_string(),
-            ))),
+            "Cancelled.k7ph",
+            Response::Cancelled(signal_flow::RequestId("k7ph".to_string())),
         ),
         (
-            "RefreshRejected.Protected",
-            Response::RefreshRejected(signal_flow::RefreshRejection::Protected),
+            "CancelRejected.Closed",
+            Response::CancelRejected(signal_flow::RequestRejection::Closed),
         ),
         (
-            "ReplaceRejected.Protected",
-            Response::ReplaceRejected(signal_flow::ReplaceRejection::Protected),
+            "SilenceRejected.NotTask",
+            Response::SilenceRejected(signal_flow::RequestRejection::NotTask),
         ),
         (
-            "StopRejected.Protected",
-            Response::StopRejected(signal_flow::StopRejection::Protected),
+            "Cleared.[ k7ph m2qa ]",
+            Response::Cleared(vec![
+                signal_flow::RequestId("k7ph".to_string()),
+                signal_flow::RequestId("m2qa".to_string()),
+            ]),
+        ),
+        (
+            "Pushed.[ p5lg ]",
+            Response::Pushed(vec![signal_flow::RequestId("p5lg".to_string())]),
+        ),
+        (
+            "Queues.[ { { Mind core Sol } [ Order.{ k7ph «Review the drain fix.» } ] } ]",
+            Response::Queues(vec![signal_flow::Queue {
+                address: signal_flow::Address {
+                    aspect: Aspect::Mind,
+                    topic: signal_flow::Topic("core".to_string()),
+                    model: signal_flow::Model::Sol,
+                },
+                delivered_request_vector: vec![signal_flow::DeliveredRequest::Order(
+                    signal_flow::Order_Data {
+                        request_id: signal_flow::RequestId("k7ph".to_string()),
+                        string: "Review the drain fix.".to_string(),
+                    },
+                )],
+            }]),
+        ),
+        (
+            "Hot.[ { { Mind core Sol } Some.3 } { { Psyche core Fable } None } ]",
+            Response::Hot(vec![
+                signal_flow::Warmth {
+                    address: signal_flow::Address {
+                        aspect: Aspect::Mind,
+                        topic: signal_flow::Topic("core".to_string()),
+                        model: signal_flow::Model::Sol,
+                    },
+                    minutes_option: Some(flow_ethos::Minutes(3)),
+                },
+                signal_flow::Warmth {
+                    address: signal_flow::Address {
+                        aspect: Aspect::Psyche,
+                        topic: signal_flow::Topic("core".to_string()),
+                        model: signal_flow::Model::Fable,
+                    },
+                    minutes_option: None,
+                },
+            ]),
         ),
     ] {
         let actual = Potential::<Response>::from(text)
             .actualize(&mut budget())
-            .unwrap();
+            .unwrap_or_else(|error| panic!("{text}: {error:?}"));
         assert_eq!(actual, expected);
         assert_eq!(actual.datomize(vec![]).protosize().compact(), text);
     }

@@ -1,12 +1,16 @@
 ; Presentation names the living-directed output's book; it carries no body
 ; or sender. Transcript content ownership is deliberately not declared.
 ;
+; Every query gives the same answer to every caller, a flow, a subflow or
+; the living at a shell. The calling process is read for one thing: the
+; sender of a message is filled in from it.
+;
 ; Send is how a flow sends a request to a metaflow, through Flow itself.
 ; It carries no sender: the Nexus reads the calling process from its own
 ; socket and names the flow it runs in, by the Herdr pane it or its nearest
 ; marked ancestor runs in, or, for a Codex flow, by the thread the Codex
-; app-server named in the environment of the command it started. The
-; sender's metaflow must be Awake as that flow. The recipient is the Address
+; app-server named in the environment of the command it started. A caller
+; in no flow sends as Unbound and is served. The recipient is the Address
 ; the Send names and must be a metaflow Flow holds; a recipient Address whose
 ; topic is not an uncapitalized camelCase identifier is refused TopicRefused,
 ; carrying the topic as written. Priority determines delivery: an Awake recipient receives
@@ -16,6 +20,22 @@
 ; Attempting or Uncertain and is never retried blindly.
 ; DeliverAll asks Flow to deliver every queued message for an Address and does
 ; not insert a prompt when that queue is empty.
+;
+; A request, a reminder and a queue are each ended, emptied or forced by an
+; operation of their own. Cancel closes an open request by its id: one
+; still queued leaves its queue, a Task's reminder goes with it, and its
+; sender, and its recipient when the request reached it, are told by a Soft
+; Notice. Silence stops a Task's reminders and leaves the Task open. Clear
+; takes everything queued for an Address out of its queue, ClearAll every
+; queue, each answering the ids that left. Push delivers an Address's whole
+; queue now, as one message at the Priority named, waking an Asleep
+; metaflow, and answers the ids delivered. Queues answers every queue that
+; holds something; Hot every live flow's Address by the minutes since its
+; last turn ended, None for a flow none of whose turns has ended yet.
+; RequestRejection names why a Cancel or Silence changed nothing:
+; UnknownRequest, no request holds the id; NotYet, a delivery of it is
+; still being settled; Closed, it is already answered; NotTask, a Silence
+; of a request that is no Task.
 ;
 ; Launch starts the metaflow at Address from its declaration in Flow's
 ; configuration (the meta Metaflows family): its system and user modules,
@@ -38,19 +58,19 @@
 ; flight: a Claude flow at a Stop whose BackgroundWork is empty, its turn
 ; shown ended; a Codex flow when its app-server's thread rests.
 ;
-; BindSeat binds the seat the calling process runs in to Address. The seat
-; is read from the caller's Herdr pane: its harness and native session.
+; BindSeat binds the seat in the named Herdr pane to Address, from any
+; caller. The seat is read from that pane: its harness and native session.
 ; Its FlowId is the claim for that native session, the one Flow itself
 ; makes when it launches a flow, so a seat Flow did not start still has
 ; its real id. The seat is recorded live in its pane and the metaflow Awake
 ; as it; a metaflow Awake as another live flow is refused Taken.
 ;
-; Adopt binds that same authenticated seat to Address only when the native
-; session supplied by the seat is the NativeSessionId in the request. The
-; caller supplies no FlowId: Flow derives it from the verified native session.
+; Adopt binds that same seat to Address only when the native session the
+; pane's seat runs is the NativeSessionId in the request. The caller
+; supplies no FlowId: Flow derives it from the verified native session.
 ;
 ; Refresh ends the flow the metaflow at Address is Awake as. Anybody may
-; refresh a metaflow but a protected one (below), the flow itself included.
+; refresh a metaflow, the flow itself included.
 ; A refresh waits for the flow's idle event: a flow that rests now is
 ; refreshed at once; a working one answers RefreshQueued at once, the
 ; refresh recorded and kept by a Nexus that starts again, and it is
@@ -90,10 +110,8 @@
 ; in a new pane, keeping its FlowId, session, Model and transcript, with the
 ; current launch configuration, modules and hooks of its Address aimed at
 ; this Nexus, and no prompt typed. Anybody may restart a flow, as anybody
-; may refresh one; the Nexus derives the origin from the calling process,
-; and a flow asking for its own restart is refused Unsupported. Only a
-; Claude flow, Awake and resting, is restarted: Codex, Asleep, a working
-; seat, a past flow and a restart asked by the flow itself are Unsupported.
+; may refresh one. Only a Claude flow, Awake and resting, is restarted:
+; Codex, Asleep, a working seat and a past flow are Unsupported.
 ; While its restart is under way the flow's Address is held: a Send queues,
 ; and the queue is handed to the resumed seat once it is bound. Restarted
 ; names the flow, resumed and bound. A refusal names why: UnknownFlow,
@@ -103,14 +121,8 @@
 ; bind failed, with its fixed category; session, queue and custody kept),
 ; Interrupted (a spawn's outcome is unproven; only Stop clears it).
 ;
-; A protected Address (the meta ProtectedAddresses) is restarted, refreshed
-; or replaced on this socket only when its own seat asks, the Nexus reading
-; that seat from the calling process as it reads a restart's origin; a
-; Launch of it is such a Replace. Its Stop is taken from its own seat and
-; from the owner, a process in no flow's pane. Any other caller is refused
-; Protected: RestartRefusal.Protected names the flow; RefreshRejection,
-; ReplaceRejection and StopRejection carry Protected alone. A protected
-; Address's flow is never refreshed for its threshold.
+; A protected Address (the meta ProtectedAddresses) is never refreshed for
+; its threshold; every other act on it is answered as for any Address.
 ;
 ; Flow ordinary Signal.
 ;
@@ -119,6 +131,7 @@
 ; derives it from the calling process as Identify does (its pane's bound
 ; flow and that flow's native session), and a caller that is no bound flow,
 ; such as a deploy script, is an Unbound origin, recorded, never refused.
+; A retried LaunchRequestId is the same launch whatever its origin.
 ; A launch's harness is the one whose configured endpoint serves its model
 ; (Codex), else Claude; it is not named in the profile. The successor is launched; once it has
 ; Started, the predecessor is Stopped and taken out of receiving, and
@@ -222,41 +235,28 @@
 ; The optional FlowId is the caller's claim, checked against the
 ; binding: CallerMismatch carries the Caller the binding names.
 ;
-; Bind binds the calling process to an Address. A Bind for { Field message
-; Astra } is accepted only when the kernel-reported executable is the
-; configured MessageNexusBinary; an unconfigured Nexus answers
-; NotConfigured and another executable answers NotMessage. The Process in
-; the request is not proof of the caller's executable.
+; Bind binds the named live Process to an Address, from any caller.
 ;
-; Lock, Deliver and Release are accepted only from the exact bound Message
-; process (PID and start time). Message's Identify result supplies the
-; distinct Sender Address in Lock; Flow trusts that bound Message peer's
-; assertion and does not independently resolve the Sender's origin. A
-; Sender must name an existing Awake metaflow. The request is queued with
-; that Sender (QueuedRequest.{ SentBy Request }), and a woken or drained
-; flow reads each queued request with who sent it; a request queued before
-; senders were kept reads SentBy Unknown. Unknown addresses are not
-; created; an Asleep Sender is refused as Asleep.
+; Lock, Deliver, Release, Identify, IdentifyThread, Acknowledge,
+; ObserveSender and ObserveDeliveries are taken from any caller. Lock names
+; the Sender Address the request is queued under (QueueEntry.{ SentBy
+; Request }), and a woken or drained flow reads each queued request with
+; who sent it; a request queued before senders were kept reads SentBy
+; Unknown, one from a caller in no flow SentBy Unbound. Unknown addresses
+; are not created.
 ;
-; IdentifyThread names the metaflow a Codex thread runs as, for an MCP
-; send server serving that thread. Message sends it, as it sends Identify,
-; with the process its own socket reports for the send server and the
-; thread id Codex stamped on the tool call (its _meta threadId). Flow
-; accepts it only from the bound Message process, and only when that
-; process's kernel-reported executable is a configured send server's and
-; its parent's is the Codex app-server executable configured with it (the
-; meta SendServers family): another executable or parent is NotSendServer,
-; and no configured send server is NotConfigured. The thread then names the
-; Address of the metaflow Awake as the one live Codex flow whose thread Flow
-; recorded at its Start; any other thread, or one whose metaflow is not
-; Awake, is Unidentified. Neither the process's environment nor the
-; app-server as a whole names a flow.
+; IdentifyThread names the metaflow a Codex thread runs as: the Address of
+; the metaflow Awake as the one live Codex flow whose thread Flow recorded
+; at its Start; any other thread, or one whose metaflow is not Awake, is
+; Unidentified. NotMessage and NotSendServer are answered no longer; they
+; stay in Refusal for the outcomes archived with them.
 ;
 ; Report carries one harness event of a flow Flow holds, sent by the
 ; harness's hook through the Flow CLI with the FlowId the flow was
 ; launched with. Flow stores the event in that flow's Memory and answers
-; Reported. A FlowId Flow does not hold is refused, Refused.Unknown.FlowId,
-; never adopted: a flow Flow did not launch is a flow Flow does not know.
+; Reported, and acts on it whichever process sent it. A FlowId Flow does
+; not hold is refused, Refused.Unknown.FlowId, never adopted: a flow Flow
+; did not launch is a flow Flow does not know.
 ;
 ; Stopped carries the BackgroundWork its hook was given: a Claude flow
 ; whose Stop names work in flight has not rested, and the Stop its turn
@@ -333,13 +333,20 @@ Signal
   DeliverAll.Address
   Launch.LaunchRequest
   Rehearse.LaunchRequest
-  BindSeat.Address
-  Adopt.{ Address NativeSessionId }
+  BindSeat.{ Address SeatPane }
+  Adopt.{ Address SeatPane NativeSessionId }
   Restart.FlowId
   Keep.{ Address Section }
   Drop.{ Address Title }
   Glance.Address
-  Read.Address ]
+  Read.Address
+  Cancel.RequestId
+  Silence.RequestId
+  Clear.Address
+  ClearAll
+  Push.{ Address Priority }
+  Queues
+  Hot ]
 [ Started.Launched
   LaunchPending.LaunchAttempt
   StartAmbiguous.PromptDeliveryIntent
@@ -400,7 +407,15 @@ Signal
   TurnEnded.TurnEnd
   MetaflowsObserved.Vector<Metaflow>
   MetaflowChanged.Metaflow
-  MetaflowGone.Address ]
+  MetaflowGone.Address
+  Cancelled.RequestId
+  CancelRejected.RequestRejection
+  Silenced.RequestId
+  SilenceRejected.RequestRejection
+  Cleared.Vector<RequestId>
+  Pushed.Vector<RequestId>
+  Queues.Vector<Queue>
+  Hot.Vector<Warmth> ]
 [
   SessionId.String
   Tokens.Integer
@@ -637,14 +652,12 @@ Signal
                      HerdrUnavailable
                      SuccessorRefused.ReplaceRejection ; the Replace that starts the successor owed was refused
                      Undeclared                        ; no declaration or model names a successor
-                     SuccessorUnconfirmed              ; the successor's launch is pending or ambiguous past the confirmation wait
-                     Protected ]                       ; the Address is protected and its own seat did not ask
+                     SuccessorUnconfirmed ]            ; the successor's launch is pending or ambiguous past the confirmation wait
   RecipientResolutionRejection.[ UnknownFlow FlowUnavailable ]
   ; Restarting: a restart step runs for the flow now. SpawnUnproven: the
   ; flow's interrupted restart may have started a harness that Flow cannot
-  ; show stopped; the restart stays Interrupted. Protected: the flow's
-  ; Address is protected, and neither its own seat nor the owner asked.
-  StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused PersistenceRefused Restarting SpawnUnproven Protected ]
+  ; show stopped; the restart stays Interrupted.
+  StopRejection.[ UnknownFlow AlreadyStopped RouteUnavailable CloseRefused PersistenceRefused Restarting SpawnUnproven ]
   RestartRefusal.[ UnknownFlow.FlowId
                    NoHeldSession.FlowId
                    TranscriptAbsent.FlowId
@@ -652,16 +665,14 @@ Signal
                    CloseRefused.FlowId
                    ResumeRefused.{ FlowId String }
                    Interrupted.FlowId
-                   Unsupported.FlowId
-                   Protected.FlowId ]
+                   Unsupported.FlowId ]
   Replaced.{ FlowId Launched }
   ReplaceRejection.[ PredecessorAbsent
                      UnknownPredecessor
                      PredecessorStopped
                      LaunchRefused.StartRejection ; the successor's start was refused
                      ReapRefused.StopRejection    ; the predecessor's end was refused
-                     Locked                       ; a refresh or a waking holds the metaflow
-                     Protected ]                  ; the predecessor's Address is protected and its own seat did not ask
+                     Locked ]                     ; a refresh or a waking holds the metaflow
   ObserveSelection.[ Launch.LaunchRequestId
                      Agent.FlowId
                      Retirement.Address
@@ -793,7 +804,8 @@ Signal
                    Task.AnswerableTask
                    Done.VisibleDonePayload
                    Reminder.{ RequestId String } ]
-  VisibleSender.[ Sender.Address Unknown Notification ]
+  ; Unbound: a sender in no flow.
+  VisibleSender.[ Sender.Address Unknown Notification Unbound ]
   VisibleNativeInput.{ VisibleSender DeliveredMessage }
   SendRequest.{ Address SendableMessage }
   DeliveryCursor.Integer
@@ -875,7 +887,14 @@ Signal
   VisibleSendAcceptance.{ RequestId DeliveryCursor VisibleDeliveryState }
   VisibleDeliverySnapshot.{ RequestId DeliveryCursor VisibleSender Address VisibleDeliveryState }
   VisibleSendObservation.{ StoreIdentity DeliveryCursor Vector<VisibleDeliverySnapshot> }
-  ArchiveRejection.[ Caller.VisibleRefusal UnknownRequest NotYet StoreRefused ]
+  ArchiveRejection.[ UnknownRequest NotYet StoreRefused ]
+  RequestRejection.[ UnknownRequest NotYet Closed NotTask StoreRefused ]
+  ; The priority a Push delivers a queue at.
+  Priority.[ HardAbrupt MiddleAbrupt Soft ]
+  ; One queue that holds something, oldest first.
+  Queue.{ Address Vector<DeliveredRequest> }
+  ; A live flow's Address and the minutes since its last turn ended.
+  Warmth.{ Address Option<Minutes> }
   VisibleDrainOutcome.{ Address VisibleDrainState.[ Delivered Held ] }
   ; Started: the harness's session started (Claude's SessionStart), naming
   ; the native session Claude Code gave the hook. One that follows the
@@ -891,7 +910,9 @@ Signal
   Section.{ Title Description Body }
   Heading.{ Title Description }
   Touch.[ Unknown Known.{ FlowId Tokens Timestamp } ]
-  HandoverRefusal.[ MissingTitle UnknownFlow UnknownCaller NotOwner Store.String ]
+  ; UnknownFlow: the Address is Awake as no flow. NotOwner: the handover
+  ; is another flow's, one the Address was Awake as before.
+  HandoverRefusal.[ MissingTitle UnknownFlow NotOwner Store.String ]
   Event.[ Started.Option<NativeSessionId>
           ToolUsed.String
           Stopped.NativeStop
