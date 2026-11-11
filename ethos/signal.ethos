@@ -254,9 +254,11 @@
 ; Report carries one harness event of a flow Flow holds, sent by the
 ; harness's hook through the Flow CLI with the FlowId the flow was
 ; launched with. Flow stores the event in that flow's Memory and answers
-; Reported, and acts on it whichever process sent it. A FlowId Flow does
-; not hold is refused, Refused.Unknown.FlowId, never adopted: a flow Flow
-; did not launch is a flow Flow does not know.
+; Reported, whoever sends it. A seat a restart bound shares its native
+; session with the harness it replaced, so an event of it acts only when
+; the reporting process descends from the resumed harness. A FlowId Flow
+; does not hold is refused, Refused.Unknown.FlowId, never adopted: a flow
+; Flow did not launch is a flow Flow does not know.
 ;
 ; Stopped carries the BackgroundWork its hook was given: a Claude flow
 ; whose Stop names work in flight has not rested, and the Stop its turn
