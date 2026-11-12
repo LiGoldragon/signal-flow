@@ -3,9 +3,9 @@ pub use generated::signal::*;
 
 pub use flow_ethos::{
     Address, AnswerableTask, Aspect, Context, DonePayload, FlowId, HarnessKind, Key, Lock,
-    LogicalDeliveryId, Message, MetaSocketPath, Metaflow, Model, ModelName, NativeInput,
-    OrdinarySocketPath, Process, QueueEntry, Request, RequestId, ResultPayload, SentBy, Source,
-    Start, Subaspect, Topic, Verbatim,
+    LogicalDeliveryId, Message, MetaSocketPath, Metaflow, MetaflowName, Model, ModelName,
+    NativeInput, OrdinarySocketPath, Permaflow, PermaflowState, Process, QueueEntry, Request,
+    RequestId, ResultPayload, SentBy, Source, Start, Subaspect, Topic, Verbatim,
 };
 
 pub use signal::{ByteViewable, Restorable, Signal, Signalizable};

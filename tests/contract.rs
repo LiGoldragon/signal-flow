@@ -38,8 +38,8 @@ fn missing_module_refusal_carries_known_or_historical_identity() {
 #[test]
 fn every_ordinary_request_has_a_concrete_datom() {
     for text in [
-        "Start.{ request-7 [ spirit:core ] [ compensation:main-flow knowledge:flow ] Custom.[ 4e1d2a ] { Field flow Astra } gpt-6-astra medium Some.836818 messaging-build Some.[ SkillTool WorkflowTool ] Regular Default «Carry this bounded launch request.» }",
-        "Start.{ field-flow-quaternary-1 [ spirit:core ] [ compensation:main-flow ] Predecessors.0 { Field flow Haiku } haiku medium None fieldFlow None Regular Default «Send the Order through Message.» }",
+        "Start.{ request-7 [ spirit:core ] [ compensation:main-flow knowledge:flow ] Custom.[ 4e1d2a ] { Field flow Astra } gpt-6-astra medium Some.836818 messaging-build Some.[ SkillTool WorkflowTool ] Regular Default «Carry this bounded launch request.» [] }",
+        "Start.{ field-flow-quaternary-1 [ spirit:core ] [ compensation:main-flow ] Predecessors.0 { Field flow Haiku } haiku medium None fieldFlow None Regular Default «Send the Order through Message.» [] }",
         "Refresh.{ Psyche core Fable }",
         "ResolveRecipient.fac697",
         "Adopt.{ { Mind core Sol } { main w1:p3 } 6c9e081f-70b0-4a35-9838-6cc7dca01971 }",
@@ -121,6 +121,7 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
         instruction_prompt: signal_flow::InstructionPrompt(
             "Carry this bounded launch request.".to_string(),
         ),
+        metaflow_names: signal_flow::MetaflowNames(vec![]),
     };
     let receipt_request = signal_flow::TargetReceiptRequest {
         launch_request_id: profile.launch_request_id.clone(),
@@ -230,6 +231,7 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
             instruction_prompt: signal_flow::InstructionPrompt(
                 "Carry this bounded launch request.".to_string(),
             ),
+            metaflow_names: signal_flow::MetaflowNames(vec![]),
         },
         prompt_sha256: intent.prompt_sha256.clone(),
         origin: signal_flow::Origin::Flow(signal_flow::FlowOrigin {
@@ -425,8 +427,8 @@ fn a_send_names_its_recipient_and_deliver_all_names_a_metaflow() {
     for text in [
         "Send.{ { Mind core Sol } Soft.Order.«Review the drain fix» }",
         "DeliverAll.{ Psyche core Opus }",
-        "Launch.{ { Mind core Astra } Predecessors.2 brief }",
-        "Launch.{ { Mind core Astra } Custom.[ 36b71b e3c8c1 ] brief }",
+        "Launch.{ { Mind core Astra } Predecessors.2 brief [] }",
+        "Launch.{ { Mind core Astra } Custom.[ 36b71b e3c8c1 ] brief [] }",
         "BindSeat.{ { Field core Sol } { main w1:p3 } }",
     ] {
         let query = Potential::<Query>::from(text)
@@ -708,8 +710,10 @@ fn launch_and_rehearse_share_one_request_and_have_typed_answers() {
     // datom-codec 0.33 prints a bare String bare: `Begin.` is the canonical
     // print of the brief the guillemet form `«Begin.»` also reads as.
     for text in [
-        "Launch.{ { Psyche core Fable } Predecessors.1 Begin. }",
-        "Rehearse.{ { Psyche core Fable } Predecessors.1 Begin. }",
+        "Launch.{ { Psyche core Fable } Predecessors.1 Begin. [] }",
+        "Rehearse.{ { Psyche core Fable } Predecessors.1 Begin. [] }",
+        "Launch.{ { Psyche core Fable } Predecessors.1 Begin. [ psycheCore flowTeam psycheCore ] }",
+        "Rehearse.{ { Psyche core Fable } Predecessors.1 Begin. [ flowTeam ] }",
     ] {
         let query = Potential::<Query>::from(text)
             .actualize(&mut budget())
@@ -758,43 +762,57 @@ fn caller_names_the_flow_its_aspect_and_model() {
     );
 }
 
-/// Metaflows lists preserve the address, current state, past flows and queued
-/// requests as one typed record. The concrete text is the specification.
+/// Inventory exposes only the public address and awake standing.
 #[test]
-fn metaflows_query_and_listed_metaflow_roundtrip() {
-    let query = Potential::<Query>::from("Metaflows")
-        .actualize(&mut budget())
-        .unwrap();
-    assert_eq!(query, Query::Metaflows);
-
-    let text = "Listed.[ { { Psyche flow Fable } Awake.f1c841 [ past-1 ] [] } ]";
-    let restored = Potential::<Response>::from(text)
-        .actualize(&mut budget())
-        .unwrap();
-    let Response::Listed(rows) = &restored else {
-        panic!("Metaflows answers with typed metaflow records")
-    };
-    assert_eq!(rows.len(), 1);
-    assert_eq!(rows[0].address.aspect, Aspect::Psyche);
-    assert_eq!(
-        rows[0].address.topic,
-        signal_flow::Topic("flow".to_string())
+fn scoped_permaflows_and_cohesions_round_trip() {
+    for text in [
+        "Permaflows.Mine",
+        "Permaflows.All",
+        "Metaflows",
+        "Observe.Permaflows.Mine",
+        "Observe.Permaflows.All",
+    ] {
+        let query = Potential::<Query>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        assert_eq!(query.datomize(vec![]).protosize().compact(), text);
+    }
+    for text in [
+        "Permaflows.[ { { Psyche flow Fable } Awake } { { Mind core Sol } Asleep } ]",
+        "Metaflows.[ { flowTeam [ { Psyche flow Fable } { Mind core Sol } ] } ]",
+        "PermaflowsObserved.[ { { Mind core Sol } Asleep } ]",
+        "PermaflowChanged.{ { Mind core Sol } Awake }",
+        "PermaflowGone.{ Mind core Sol }",
+        "PermaflowsRejected.CallerUnknown",
+        "PermaflowsRejected.CallerContradictory",
+        "PermaflowsRejected.StoreRefused",
+    ] {
+        let response = Potential::<Response>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        assert_eq!(response.datomize(vec![]).protosize().compact(), text);
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            response
+        );
+    }
+    for old in [
+        "Listed.[ { { Psyche flow Fable } Awake.f1c841 [ past-1 ] [] } ]",
+        "Permaflows.[ { { Psyche flow Fable } Awake.f1c841 [ past-1 ] [] } ]",
+        "Permaflows.[ { { Psyche flow Fable } Awake 42 } ]",
+    ] {
+        assert!(
+            Potential::<Response>::from(old)
+                .actualize(&mut budget())
+                .is_err()
+        );
+    }
+    assert!(
+        Potential::<Query>::from("Observe.Metaflows")
+            .actualize(&mut budget())
+            .is_err()
     );
-    assert_eq!(
-        rows[0].state,
-        flow_ethos::State::Awake(signal_flow::FlowId("f1c841".to_string()))
-    );
-    assert_eq!(
-        rows[0].past,
-        flow_ethos::Past(vec![signal_flow::FlowId("past-1".to_string())])
-    );
-    assert!(rows[0].queue.0.is_empty());
-    let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&restored).unwrap();
-    assert_eq!(
-        rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
-        restored
-    );
-    assert_eq!(restored.datomize(vec![]).protosize().compact(), text);
 }
 
 /// Store failures retain their diagnostic as a typed Signal payload.
@@ -811,29 +829,9 @@ fn store_refusal_roundtrips_with_its_error_text() {
     assert_eq!(response.datomize(vec![]).protosize().compact(), text);
 }
 
-/// A sleeping metaflow retains its queue without claiming an awake flow.
-#[test]
-fn listed_asleep_metaflow_roundtrips_without_a_current_flow() {
-    let text = "Listed.[ { { Mind topics Astra } Asleep [] [] } ]";
-    let restored = Potential::<Response>::from(text)
-        .actualize(&mut budget())
-        .unwrap();
-    let Response::Listed(rows) = &restored else {
-        panic!("Metaflows answers with typed metaflow records")
-    };
-    assert_eq!(rows.len(), 1);
-    assert_eq!(rows[0].state, flow_ethos::State::Asleep);
-    let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&restored).unwrap();
-    assert_eq!(
-        rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
-        restored
-    );
-    assert_eq!(restored.datomize(vec![]).protosize().compact(), text);
-}
-
 #[test]
 fn start_names_the_address_of_the_seat_it_launches() {
-    let text = "Start.{ field-flow-quaternary-1 [ spirit:core ] [ compensation:main-flow ] Custom.[ fac697 ] { Field flow Haiku } haiku medium None fieldFlow None Regular Default «Send the Order through Message.» }";
+    let text = "Start.{ field-flow-quaternary-1 [ spirit:core ] [ compensation:main-flow ] Custom.[ fac697 ] { Field flow Haiku } haiku medium None fieldFlow None Regular Default «Send the Order through Message.» [] }";
     let Query::Start(profile) = Potential::<Query>::from(text)
         .actualize(&mut budget())
         .unwrap()
@@ -856,10 +854,12 @@ fn start_names_the_address_of_the_seat_it_launches() {
     for text in [
         "StartRejected.AddressAwake",
         "StartRejected.TopicRefused.FlowRepair",
-        "StartRejected.ContextRefused.MetaflowMismatch",
+        "StartRejected.ContextRefused.PermaflowMismatch",
         "StartRejected.ContextRefused.ModuleTooLarge",
         "StartRejected.LeaveOutRefused.Indispensable.ToolSearch",
         "StartRejected.LeaveOutRefused.NeedsWorkflowLeftOut.SkillTool",
+        "StartRejected.MetaflowsRefused.NameRefused.BadName",
+        "StartRejected.MetaflowsRefused.Unknown.flowTeam",
     ] {
         let response = Potential::<Response>::from(text)
             .actualize(&mut budget())
@@ -1257,14 +1257,14 @@ fn a_turn_end_subscription_names_address_harness_and_flow_round_trip() {
     }
 }
 
-/// Observe.Metaflows subscribes to the metaflows: as Metaflows lists them
-/// on open, then each one that changes as it now stands, and the Address
-/// of each no longer listed. Datom to rkyv to datom returns the same text.
+/// A scoped subscription exposes brief initial standing and subsequent changes.
 #[test]
-fn a_metaflow_subscription_opens_on_the_list_then_names_each_change_round_trip() {
-    let query = Query::Observe(signal_flow::ObserveSelection::Metaflows);
+fn a_permaflow_subscription_opens_on_the_list_then_names_each_change_round_trip() {
+    let query = Query::Observe(signal_flow::ObserveSelection::Permaflows(
+        signal_flow::Scope::Mine,
+    ));
     let query_text = query.datomize(vec![]).protosize().compact();
-    assert_eq!(query_text, "Observe.Metaflows");
+    assert_eq!(query_text, "Observe.Permaflows.Mine");
     assert_eq!(
         Potential::<Query>::from(query_text)
             .actualize(&mut budget())
@@ -1272,10 +1272,10 @@ fn a_metaflow_subscription_opens_on_the_list_then_names_each_change_round_trip()
         query
     );
     for text in [
-        "MetaflowsObserved.[ { { Psyche flow Fable } Awake.f1c841 [ past-1 ] [] } { { Mind topics Astra } Asleep [] [] } ]",
-        "MetaflowsObserved.[]",
-        "MetaflowChanged.{ { Psyche flow Fable } Asleep [ f1c841 past-1 ] [] }",
-        "MetaflowGone.{ Mind topics Astra }",
+        "PermaflowsObserved.[ { { Psyche flow Fable } Awake } { { Mind topics Astra } Asleep } ]",
+        "PermaflowsObserved.[]",
+        "PermaflowChanged.{ { Psyche flow Fable } Asleep }",
+        "PermaflowGone.{ Mind topics Astra }",
     ] {
         let value = Potential::<Response>::from(text)
             .actualize(&mut budget())
@@ -1677,6 +1677,21 @@ fn a_refused_reap_is_no_replace_rejection() {
                 .actualize(&mut budget())
                 .is_err(),
             "{text}"
+        );
+    }
+}
+
+#[test]
+fn launch_group_selection_has_one_empty_state() {
+    for text in [
+        "Launch.{ { Psyche core Fable } Predecessors.1 Begin. None }",
+        "Launch.{ { Psyche core Fable } Predecessors.1 Begin. Some.[] }",
+        "Rehearse.{ { Psyche core Fable } Predecessors.1 Begin. }",
+    ] {
+        assert!(
+            Potential::<Query>::from(text)
+                .actualize(&mut budget())
+                .is_err()
         );
     }
 }

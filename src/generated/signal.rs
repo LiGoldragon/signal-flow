@@ -5,6 +5,46 @@
     clippy::type_complexity
 )]
 #[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum Scope {
+    Mine,
+    All,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum State {
+    Awake,
+    Asleep,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Listed {
+    pub address: flow_ethos::Address,
+    pub state: State,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum PermaflowListingRejection {
+    CallerUnknown,
+    CallerContradictory,
+    StoreRefused,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct MetaflowNames(pub std::vec::Vec<flow_ethos::MetaflowName>);
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum MetaflowSelectionRejection {
+    NameRefused(flow_ethos::MetaflowName),
+    Unknown(flow_ethos::MetaflowName),
+}
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct SessionId(pub String);
@@ -82,6 +122,7 @@ pub struct LaunchRequest {
     pub address: flow_ethos::Address,
     pub remembering: Remembering,
     pub instruction_prompt: InstructionPrompt,
+    pub metaflow_names: MetaflowNames,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -225,6 +266,7 @@ pub struct LaunchProfile {
     pub flow_kind: FlowKind,
     pub tool_set: ToolSet,
     pub instruction_prompt: InstructionPrompt,
+    pub metaflow_names: MetaflowNames,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -570,7 +612,7 @@ pub enum ModelRefusal {
 pub enum ContextRefusal {
     ComposerUnavailable,
     ComposerRejected(String),
-    MetaflowMismatch,
+    PermaflowMismatch,
     PayloadMismatch,
     ModuleMissing(std::option::Option<ModuleIdentity>),
     RecordMissing,
@@ -765,6 +807,7 @@ pub enum StartRejection {
     ModelRefused(ModelRefusal),
     Undeclared,
     TopicRefused(flow_ethos::Topic),
+    MetaflowsRefused(MetaflowSelectionRejection),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -904,7 +947,7 @@ pub enum ObserveSelection {
     Retirement(flow_ethos::Address),
     Undecodable,
     TurnEnds,
-    Metaflows,
+    Permaflows(Scope),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -1861,6 +1904,7 @@ pub enum Query {
     ArchiveRequest(flow_ethos::RequestId),
     Release(flow_ethos::Lock),
     Current(flow_ethos::Address),
+    Permaflows(Scope),
     Metaflows,
     IdentifyThread(IdentifyThread_Data),
     Send(SendRequest),
@@ -1921,7 +1965,9 @@ pub enum Response {
     Refreshed(Refreshed),
     RecipientResolved(FlowNode),
     Stopped(flow_ethos::FlowId),
-    Listed(std::vec::Vec<flow_ethos::Metaflow>),
+    Permaflows(std::vec::Vec<Listed>),
+    PermaflowsRejected(PermaflowListingRejection),
+    Metaflows(std::vec::Vec<flow_ethos::Metaflow>),
     StartRejected(StartRejection),
     Rehearsed(Command),
     RehearseRejected(StartRejection),
@@ -1973,9 +2019,9 @@ pub enum Response {
     UndecodableObserved(std::vec::Vec<UndecodableFrame>),
     TurnEndsObserved(std::vec::Vec<TurnEnd>),
     TurnEnded(TurnEnd),
-    MetaflowsObserved(std::vec::Vec<flow_ethos::Metaflow>),
-    MetaflowChanged(flow_ethos::Metaflow),
-    MetaflowGone(flow_ethos::Address),
+    PermaflowsObserved(std::vec::Vec<Listed>),
+    PermaflowChanged(Listed),
+    PermaflowGone(flow_ethos::Address),
     Cancelled(flow_ethos::RequestId),
     CancelRejected(RequestRejection),
     Silenced(flow_ethos::RequestId),

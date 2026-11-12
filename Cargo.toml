@@ -1,6 +1,6 @@
 [package]
 name = "signal-flow"
-version = "61.0.0"
+version = "62.0.0"
 edition = "2024"
 rust-version = "1.89"
 license = "MIT OR Apache-2.0"
@@ -17,7 +17,7 @@ datom = ["dep:datom-codec", "dep:protos", "flow-ethos/datom", "signal/datom"]
 datom-codec = { git = "https://github.com/LiGoldragon/datom-codec", rev = "09a0526", optional = true }
 protos = { git = "https://github.com/LiGoldragon/protos", rev = "c93b598", optional = true }
 signal = { git = "https://github.com/LiGoldragon/signal", rev = "6d4eb74", default-features = false }
-flow-ethos = { git = "https://github.com/LiGoldragon/flow", rev = "062ef9e1", default-features = false }
+flow-ethos = { git = "https://github.com/LiGoldragon/flow", rev = "dbfff5bc14550da27895fc1e02dc76c2365af8ae", default-features = false }
 rkyv = { version = "0.8", default-features = false, features = ["std", "bytecheck", "little_endian", "pointer_width_32", "unaligned"] }
 
 [build-dependencies]
