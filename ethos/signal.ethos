@@ -66,10 +66,21 @@
 ; Nexus that starts again, and Observe.Launch follows it to its outcome.
 ; Until the flow rests it still receives what is sent to it; then, under
 ; the metaflow's lock, the successor is started with the Launch's brief and
-; confirmed, the flow it replaces ends, given no turn, and the queue goes
-; to the successor, oldest first; the outcome is Replaced. Any other Launch
-; is a Start. An Address with no declaration is refused,
-; StartRejected.Undeclared.
+; confirmed, and from its confirmation the Address receives as the
+; successor and the queue goes to it, oldest first. The flow it replaces
+; is given no turn and is recorded Stopped, and its reap is owed: the
+; answer is ReapPending, and the outcome becomes Replaced when the reap
+; settles. Any other Launch is a Start. An Address with no declaration is
+; refused, StartRejected.Undeclared.
+;
+; A Start, or a Launch that is a Start, whose Address holds a handover
+; written by an earlier flow hands that handover to the started flow in
+; the commit that records it Started, when the handover's owner has ended.
+; Otherwise it answers HandoverPending: the started flow receives at once,
+; and the handover is handed to it at its next rest or at its own first
+; handover write. A later launch at the Address that becomes its receiving
+; flow first takes the handover over, and the earlier launch's outcome
+; then reads HandoverSuperseded.
 ;
 ; A flow rests when its turn has ended and no work it started is in
 ; flight: a Claude flow at a Stop whose BackgroundWork is empty, its turn
@@ -97,20 +108,33 @@
 ; delivered to it, and a Send that arrives queues on the metaflow. A
 ; metaflow whose declaration is Maintained, or whose queue holds a request
 ; that asks for a wake, has its successor started in the same event: the
-; successor is started and its receipt confirmed before the flow it
-; replaces is reaped, and the queue goes to it, oldest first. Any other is
-; left Asleep, and its successor starts on the next waking request, as any
-; Asleep metaflow wakes, with the whole queue, oldest first. Either way
-; the ending flow's harness is closed without a turn, the flow is recorded
-; ended and joins Past, and the lock is released; Refreshed names the
-; Address and the flow that ended. A successor owed is recorded in Flow's
+; successor is started and its receipt confirmed, from its confirmation the
+; Address receives as it and the queue goes to it, oldest first; the flow
+; it replaces is recorded Stopped, its reap is owed, and the refresh
+; answers ReapPending. Any other is left Asleep, and its successor starts
+; on the next waking request, as any Asleep metaflow wakes, with the whole
+; queue, oldest first: the ending flow's harness is closed without a turn,
+; the flow is recorded ended and joins Past, the lock is released, and
+; Refreshed names the Address and the flow that ended. A successor owed is recorded in Flow's
 ; memory before it starts, and given when it is confirmed: a Nexus that
 ; starts with one still owed starts it, whatever the context of the flow
 ; it follows. A successor whose Replace is refused answers
 ; SuccessorRefused with that rejection; one no declaration or configured
 ; model names answers Undeclared; one whose launch is still pending or
 ; ambiguous when the confirmation wait ends answers SuccessorUnconfirmed,
-; and stays owed.
+; and stays owed. A confirmed successor is never answered
+; SuccessorUnconfirmed.
+;
+; A reap is owed in one commit of Flow's Memory: the predecessor recorded
+; Stopped, the outcome ReapPending, and the reap's own record. ReapPending
+; is answered as soon as that commit lands, before Herdr is called. Every
+; step of the reap that calls Herdr, the reading and the closing of the
+; predecessor's pane, is taken outside the dispatch gate, and the reap
+; settles on the events Flow observes: the predecessor's pane seen gone,
+; the successor's next rest, Flow's own start. Before it writes, Flow reads
+; again which flow the Address receives as, and hands the handover only to
+; that flow; a step whose reap has since settled or been taken over writes
+; nothing. ReapStanding says where a pending reap stands.
 ;
 ; A Task (flow_ethos Request) is an order with its Minutes: Flow keeps it,
 ; named by the LogicalDeliveryId it answers the send with, and when the
@@ -156,13 +180,15 @@
 ; such as a deploy script, is an Unbound origin, recorded, never refused.
 ; A retried LaunchRequestId is the same launch whatever its origin.
 ; A launch's harness is the one whose configured endpoint serves its model
-; (Codex), else Claude; it is not named in the profile. The successor is launched; once it has
-; Started, the predecessor is Stopped and taken out of receiving, and
-; only then is the successor routable. Reaping belongs to the refresh
-; event: no state holds both flows routable. Replaced carries the
-; stopped predecessor's FlowId and the successor's Started.
-; ReplaceRejection names why no replacement took place; after
-; ReapRefused the successor is not routable. A Replace runs under its
+; (Codex), else Claude; it is not named in the profile. The successor is launched, and once it is
+; confirmed it is the flow its Address receives as and the predecessor
+; receives nothing more: one record names the Address's receiving flow,
+; and its one commit switches it. The predecessor is then recorded Stopped
+; and its reap owed, answered ReapPending; its pane is closed outside the
+; dispatch gate, and when the reap settles the outcome is Replaced.
+; Replaced carries the stopped predecessor's FlowId and the successor's
+; Started. ReplaceRejection names why no replacement took place; every
+; reap follows a confirmed successor. A Replace runs under its
 ; metaflow's lock, and one whose metaflow a refresh or a waking holds is
 ; refused Locked. A Replace asked from outside waits for its
 ; predecessor's idle event as a Launch does, answering LaunchPending while
@@ -172,7 +198,9 @@
 ; LaunchStatus answers a known LaunchRequestId with one LaunchInspected
 ; snapshot: its LaunchAttempt, its optional settled outcome, and the
 ; FlowNode actually recorded for the launched flow, if one exists. A
-; pending attempt has no outcome. A replacement's FlowNode is its
+; pending attempt has no outcome. A launch whose reap or handover is
+; pending reads ReapPending or HandoverPending until it settles, then
+; Replaced or Started; HandoverSuperseded is final. A replacement's FlowNode is its
 ; successor, never the predecessor named in LaunchProfile. An unknown
 ; request has neither attempt nor outcome; an outcome without an attempt
 ; is InconsistentRecords. If the rows change while read, the answer is
@@ -197,13 +225,22 @@
 ; flow Flow does not hold answers one Gone frame. Unknown is Herdr's own
 ; word for an agent it cannot read.
 ;
-; A frame on this socket that does not decode as a Query of this contract,
-; the Report of a hook built on an earlier one among them, is answered
-; FrameRefused and recorded. Its UndecodableFrame names the calling process
-; and its seat as Flow read them, from the kernel and from Herdr
-; (SeatEvidence), and the flow bound to that seat when there is one; nothing
-; in the frame is read. An earlier client cannot read the answer, so the
-; record is how its refusal is seen.
+; Every connection to this socket greets first, through Signal's
+; Handshake: the peer's first frame is the greeting of the contract it was
+; built on, Query's greeting, and Flow answers HandshakeReceipt before any
+; Query is decoded: Greeted with this contract's digest, or
+; GreetingRefused.ContractMismatch carrying it. A first frame that is not
+; this contract's greeting, a greeting of an earlier contract, an earlier
+; client's Query or a frame too short to be a greeting, is answered that
+; typed refusal and recorded, and the connection ends. A frame after the
+; greeting that does not decode as a Query of this contract is answered
+; FrameRefused and recorded. Each record is an UndecodableFrame: the
+; calling process and its seat as Flow read them, from the kernel and from
+; Herdr (SeatEvidence), and the flow bound to that seat when there is one;
+; it holds metadata alone, and nothing in the frame is read or kept. An
+; earlier client cannot read the answer, so the record is how its refusal
+; is seen. The meta socket greets the same way and records its refused
+; greetings here too.
 ;
 ; Observe.Undecodable opens an exchange that goes on answering: on open it
 ; sends every UndecodableFrame Flow recorded, oldest first, then one
@@ -448,7 +485,10 @@ Signal
   Reminded.RequestId
   Answered.VisibleNativeInput
   AnswerRejected.AnswerRejection
-  RestartQueued.FlowId ]
+  RestartQueued.FlowId
+  ReapPending
+  HandoverPending
+  HandoverSuperseded ]
 [
   SessionId.String
   Tokens.Integer
@@ -527,7 +567,7 @@ Signal
                          Ambiguous.PromptDeliveryIntent ]
   LaunchAttemptPhase.[ Reserved NativeLaunchIntentRecorded NativeBound RegistrationAcknowledged PromptIntentRecorded PromptObserved PromptAmbiguous ]
   LaunchAttempt.{ LaunchRequestId LaunchProfile PromptSha256 Origin LaunchAttemptPhase Option<NativeLaunchIntent> Option<NativeLaunchBinding> Option<RegistrationAcknowledgement> Option<PromptDeliveryIntent> Option<PromptDeliveryResult> }
-  LaunchStatusOutcome.[ Started.Launched Replaced StartRejected.StartRejection ReplaceRejected.ReplaceRejection ]
+  LaunchStatusOutcome.[ Started.Launched Replaced StartRejected.StartRejection ReplaceRejected.ReplaceRejection ReapPending HandoverPending HandoverSuperseded ]
   LaunchInspection.{ LaunchAttempt Option<LaunchStatusOutcome> Option<FlowNode> }
   LaunchAttemptReservation.[ Reserved.LaunchAttempt
                              Existing.LaunchAttempt
@@ -705,8 +745,53 @@ Signal
                      UnknownPredecessor
                      PredecessorStopped
                      LaunchRefused.StartRejection ; the successor's start was refused
-                     ReapRefused.StopRejection    ; the predecessor's end was refused
                      Locked ]                     ; a refresh or a waking holds the metaflow
+  ; ReapPending: a replacement whose successor is confirmed and is the flow
+  ; its Address receives as; the reap of the Predecessor is owed, and
+  ; ReapStanding says where it stands. The predecessor receives nothing
+  ; from the successor's confirmation on, whatever its own record says.
+  ReapPending.{ Address Predecessor Launched ReapStanding }
+  ; Owed: recorded in Flow's Memory, its steps outside it not yet taken; the
+  ; answer of every reap as soon as it is owed. Unrecorded: the reap's own
+  ; commit was refused; the successor's next rest or Flow's next start
+  ; records it. PredecessorMissing: no flow row names the predecessor; the
+  ; reap stands so, and no event takes it up. PredecessorUnknown: the
+  ; predecessor's row could not be read; the next event bearing on the reap
+  ; reads it again. HerdrUnavailable: Herdr could not be read to see the
+  ; predecessor's pane. CloseRefused: Herdr refused to close the
+  ; predecessor's pane. HandoverRefused: the handover generation was not
+  ; closed for the successor. SettleUnrecorded: the pane is gone and the
+  ; settling commit was refused.
+  ReapStanding.[ Owed
+                 Unrecorded
+                 PredecessorMissing
+                 PredecessorUnknown
+                 HerdrUnavailable
+                 CloseRefused
+                 HandoverRefused.HandoverCloseRefusal
+                 SettleUnrecorded ]
+  ; HandoverPending: a flow started fresh at Address and is the flow it
+  ; receives as. The handover generation its HandoverOwner holds was not
+  ; handed to it, for HandoverCloseRefusal; it is handed over at the started
+  ; flow's next rest or at its own first handover write, whichever comes
+  ; first. A HandoverOwner no flow row names stays so, and no event takes
+  ; it up.
+  HandoverPending.{ Address HandoverOwner Launched HandoverCloseRefusal }
+  ; HandoverSuperseded: a flow started fresh at Address whose handover was
+  ; pending until a later launch at the Address, whose flow is the
+  ; Successor, took the handover over. Final.
+  HandoverSuperseded.{ Address HandoverOwner Launched Successor }
+  ; The flow that holds an Address's handover generation.
+  HandoverOwner.FlowId
+  ; PersistenceRefused: the owner ended and the commit handing the
+  ; handover over was refused. Owner: the owner is not shown ended.
+  HandoverCloseRefusal.[ PersistenceRefused Owner.HandoverOwnerRefusal ]
+  ; A generation is handed past its owner only on the owner's flow row
+  ; recording it Stopped, Retired or Exited. Live: the owner's row is
+  ; Pending or Active. Missing: no flow row names the owner; it stands so,
+  ; and no event takes it up. Unknown: the owner's row could not be read;
+  ; the next event bearing on the handover reads it again.
+  HandoverOwnerRefusal.[ Live.FlowId Missing.FlowId Unknown.FlowId ]
   ObserveSelection.[ Launch.LaunchRequestId
                      Agent.FlowId
                      Retirement.Address

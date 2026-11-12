@@ -489,7 +489,6 @@ fn replace_and_launch_status_responses_have_concrete_datoms() {
         "ReplaceRejected.PredecessorStopped",
         "ReplaceRejected.LaunchRefused.NativeLaunchRefused.{ Naming PaneLabelRefused }",
         "ReplaceRejected.LaunchRefused.NativeLaunchRefused.{ Naming WorkspaceLabelRefused }",
-        "ReplaceRejected.ReapRefused.CloseRefused",
         "ReplaceRejected.Locked",
         "LaunchStatusRejected.UnknownLaunchRequest",
         "LaunchStatusRejected.PersistenceRefused",
@@ -517,7 +516,6 @@ fn refresh_answers_have_concrete_datoms() {
         "RefreshRejected.PersistenceRefused",
         "RefreshRejected.HerdrUnavailable",
         "RefreshRejected.SuccessorRefused.LaunchRefused.Undeclared",
-        "RefreshRejected.SuccessorRefused.ReapRefused.CloseRefused",
         "RefreshRejected.Undeclared",
         "RefreshRejected.SuccessorUnconfirmed",
     ] {
@@ -1570,5 +1568,115 @@ fn a_handover_refusal_carries_its_predecessor_and_fault() {
             ))
         );
         assert_eq!(response.datomize(vec![]).protosize().compact(), text);
+    }
+}
+
+/// A replacement whose successor is confirmed answers ReapPending as soon as
+/// its reap is owed; a fresh start whose handover could not move answers
+/// HandoverPending; a pending handover a later launch took over reads
+/// HandoverSuperseded. Each is a reply and a launch outcome.
+#[test]
+fn pending_reaps_and_handovers_round_trip_as_replies_and_outcomes() {
+    let launched = "{ 908786 session-2 Available.{ default claude-a1 w1:p4 term-4 } Flow.{ fac697 session-1 } }";
+    let standings = [
+        "Owed",
+        "Unrecorded",
+        "PredecessorMissing",
+        "PredecessorUnknown",
+        "HerdrUnavailable",
+        "CloseRefused",
+        "HandoverRefused.PersistenceRefused",
+        "HandoverRefused.Owner.Live.751881",
+        "HandoverRefused.Owner.Missing.751881",
+        "HandoverRefused.Owner.Unknown.751881",
+        "SettleUnrecorded",
+    ];
+    let refusals = [
+        "PersistenceRefused",
+        "Owner.Live.751881",
+        "Owner.Missing.751881",
+        "Owner.Unknown.751881",
+    ];
+    let mut texts = Vec::new();
+    for standing in standings {
+        texts.push(format!(
+            "ReapPending.{{ {{ Psyche core Fable }} fac697 {launched} {standing} }}"
+        ));
+    }
+    for refusal in refusals {
+        texts.push(format!(
+            "HandoverPending.{{ {{ Psyche core Fable }} 751881 {launched} {refusal} }}"
+        ));
+    }
+    texts.push(format!(
+        "HandoverSuperseded.{{ {{ Psyche core Fable }} 751881 {launched} 4e1d2a }}"
+    ));
+    for text in &texts {
+        let response = Potential::<Response>::from(text.as_str())
+            .actualize(&mut budget())
+            .unwrap();
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            response
+        );
+        assert_eq!(&response.datomize(vec![]).protosize().compact(), text);
+        let outcome = Potential::<signal_flow::LaunchStatusOutcome>::from(text.as_str())
+            .actualize(&mut budget())
+            .unwrap();
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&outcome).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<signal_flow::LaunchStatusOutcome, rkyv::rancor::Error>(&archive)
+                .unwrap(),
+            outcome
+        );
+        assert_eq!(&outcome.datomize(vec![]).protosize().compact(), text);
+    }
+}
+
+#[test]
+fn a_pending_reap_names_its_address_predecessor_successor_and_standing() {
+    let text = "ReapPending.{ { Psyche core Fable } fac697 { 908786 session-2 Unavailable Unbound } HandoverRefused.Owner.Live.751881 }";
+    let response = Potential::<Response>::from(text)
+        .actualize(&mut budget())
+        .unwrap();
+    assert_eq!(
+        response,
+        Response::ReapPending(signal_flow::ReapPending {
+            address: signal_flow::Address {
+                aspect: Aspect::Psyche,
+                topic: signal_flow::Topic("core".to_string()),
+                model: signal_flow::Model::Fable,
+            },
+            predecessor: signal_flow::Predecessor(signal_flow::FlowId("fac697".to_string())),
+            launched: signal_flow::Launched {
+                flow_id: signal_flow::FlowId("908786".to_string()),
+                session_id: signal_flow::SessionId("session-2".to_string()),
+                herdr_route_selection: signal_flow::HerdrRouteSelection::Unavailable,
+                origin: signal_flow::Origin::Unbound,
+            },
+            reap_standing: signal_flow::ReapStanding::HandoverRefused(
+                signal_flow::HandoverCloseRefusal::Owner(signal_flow::HandoverOwnerRefusal::Live(
+                    signal_flow::FlowId("751881".to_string())
+                ))
+            ),
+        })
+    );
+}
+
+/// Every reap follows a confirmed successor, so a refused reap is no reason
+/// a replacement did not take place: ReapRefused is no datom of 61.
+#[test]
+fn a_refused_reap_is_no_replace_rejection() {
+    for text in [
+        "ReplaceRejected.ReapRefused.CloseRefused",
+        "RefreshRejected.SuccessorRefused.ReapRefused.CloseRefused",
+    ] {
+        assert!(
+            Potential::<Response>::from(text)
+                .actualize(&mut budget())
+                .is_err(),
+            "{text}"
+        );
     }
 }

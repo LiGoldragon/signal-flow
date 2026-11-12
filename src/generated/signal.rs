@@ -411,6 +411,9 @@ pub enum LaunchStatusOutcome {
     Replaced(Replaced),
     StartRejected(StartRejection),
     ReplaceRejected(ReplaceRejection),
+    ReapPending(ReapPending),
+    HandoverPending(HandoverPending),
+    HandoverSuperseded(HandoverSuperseded),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -831,8 +834,66 @@ pub enum ReplaceRejection {
     UnknownPredecessor,
     PredecessorStopped,
     LaunchRefused(StartRejection),
-    ReapRefused(StopRejection),
     Locked,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct ReapPending {
+    pub address: flow_ethos::Address,
+    pub predecessor: Predecessor,
+    pub launched: Launched,
+    pub reap_standing: ReapStanding,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum ReapStanding {
+    Owed,
+    Unrecorded,
+    PredecessorMissing,
+    PredecessorUnknown,
+    HerdrUnavailable,
+    CloseRefused,
+    HandoverRefused(HandoverCloseRefusal),
+    SettleUnrecorded,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct HandoverPending {
+    pub address: flow_ethos::Address,
+    pub handover_owner: HandoverOwner,
+    pub launched: Launched,
+    pub handover_close_refusal: HandoverCloseRefusal,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct HandoverSuperseded {
+    pub address: flow_ethos::Address,
+    pub handover_owner: HandoverOwner,
+    pub launched: Launched,
+    pub successor: Successor,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct HandoverOwner(pub flow_ethos::FlowId);
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum HandoverCloseRefusal {
+    PersistenceRefused,
+    Owner(HandoverOwnerRefusal),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum HandoverOwnerRefusal {
+    Live(flow_ethos::FlowId),
+    Missing(flow_ethos::FlowId),
+    Unknown(flow_ethos::FlowId),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1927,4 +1988,7 @@ pub enum Response {
     Answered(VisibleNativeInput),
     AnswerRejected(AnswerRejection),
     RestartQueued(flow_ethos::FlowId),
+    ReapPending(ReapPending),
+    HandoverPending(HandoverPending),
+    HandoverSuperseded(HandoverSuperseded),
 }

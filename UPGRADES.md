@@ -1,5 +1,48 @@
 # Upgrades
 
+## 61.0.0: a pending reap and a pending handover; every connection greets
+
+Built on 60.0.0 (04a72fd), for Flow 0.54.7, on flow-ethos 0.54.3
+(`062ef9e1`) and signal 11.0.0 (`6d4eb74`).
+
+- `Response` gains, last, `ReapPending`, `HandoverPending` and
+  `HandoverSuperseded`; `LaunchStatusOutcome` gains the same three, last.
+  - `ReapPending.{ Address Predecessor Launched ReapStanding }` answers a
+    Replace, a Launch that replaces and a Refresh whose successor started,
+    as soon as the reap is owed in Flow's Memory: the successor is
+    confirmed and receives, the predecessor is recorded Stopped, and the
+    pane is closed afterwards, outside the dispatch gate. `ReapStanding.[
+    Owed Unrecorded PredecessorMissing PredecessorUnknown HerdrUnavailable
+    CloseRefused HandoverRefused.HandoverCloseRefusal SettleUnrecorded ]`.
+    `Owed` is the answer of every reap as soon as it is owed. The launch's
+    outcome becomes `Replaced` when the reap settles.
+  - `HandoverPending.{ Address HandoverOwner Launched HandoverCloseRefusal }`
+    answers a Start and a fresh Launch whose Address's handover could not
+    be handed to the started flow; `HandoverSuperseded.{ Address
+    HandoverOwner Launched Successor }` is the final outcome of such a
+    launch whose handover a later launch took over.
+  - `HandoverCloseRefusal.[ PersistenceRefused Owner.HandoverOwnerRefusal ]`,
+    `HandoverOwnerRefusal.[ Live.FlowId Missing.FlowId Unknown.FlowId ]`,
+    `HandoverOwner.FlowId`.
+  - `ReapPending.{ { Psyche core Fable } fac697 { 908786 session-2
+    Unavailable Unbound } Owed }`.
+- `ReplaceRejection` loses `ReapRefused.StopRejection`: every reap follows
+  a confirmed successor, so a reap is never why a replacement did not take
+  place. `Locked` moves up one; `RefreshRejection.SuccessorRefused` carries
+  the shorter type.
+- Every ordinary connection greets first through Signal's Handshake,
+  `Query::greeting()`, and reads `HandshakeReceipt` before its first Query.
+  A peer built on 60.0.0 greets with 60's digest, or writes its Query
+  first, and is answered `GreetingRefused.ContractMismatch` with 61's
+  digest; Flow records that refusal as an `UndecodableFrame`, metadata
+  alone. Use the matching 0.54.7 CLI and hook.
+- The crate re-exports `Contracted`, `ContractDigest`, `Handshake`,
+  `HandshakeReceipt` and `HandshakeRejection` from signal 11.0.0, so a peer
+  whose own contracts are built on another Signal greets through this
+  crate alone.
+- The notes on Launch, Start, Refresh, Replace, LaunchStatus and the
+  undecodable frame say what Flow 0.54.7 does. The names are tentative.
+
 ## 60.0.0: Living, routed answers, Remind, Answer, a Report's birth
 
 Built on 59.0.0 (d2a4ca5), for Flow 0.54.3, on flow-ethos 0.54.3
