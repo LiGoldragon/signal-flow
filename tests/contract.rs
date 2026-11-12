@@ -450,7 +450,7 @@ fn a_send_names_its_recipient_and_deliver_all_names_a_metaflow() {
 #[test]
 fn replace_and_launch_status_queries_have_concrete_datoms() {
     for text in [
-        "Replace.{ request-8 [ spirit:core ] [ compensation:main-flow ] Predecessors.1 { Field flow Sol } opus-5-5 high Some.fac697 messaging-build None Regular Default «Carry on from fac697.» }",
+        "Replace.{ request-8 [ spirit:core ] [ compensation:main-flow ] Predecessors.1 { Field flow Sol } opus-5-5 high Some.fac697 messaging-build None Regular Default «Carry on from fac697.» [] }",
         "LaunchStatus.request-8",
         "Observe.Launch.request-8",
     ] {
@@ -468,7 +468,7 @@ fn replace_and_launch_status_queries_have_concrete_datoms() {
 
 #[test]
 fn replace_carries_the_predecessor_in_its_launch_profile() {
-    let text = "Replace.{ request-8 [ spirit:core ] [] Predecessors.1 { Field flow Sol } opus-5-5 high Some.fac697 messaging-build None Regular Default «Carry on from fac697.» }";
+    let text = "Replace.{ request-8 [ spirit:core ] [] Predecessors.1 { Field flow Sol } opus-5-5 high Some.fac697 messaging-build None Regular Default «Carry on from fac697.» [] }";
     let Query::Replace(profile) = Potential::<Query>::from(text)
         .actualize(&mut budget())
         .unwrap()
