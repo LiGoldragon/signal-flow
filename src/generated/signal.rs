@@ -1933,15 +1933,15 @@ pub enum Output {
     Released,
     Current(Current_Data),
     Listed(std::vec::Vec<flow_ethos::Metaflow>),
-    StartAmbiguous(PromptDeliveryIntent),
+    ThreadIdentified(flow_ethos::Address),
     Sent(VisibleSendReceipt),
     SendsObserved(VisibleSendObservation),
     SendChanged(VisibleDeliverySnapshot),
-    StartRejected(StartRejection),
+    DeliveriesObserved(VisibleSendObservation),
     Drained(VisibleDrainOutcome),
     LaunchPending(LaunchAttempt),
     Rehearsed(Command),
-    RehearseRejected(StartRejection),
+    SeatBound(flow_ethos::FlowId),
     Adopted(flow_ethos::FlowId),
     Restarted(flow_ethos::FlowId),
     Kept(Kept_Data),
@@ -1951,12 +1951,16 @@ pub enum Output {
     Cancelled(flow_ethos::RequestId),
     Silenced(flow_ethos::RequestId),
     Cleared(std::vec::Vec<flow_ethos::RequestId>),
-    RefreshRejected(RefreshRejection),
+    AllCleared(std::vec::Vec<flow_ethos::RequestId>),
     Pushed(std::vec::Vec<flow_ethos::RequestId>),
     Queues(std::vec::Vec<Queue>),
     Hot(std::vec::Vec<Warmth>),
     Reminded(flow_ethos::RequestId),
     Answered(VisibleNativeInput),
+    StartAmbiguous(PromptDeliveryIntent),
+    StartRejected(StartRejection),
+    RehearseRejected(StartRejection),
+    RefreshRejected(RefreshRejection),
     RecipientResolutionRejected(RecipientResolutionRejection),
     StopRejected(StopRejection),
     ReplaceRejected(ReplaceRejection),
@@ -2057,7 +2061,7 @@ pub trait Answering {
     fn identify_thread(
         &self,
         identify_thread: &IdentifyThread_Data,
-    ) -> std::result::Result<PromptDeliveryIntent, Output>;
+    ) -> std::result::Result<flow_ethos::Address, Output>;
     fn send(
         &self,
         send_request: &SendRequest,
@@ -2073,7 +2077,7 @@ pub trait Answering {
     fn observe_deliveries(
         &self,
         delivery_cursor_option: &std::option::Option<DeliveryCursor>,
-    ) -> std::result::Result<StartRejection, Output>;
+    ) -> std::result::Result<VisibleSendObservation, Output>;
     fn deliver_all(
         &self,
         address: &flow_ethos::Address,
@@ -2089,7 +2093,7 @@ pub trait Answering {
     fn bind_seat(
         &self,
         bind_seat: &BindSeat_Data,
-    ) -> std::result::Result<StartRejection, Output>;
+    ) -> std::result::Result<flow_ethos::FlowId, Output>;
     fn adopt(
         &self,
         adopt: &Adopt_Data,
@@ -2120,7 +2124,9 @@ pub trait Answering {
         &self,
         address: &flow_ethos::Address,
     ) -> std::result::Result<std::vec::Vec<flow_ethos::RequestId>, Output>;
-    fn clear_all(&self) -> std::result::Result<RefreshRejection, Output>;
+    fn clear_all(
+        &self,
+    ) -> std::result::Result<std::vec::Vec<flow_ethos::RequestId>, Output>;
     fn push(
         &self,
         push: &Push_Data,
@@ -2221,7 +2227,7 @@ impl Answerable for Input {
             Input::IdentifyThread(carried) => {
                 nexus
                     .identify_thread(carried)
-                    .map_or_else(|refusal| refusal, Output::StartAmbiguous)
+                    .map_or_else(|refusal| refusal, Output::ThreadIdentified)
             }
             Input::Send(carried) => {
                 nexus.send(carried).map_or_else(|refusal| refusal, Output::Sent)
@@ -2239,7 +2245,7 @@ impl Answerable for Input {
             Input::ObserveDeliveries(carried) => {
                 nexus
                     .observe_deliveries(carried)
-                    .map_or_else(|refusal| refusal, Output::StartRejected)
+                    .map_or_else(|refusal| refusal, Output::DeliveriesObserved)
             }
             Input::DeliverAll(carried) => {
                 nexus
@@ -2257,7 +2263,7 @@ impl Answerable for Input {
             Input::BindSeat(carried) => {
                 nexus
                     .bind_seat(carried)
-                    .map_or_else(|refusal| refusal, Output::RehearseRejected)
+                    .map_or_else(|refusal| refusal, Output::SeatBound)
             }
             Input::Adopt(carried) => {
                 nexus.adopt(carried).map_or_else(|refusal| refusal, Output::Adopted)
@@ -2287,7 +2293,7 @@ impl Answerable for Input {
                 nexus.clear(carried).map_or_else(|refusal| refusal, Output::Cleared)
             }
             Input::ClearAll => {
-                nexus.clear_all().map_or_else(|refusal| refusal, Output::RefreshRejected)
+                nexus.clear_all().map_or_else(|refusal| refusal, Output::AllCleared)
             }
             Input::Push(carried) => {
                 nexus.push(carried).map_or_else(|refusal| refusal, Output::Pushed)

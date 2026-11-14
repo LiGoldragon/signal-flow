@@ -372,8 +372,9 @@
 ; input's answer no input by position. An input with several replies has
 ; its success reply at its position and the others after the inputs.
 ; Where two inputs answer the same reply, the earlier input has it at its
-; position, and the later one has there a reply of its own or, having
-; none, an output marked as standing at it.
+; position, and the later one has a reply of its own at its own.
+; ObserveSends and ObserveSender open with SendsObserved, ObserveDeliveries
+; with DeliveriesObserved; each then streams SendChanged.
 
 Signal
 [
@@ -438,15 +439,15 @@ Signal
   Released
   Current.[ Awake.FlowId Asleep Unknown ]
   Listed.Vector<Metaflow>
-  StartAmbiguous.PromptDeliveryIntent    ; at IdentifyThread, which answers Identified
+  ThreadIdentified.Address
   Sent.VisibleSendReceipt                ; Send's; Send also answers SendAccepted, Deliver's
   SendsObserved.VisibleSendObservation
   SendChanged.VisibleDeliverySnapshot    ; ObserveSender's; its opening frame is SendsObserved
-  StartRejected.StartRejection           ; at ObserveDeliveries, which answers SendsObserved
+  DeliveriesObserved.VisibleSendObservation
   Drained.VisibleDrainOutcome
   LaunchPending.LaunchAttempt            ; Launch's; a Launch that starts answers Started
   Rehearsed.Command
-  RehearseRejected.StartRejection        ; at BindSeat, which answers Bound
+  SeatBound.FlowId
   Adopted.FlowId
   Restarted.FlowId
   Kept.{ Address Title Touch }
@@ -456,12 +457,16 @@ Signal
   Cancelled.RequestId
   Silenced.RequestId
   Cleared.Vector<RequestId>
-  RefreshRejected.RefreshRejection       ; at ClearAll, which answers Cleared
+  AllCleared.Vector<RequestId>
   Pushed.Vector<RequestId>
   Queues.Vector<Queue>
   Hot.Vector<Warmth>
   Reminded.RequestId
   Answered.VisibleNativeInput
+  StartAmbiguous.PromptDeliveryIntent
+  StartRejected.StartRejection
+  RehearseRejected.StartRejection
+  RefreshRejected.RefreshRejection
   RecipientResolutionRejected.RecipientResolutionRejection
   StopRejected.StopRejection
   ReplaceRejected.ReplaceRejection

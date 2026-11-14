@@ -19,11 +19,21 @@ flow-ethos 0.54.3 (`062ef9e1`) and signal 11.0.0 (`6d4eb74`).
   position: Observe has AgentObserved, and every other selection's
   opening frame is its own output after the inputs.
 - Where two inputs answer the same reply, the earlier has it at its
-  position. The later has there a reply of its own (Send: Sent; ObserveSender:
-  SendChanged; Launch: LaunchPending) or, having none, an output marked as
-  standing at it (IdentifyThread: StartAmbiguous; ObserveDeliveries:
-  StartRejected; BindSeat: RehearseRejected; ClearAll: RefreshRejected).
-  Such an input's capability answers its reply as the error arm.
+  position, and the later has a reply of its own at its own (Send: Sent;
+  ObserveSender: SendChanged; Launch: LaunchPending).
+- Four inputs that answered another input's reply answer an output of their
+  own, at their own position, carrying the same type:
+  - IdentifyThread answers `ThreadIdentified.Address`, where it answered
+    Identified.
+  - ObserveDeliveries opens with `DeliveriesObserved.VisibleSendObservation`,
+    where it opened with SendsObserved; SendChanged follows as before.
+  - BindSeat answers `SeatBound.FlowId`, where it answered Bound.
+  - ClearAll answers `AllCleared.Vector<RequestId>`, where it answered
+    Cleared.
+
+  A client that matches the old reply of any of these four matches the new
+  one. StartAmbiguous, StartRejected, RehearseRejected and RefreshRejected
+  follow the last input's output, ahead of RecipientResolutionRejected.
 - The contract digest changes, so a 62 peer is refused with 63's digest
   (tests/fixtures/signal-flow-62.ethos). Repin meta-signal-flow and every
   client: `Query` becomes `Input` and `Response` becomes `Output`.

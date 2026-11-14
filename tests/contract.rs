@@ -951,6 +951,7 @@ fn identify_thread_and_its_refusal_have_concrete_datoms() {
     assert_eq!(query.datomize(vec![]).protosize().compact(), text);
     for text in [
         "Identified.{ Mind flow Sol }",
+        "ThreadIdentified.{ Mind flow Sol }",
         "Refused.NotSendServer.{ 4242 987654 }",
         "Refused.Unidentified.{ None None None 1761800000 { 4242 987654 } }",
     ] {
@@ -983,6 +984,8 @@ fn durable_admission_and_resumable_sender_outcomes_round_trip() {
         "SendChanged.{ req4 4 Sender.{ Mind flow Sol } { Psyche flow Opus } Withdrawn }",
         "SendChanged.{ req5 5 Sender.{ Mind flow Sol } { Psyche flow Opus } Retryable.WakeRefused.ContextRefused.RecordMissing }",
         "SendsObserved.{ store1 6 [ { req6 6 Sender.{ Mind flow Sol } { Psyche flow Opus } Retryable.WakeRefused.Undeclared } ] }",
+        "DeliveriesObserved.{ store1 7 [ { req7 7 Sender.{ Mind flow Sol } { Psyche flow Opus } Delivered } ] }",
+        "SeatBound.6c9e08",
         "Drained.{ { Psyche flow Opus } Held }",
     ] {
         let value = Potential::<Output>::from(text)
@@ -1373,6 +1376,13 @@ fn every_queue_and_request_operation_round_trips_as_text() {
         (
             "Cleared.[ k7ph m2qa ]",
             Output::Cleared(vec![
+                signal_flow::RequestId("k7ph".to_string()),
+                signal_flow::RequestId("m2qa".to_string()),
+            ]),
+        ),
+        (
+            "AllCleared.[ k7ph m2qa ]",
+            Output::AllCleared(vec![
                 signal_flow::RequestId("k7ph".to_string()),
                 signal_flow::RequestId("m2qa".to_string()),
             ]),
