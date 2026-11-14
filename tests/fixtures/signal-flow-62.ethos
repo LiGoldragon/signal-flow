@@ -53,7 +53,7 @@
 ; of a request that is no Task.
 ;
 ; Launch starts the metaflow at Address from its declaration in Flow's
-; configuration (the meta Metaflows family): its system and user modules,
+; configuration (the meta Metaflows family): its system and prompt modules,
 ; the native model configured for its Address's Model, the effort its
 ; Model runs at, and its default leave-outs. The InstructionPrompt is the brief, the
 ; one string given that flow alone. Every launch opens its pane in the one
@@ -352,7 +352,7 @@
 ; register the seat with its messenger.
 ;
 ; A LaunchProfile names its seat's context only by module identity:
-; SystemModules for the system prompt and UserModules for the first USER
+; SystemModules for the system prompt and PromptModules for the first USER
 ; message. Flow has the context composer resolve those identities in the
 ; context repositories and verifies the answer; no path and no context
 ; text travels in a Start. The only text a Start carries is the seat's
@@ -505,7 +505,7 @@ Signal
   ; colon is anatomical; a hyphenated legacy name is not an identity.
   ModuleIdentity.String
   SystemModules.Vector<ModuleIdentity>
-  UserModules.Vector<ModuleIdentity>
+  PromptModules.Vector<ModuleIdentity>
   Effort.String
   RememberingDepth.Integer
   Remembering.[ Predecessors.RememberingDepth Custom.Vector<FlowId> ]
@@ -545,7 +545,7 @@ Signal
   ArtifactToolsAllowed.Boolean
   ; A Start's leave-outs, when it names them, replace the default its
   ; metaflow's configuration names; None takes that default.
-  LaunchProfile.{ LaunchRequestId SystemModules UserModules Remembering Address ModelName Effort Option<FlowId> HerdrSessionName Option<LeaveOuts> FlowKind ToolSet InstructionPrompt }
+  LaunchProfile.{ LaunchRequestId SystemModules PromptModules Remembering Address ModelName Effort Option<FlowId> HerdrSessionName Option<LeaveOuts> FlowKind ToolSet InstructionPrompt }
   TargetReceiptRequest.{ LaunchRequestId PromptSha256 }
   PromptPart.{ PromptPartText PromptSha256 }
   FirstPromptPayload.{ FirstPromptBody PromptSha256 Vector<PromptPart> }
@@ -692,7 +692,7 @@ Signal
   ; it carries the topic as written. Flow never lowers its capitals.
   ; CompositionRefused: the launch could not be composed, for its reason.
   ; An Invalid variant names the profile field that is not well formed:
-  ; InvalidSystemModules and InvalidUserModules, a module list empty (the
+  ; InvalidSystemModules and InvalidPromptModules, a module list empty (the
   ; system's), repeated, sharing a module or not of identities;
   ; InvalidRemembering, a Remembering of no flows (Custom.[]), naming an
   ; empty FlowId or of a negative depth; InvalidLaunchRequestId,
@@ -705,7 +705,7 @@ Signal
   ; be read. Unrecorded: an outcome Flow archived before it kept the reason.
   ; HandoverUnreadable: the launch names a predecessor whose handover could
   ; not be read whole; it carries the predecessor and the fault.
-  CompositionRefusal.[ InvalidLaunchRequestId InvalidModelName InvalidEffort InvalidToolSet InvalidHerdrSessionName InvalidSystemModules InvalidUserModules InvalidRemembering InexactModel Unconfigured PresentationUnavailable Unrecorded HandoverUnreadable.{ FlowId HandoverFault } ]
+  CompositionRefusal.[ InvalidLaunchRequestId InvalidModelName InvalidEffort InvalidToolSet InvalidHerdrSessionName InvalidSystemModules InvalidPromptModules InvalidRemembering InexactModel Unconfigured PresentationUnavailable Unrecorded HandoverUnreadable.{ FlowId HandoverFault } ]
   ; HandoverFault names why a predecessor's handover was not read:
   ; InvalidPredecessor, the predecessor does not name a flow; RootUnresolved,
   ; the launch root it is kept under could not be resolved; NotUtf8, the

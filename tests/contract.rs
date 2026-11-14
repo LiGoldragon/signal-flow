@@ -2,7 +2,7 @@
 
 use datom_codec::{Actualizing, Budget, Datomizable, Potential};
 use protos::{Compactable, Protosizable, ReaderBudget};
-use signal_flow::{Aspect, Query, Refusal, Response};
+use signal_flow::{Aspect, Input, Output, Refusal};
 
 fn budget() -> Budget {
     Budget {
@@ -44,7 +44,7 @@ fn every_ordinary_request_has_a_concrete_datom() {
         "ResolveRecipient.fac697",
         "Adopt.{ { Mind core Sol } { main w1:p3 } 6c9e081f-70b0-4a35-9838-6cc7dca01971 }",
     ] {
-        let query = Potential::<Query>::from(text)
+        let query = Potential::<Input>::from(text)
             .actualize(&mut budget())
             .unwrap();
         assert_eq!(query.datomize(vec![]).protosize().compact(), text);
@@ -53,7 +53,7 @@ fn every_ordinary_request_has_a_concrete_datom() {
 
 #[test]
 fn flow_node_round_trips_over_signal_and_datom() {
-    let reply = Response::RecipientResolved(signal_flow::FlowNode {
+    let reply = Output::RecipientResolved(signal_flow::FlowNode {
         flow_id: signal_flow::FlowId("fac697".to_string()),
         session_id: signal_flow::SessionId("session-1".to_string()),
         harness_kind: signal_flow::HarnessKind::Codex,
@@ -79,11 +79,11 @@ fn flow_node_round_trips_over_signal_and_datom() {
     });
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&reply).unwrap();
     assert_eq!(
-        rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+        rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
         reply
     );
     let text = reply.datomize(vec![]).protosize().compact();
-    let restored = Potential::<Response>::from(text)
+    let restored = Potential::<Output>::from(text)
         .actualize(&mut budget())
         .unwrap();
     assert_eq!(restored, reply);
@@ -277,13 +277,13 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
 
 #[test]
 fn agent_observation_carries_the_flow_and_its_herdr_state() {
-    let query = Query::Observe(signal_flow::ObserveSelection::Agent(signal_flow::FlowId(
+    let query = Input::Observe(signal_flow::ObserveSelection::Agent(signal_flow::FlowId(
         "7d41e0".to_string(),
     )));
     let query_text = query.datomize(vec![]).protosize().compact();
     assert_eq!(query_text, "Observe.Agent.7d41e0");
     assert_eq!(
-        Potential::<Query>::from(query_text)
+        Potential::<Input>::from(query_text)
             .actualize(&mut budget())
             .unwrap(),
         query
@@ -314,19 +314,19 @@ fn agent_observation_carries_the_flow_and_its_herdr_state() {
             "AgentObserved.{ 7d41e0 Gone }",
         ),
     ] {
-        let response = Response::AgentObserved(signal_flow::AgentObservation {
+        let response = Output::AgentObserved(signal_flow::AgentObservation {
             flow_id: signal_flow::FlowId("7d41e0".to_string()),
             agent_state: state,
         });
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
         assert_eq!(
-            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
             response
         );
         let text = response.datomize(vec![]).protosize().compact();
         assert_eq!(text, expected);
         assert_eq!(
-            Potential::<Response>::from(text)
+            Potential::<Output>::from(text)
                 .actualize(&mut budget())
                 .unwrap(),
             response
@@ -352,18 +352,18 @@ fn retirement_observation_carries_exact_generation_and_archive_identity() {
         successor: signal_flow::Successor(signal_flow::FlowId("def456".to_string())),
     };
     let values = [
-        Query::Observe(ObserveSelection::Retirement(address.clone()))
+        Input::Observe(ObserveSelection::Retirement(address.clone()))
             .datomize(vec![])
             .protosize()
             .compact(),
-        Response::RetirementObserved(RetirementSnapshot {
+        Output::RetirementObserved(RetirementSnapshot {
             address,
             handover_generation_key_vector: vec![key.clone()],
         })
         .datomize(vec![])
         .protosize()
         .compact(),
-        Response::RetirementChanged(RetirementChange::ArchiveCommitted(ArchiveCommitted {
+        Output::RetirementChanged(RetirementChange::ArchiveCommitted(ArchiveCommitted {
             handover_generation_key: key,
             handover_archive_identity: HandoverArchiveIdentity {
                 git_commit: signal_flow::GitCommit("commit".to_string()),
@@ -376,7 +376,7 @@ fn retirement_observation_carries_exact_generation_and_archive_identity() {
         .datomize(vec![])
         .protosize()
         .compact(),
-        Response::RetirementObservationFailed(RetirementObservationFailure::Overflow)
+        Output::RetirementObservationFailed(RetirementObservationFailure::Overflow)
             .datomize(vec![])
             .protosize()
             .compact(),
@@ -384,21 +384,21 @@ fn retirement_observation_carries_exact_generation_and_archive_identity() {
     assert_eq!(values[0], "Observe.Retirement.{ Mind flowNexus Sol }");
     for text in values {
         if text.starts_with("Observe") {
-            let value = Potential::<Query>::from(text.clone())
+            let value = Potential::<Input>::from(text.clone())
                 .actualize(&mut budget())
                 .unwrap();
             let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&value).unwrap();
             assert_eq!(
-                rkyv::from_bytes::<Query, rkyv::rancor::Error>(&bytes).unwrap(),
+                rkyv::from_bytes::<Input, rkyv::rancor::Error>(&bytes).unwrap(),
                 value
             );
         } else {
-            let value = Potential::<Response>::from(text)
+            let value = Potential::<Output>::from(text)
                 .actualize(&mut budget())
                 .unwrap();
             let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&value).unwrap();
             assert_eq!(
-                rkyv::from_bytes::<Response, rkyv::rancor::Error>(&bytes).unwrap(),
+                rkyv::from_bytes::<Output, rkyv::rancor::Error>(&bytes).unwrap(),
                 value
             );
         }
@@ -416,7 +416,7 @@ fn a_send_names_its_recipient_and_deliver_all_names_a_metaflow() {
         "Send.{ Address.{ Mind core Sol } Soft.Order.«Review the drain fix» }",
     ] {
         assert!(
-            Potential::<Query>::from(text)
+            Potential::<Input>::from(text)
                 .actualize(&mut budget())
                 .is_err(),
             "{text} is refused"
@@ -429,7 +429,7 @@ fn a_send_names_its_recipient_and_deliver_all_names_a_metaflow() {
         "Launch.{ { Mind core Astra } Custom.[ 36b71b e3c8c1 ] brief }",
         "BindSeat.{ { Field core Sol } { main w1:p3 } }",
     ] {
-        let query = Potential::<Query>::from(text)
+        let query = Potential::<Input>::from(text)
             .actualize(&mut budget())
             .unwrap_or_else(|error| panic!("{text}: {error:?}"));
         assert_eq!(query.datomize(Vec::new()).protosize().compact(), text);
@@ -438,7 +438,7 @@ fn a_send_names_its_recipient_and_deliver_all_names_a_metaflow() {
         "StartRejected.Undeclared",
         "Refused.TopicRefused.Primary_Committing",
     ] {
-        let response = Potential::<Response>::from(text)
+        let response = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap_or_else(|error| panic!("{text}: {error:?}"));
         assert_eq!(response.datomize(Vec::new()).protosize().compact(), text);
@@ -452,12 +452,12 @@ fn replace_and_launch_status_queries_have_concrete_datoms() {
         "LaunchStatus.request-8",
         "Observe.Launch.request-8",
     ] {
-        let query = Potential::<Query>::from(text)
+        let query = Potential::<Input>::from(text)
             .actualize(&mut budget())
             .unwrap();
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&query).unwrap();
         assert_eq!(
-            rkyv::from_bytes::<Query, rkyv::rancor::Error>(&archive).unwrap(),
+            rkyv::from_bytes::<Input, rkyv::rancor::Error>(&archive).unwrap(),
             query
         );
         assert_eq!(query.datomize(vec![]).protosize().compact(), text);
@@ -467,7 +467,7 @@ fn replace_and_launch_status_queries_have_concrete_datoms() {
 #[test]
 fn replace_carries_the_predecessor_in_its_launch_profile() {
     let text = "Replace.{ request-8 [ spirit:core ] [] Predecessors.1 { Field flow Sol } opus-5-5 high Some.fac697 messaging-build None Regular Default «Carry on from fac697.» }";
-    let Query::Replace(profile) = Potential::<Query>::from(text)
+    let Input::Replace(profile) = Potential::<Input>::from(text)
         .actualize(&mut budget())
         .unwrap()
     else {
@@ -493,12 +493,12 @@ fn replace_and_launch_status_responses_have_concrete_datoms() {
         "LaunchStatusRejected.UnknownLaunchRequest",
         "LaunchStatusRejected.PersistenceRefused",
     ] {
-        let response = Potential::<Response>::from(text)
+        let response = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap();
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
         assert_eq!(
-            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
             response
         );
         assert_eq!(response.datomize(vec![]).protosize().compact(), text);
@@ -519,12 +519,12 @@ fn refresh_answers_have_concrete_datoms() {
         "RefreshRejected.Undeclared",
         "RefreshRejected.SuccessorUnconfirmed",
     ] {
-        let response = Potential::<Response>::from(text)
+        let response = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap();
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
         assert_eq!(
-            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
             response
         );
         assert_eq!(response.datomize(vec![]).protosize().compact(), text);
@@ -540,18 +540,18 @@ fn a_refused_harness_start_carries_its_cause_and_its_opened_thread() {
         "StartRejected.HarnessSpawnRefused.{ CommandTooLong Some.{ thread-1 InProgress ArchiveRefused } }",
         "StartRejected.NativeLaunchRefused.{ Bind NativeSessionMissing }",
     ] {
-        let response = Potential::<Response>::from(text)
+        let response = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap();
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
         assert_eq!(
-            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
             response
         );
         assert_eq!(response.datomize(vec![]).protosize().compact(), text);
     }
-    let Response::StartRejected(signal_flow::StartRejection::HarnessSpawnRefused(refusal)) =
-        Potential::<Response>::from(
+    let Output::StartRejected(signal_flow::StartRejection::HarnessSpawnRefused(refusal)) =
+        Potential::<Output>::from(
             "StartRejected.HarnessSpawnRefused.{ Herdr.{ Some.timeout «timed out waiting for agent startup» } None }",
         )
         .actualize(&mut budget())
@@ -593,18 +593,18 @@ fn a_refused_registration_and_a_refused_native_step_carry_their_stage() {
         "StartRejected.RegistrationRefused.Unclassified",
         "ReplaceRejected.LaunchRefused.RegistrationRefused.NativeTarget.NoNativeSession",
     ] {
-        let response = Potential::<Response>::from(text)
+        let response = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap();
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
         assert_eq!(
-            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
             response
         );
         assert_eq!(response.datomize(vec![]).protosize().compact(), text);
     }
-    let Response::StartRejected(signal_flow::StartRejection::NativeLaunchRefused(refusal)) =
-        Potential::<Response>::from("StartRejected.NativeLaunchRefused.{ Receipt LeaveOutShown }")
+    let Output::StartRejected(signal_flow::StartRejection::NativeLaunchRefused(refusal)) =
+        Potential::<Output>::from("StartRejected.NativeLaunchRefused.{ Receipt LeaveOutShown }")
             .actualize(&mut budget())
             .unwrap()
     else {
@@ -626,21 +626,21 @@ fn a_start_whose_model_is_not_the_configured_one_is_refused_with_its_reason() {
         "StartRejected.ModelRefused.Differs.claude-opus-5-5",
         "ReplaceRejected.LaunchRefused.ModelRefused.Differs.gpt-6-sol",
     ] {
-        let response = Potential::<Response>::from(text)
+        let response = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap();
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
         assert_eq!(
-            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
             response
         );
         assert_eq!(response.datomize(vec![]).protosize().compact(), text);
     }
     assert_eq!(
-        Potential::<Response>::from("StartRejected.ModelRefused.Differs.gpt-6-sol")
+        Potential::<Output>::from("StartRejected.ModelRefused.Differs.gpt-6-sol")
             .actualize(&mut budget())
             .unwrap(),
-        Response::StartRejected(signal_flow::StartRejection::ModelRefused(
+        Output::StartRejected(signal_flow::StartRejection::ModelRefused(
             signal_flow::ModelRefusal::Differs(signal_flow::ModelName("gpt-6-sol".to_string()))
         ))
     );
@@ -648,7 +648,7 @@ fn a_start_whose_model_is_not_the_configured_one_is_refused_with_its_reason() {
 
 #[test]
 fn replaced_names_the_stopped_predecessor_and_the_started_successor() {
-    let reply = Response::Replaced(signal_flow::Replaced {
+    let reply = Output::Replaced(signal_flow::Replaced {
         flow_id: signal_flow::FlowId("fac697".to_string()),
         launched: signal_flow::Launched {
             flow_id: signal_flow::FlowId("908786".to_string()),
@@ -676,12 +676,12 @@ fn replaced_names_the_stopped_predecessor_and_the_started_successor() {
 #[test]
 fn resolve_caller_queries_and_replies_have_concrete_datoms() {
     for text in ["ResolveCaller.None", "ResolveCaller.Some.fac697"] {
-        let query = Potential::<Query>::from(text)
+        let query = Potential::<Input>::from(text)
             .actualize(&mut budget())
             .unwrap();
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&query).unwrap();
         assert_eq!(
-            rkyv::from_bytes::<Query, rkyv::rancor::Error>(&archive).unwrap(),
+            rkyv::from_bytes::<Input, rkyv::rancor::Error>(&archive).unwrap(),
             query
         );
         assert_eq!(query.datomize(vec![]).protosize().compact(), text);
@@ -691,12 +691,12 @@ fn resolve_caller_queries_and_replies_have_concrete_datoms() {
         "CallerResolutionRejected.CallerUnknown",
         "CallerResolutionRejected.CallerMismatch.{ fac697 Mind gpt-6-sol }",
     ] {
-        let response = Potential::<Response>::from(text)
+        let response = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap();
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
         assert_eq!(
-            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
             response
         );
         assert_eq!(response.datomize(vec![]).protosize().compact(), text);
@@ -711,18 +711,18 @@ fn launch_and_rehearse_share_one_request_and_have_typed_answers() {
         "Launch.{ { Psyche core Fable } Predecessors.1 Begin. }",
         "Rehearse.{ { Psyche core Fable } Predecessors.1 Begin. }",
     ] {
-        let query = Potential::<Query>::from(text)
+        let query = Potential::<Input>::from(text)
             .actualize(&mut budget())
             .unwrap();
         assert_eq!(
-            Potential::<Query>::from(text.replace("Begin.", "«Begin.»"))
+            Potential::<Input>::from(text.replace("Begin.", "«Begin.»"))
                 .actualize(&mut budget())
                 .unwrap(),
             query
         );
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&query).unwrap();
         assert_eq!(
-            rkyv::from_bytes::<Query, rkyv::rancor::Error>(&archive).unwrap(),
+            rkyv::from_bytes::<Input, rkyv::rancor::Error>(&archive).unwrap(),
             query
         );
         assert_eq!(query.datomize(vec![]).protosize().compact(), text);
@@ -732,7 +732,7 @@ fn launch_and_rehearse_share_one_request_and_have_typed_answers() {
         "RehearseRejected.MalformedHarnessFlags.UnclosedSingleQuote",
         "StartRejected.MalformedHarnessFlags.TrailingEscape",
     ] {
-        let response = Potential::<Response>::from(text)
+        let response = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap();
         assert_eq!(response.datomize(vec![]).protosize().compact(), text);
@@ -741,7 +741,7 @@ fn launch_and_rehearse_share_one_request_and_have_typed_answers() {
 
 #[test]
 fn caller_names_the_flow_its_aspect_and_model() {
-    let reply = Response::CallerResolved(signal_flow::CallerIdentity {
+    let reply = Output::CallerResolved(signal_flow::CallerIdentity {
         flow_id: signal_flow::FlowId("38de5b".to_string()),
         aspect: signal_flow::Aspect::Psyche,
         model_name: signal_flow::ModelName("claude-opus-5-5".to_string()),
@@ -751,7 +751,7 @@ fn caller_names_the_flow_its_aspect_and_model() {
         "CallerResolved.{ 38de5b Psyche claude-opus-5-5 }"
     );
     assert!(
-        Potential::<Response>::from("CallerResolved.{ 38de5b Psyche High claude-opus-5-5 }")
+        Potential::<Output>::from("CallerResolved.{ 38de5b Psyche High claude-opus-5-5 }")
             .actualize(&mut budget())
             .is_err(),
         "a Caller carries no power"
@@ -762,16 +762,16 @@ fn caller_names_the_flow_its_aspect_and_model() {
 /// requests as one typed record. The concrete text is the specification.
 #[test]
 fn metaflows_query_and_listed_metaflow_roundtrip() {
-    let query = Potential::<Query>::from("Metaflows")
+    let query = Potential::<Input>::from("Metaflows")
         .actualize(&mut budget())
         .unwrap();
-    assert_eq!(query, Query::Metaflows);
+    assert_eq!(query, Input::Metaflows);
 
     let text = "Listed.[ { { Psyche flow Fable } Awake.f1c841 [ past-1 ] [] } ]";
-    let restored = Potential::<Response>::from(text)
+    let restored = Potential::<Output>::from(text)
         .actualize(&mut budget())
         .unwrap();
-    let Response::Listed(rows) = &restored else {
+    let Output::Listed(rows) = &restored else {
         panic!("Metaflows answers with typed metaflow records")
     };
     assert_eq!(rows.len(), 1);
@@ -791,7 +791,7 @@ fn metaflows_query_and_listed_metaflow_roundtrip() {
     assert!(rows[0].queue.0.is_empty());
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&restored).unwrap();
     assert_eq!(
-        rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+        rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
         restored
     );
     assert_eq!(restored.datomize(vec![]).protosize().compact(), text);
@@ -801,12 +801,12 @@ fn metaflows_query_and_listed_metaflow_roundtrip() {
 #[test]
 fn store_refusal_roundtrips_with_its_error_text() {
     let text = "Refused.Store.«database unavailable»";
-    let response = Potential::<Response>::from(text)
+    let response = Potential::<Output>::from(text)
         .actualize(&mut budget())
         .unwrap();
     assert_eq!(
         response,
-        Response::Refused(Refusal::Store("database unavailable".into()))
+        Output::Refused(Refusal::Store("database unavailable".into()))
     );
     assert_eq!(response.datomize(vec![]).protosize().compact(), text);
 }
@@ -815,17 +815,17 @@ fn store_refusal_roundtrips_with_its_error_text() {
 #[test]
 fn listed_asleep_metaflow_roundtrips_without_a_current_flow() {
     let text = "Listed.[ { { Mind topics Astra } Asleep [] [] } ]";
-    let restored = Potential::<Response>::from(text)
+    let restored = Potential::<Output>::from(text)
         .actualize(&mut budget())
         .unwrap();
-    let Response::Listed(rows) = &restored else {
+    let Output::Listed(rows) = &restored else {
         panic!("Metaflows answers with typed metaflow records")
     };
     assert_eq!(rows.len(), 1);
     assert_eq!(rows[0].state, flow_ethos::State::Asleep);
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&restored).unwrap();
     assert_eq!(
-        rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+        rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
         restored
     );
     assert_eq!(restored.datomize(vec![]).protosize().compact(), text);
@@ -834,7 +834,7 @@ fn listed_asleep_metaflow_roundtrips_without_a_current_flow() {
 #[test]
 fn start_names_the_address_of_the_seat_it_launches() {
     let text = "Start.{ field-flow-quaternary-1 [ spirit:core ] [ compensation:main-flow ] Custom.[ fac697 ] { Field flow Haiku } haiku medium None fieldFlow None Regular Default «Send the Order through Message.» }";
-    let Query::Start(profile) = Potential::<Query>::from(text)
+    let Input::Start(profile) = Potential::<Input>::from(text)
         .actualize(&mut budget())
         .unwrap()
     else {
@@ -861,7 +861,7 @@ fn start_names_the_address_of_the_seat_it_launches() {
         "StartRejected.LeaveOutRefused.Indispensable.ToolSearch",
         "StartRejected.LeaveOutRefused.NeedsWorkflowLeftOut.SkillTool",
     ] {
-        let response = Potential::<Response>::from(text)
+        let response = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap();
         assert_eq!(response.datomize(vec![]).protosize().compact(), text);
@@ -874,7 +874,7 @@ fn start_names_the_address_of_the_seat_it_launches() {
 #[test]
 fn an_ended_metaflow_is_no_datom_of_the_contract() {
     assert!(
-        Potential::<Query>::from("End.{ Psyche flow Fable }")
+        Potential::<Input>::from("End.{ Psyche flow Fable }")
             .actualize(&mut budget())
             .is_err(),
         "End is refused"
@@ -887,14 +887,14 @@ fn an_ended_metaflow_is_no_datom_of_the_contract() {
         "StartRejected.AddressEnded",
     ] {
         assert!(
-            Potential::<Response>::from(text)
+            Potential::<Output>::from(text)
                 .actualize(&mut budget())
                 .is_err(),
             "{text} is refused"
         );
     }
     for text in ["Current.Asleep", "Current.Awake.f1c841", "Current.Unknown"] {
-        let response = Potential::<Response>::from(text)
+        let response = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap();
         assert_eq!(response.datomize(vec![]).protosize().compact(), text);
@@ -912,7 +912,7 @@ fn no_rank_refusal_is_a_datom_of_the_contract() {
         "SendChanged.{ req1 1 Sender.{ Mind flow Sol } { Psyche flow Opus } Failed.NoneAbove }",
     ] {
         assert!(
-            Potential::<Response>::from(text)
+            Potential::<Output>::from(text)
                 .actualize(&mut budget())
                 .is_err(),
             "{text} is refused"
@@ -921,7 +921,7 @@ fn no_rank_refusal_is_a_datom_of_the_contract() {
     // The same failure carrying a refusal the contract keeps is a datom.
     let kept =
         "SendChanged.{ req1 1 Sender.{ Mind flow Sol } { Psyche flow Opus } Failed.NotConfigured }";
-    let response = Potential::<Response>::from(kept)
+    let response = Potential::<Output>::from(kept)
         .actualize(&mut budget())
         .unwrap();
     assert_eq!(response.datomize(vec![]).protosize().compact(), kept);
@@ -933,12 +933,12 @@ fn no_rank_refusal_is_a_datom_of_the_contract() {
 #[test]
 fn identify_thread_and_its_refusal_have_concrete_datoms() {
     let text = "IdentifyThread.{ { 4242 987654 } 01a0fdcc-c1a1-7f43-8c23-06d41fa34438 }";
-    let query = Potential::<Query>::from(text)
+    let query = Potential::<Input>::from(text)
         .actualize(&mut budget())
         .unwrap();
     assert_eq!(
         query,
-        Query::IdentifyThread(signal_flow::IdentifyThread_Data {
+        Input::IdentifyThread(signal_flow::IdentifyThread_Data {
             process: signal_flow::Process {
                 pid: flow_ethos::Pid(4242),
                 started: flow_ethos::Started(987654),
@@ -954,7 +954,7 @@ fn identify_thread_and_its_refusal_have_concrete_datoms() {
         "Refused.NotSendServer.{ 4242 987654 }",
         "Refused.Unidentified.{ None None None 1761800000 { 4242 987654 } }",
     ] {
-        let response = Potential::<Response>::from(text)
+        let response = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap();
         assert_eq!(response.datomize(vec![]).protosize().compact(), text);
@@ -970,7 +970,7 @@ fn durable_admission_and_resumable_sender_outcomes_round_trip() {
         "ObserveDeliveries.Some.4",
         "Acknowledge.[ { messageMemory 0 } { messageMemory 1 } ]",
     ] {
-        let value = Potential::<Query>::from(text)
+        let value = Potential::<Input>::from(text)
             .actualize(&mut budget())
             .unwrap();
         assert_eq!(value.datomize(vec![]).protosize().compact(), text);
@@ -985,12 +985,12 @@ fn durable_admission_and_resumable_sender_outcomes_round_trip() {
         "SendsObserved.{ store1 6 [ { req6 6 Sender.{ Mind flow Sol } { Psyche flow Opus } Retryable.WakeRefused.Undeclared } ] }",
         "Drained.{ { Psyche flow Opus } Held }",
     ] {
-        let value = Potential::<Response>::from(text)
+        let value = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap();
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&value).unwrap();
         assert_eq!(
-            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
             value
         );
         assert_eq!(value.datomize(vec![]).protosize().compact(), text);
@@ -1001,25 +1001,25 @@ fn durable_admission_and_resumable_sender_outcomes_round_trip() {
 fn direct_send_replies_carry_receipt_or_failure_never_queue_state() {
     use signal_flow::{VisibleSendFailure, VisibleSendFailureReason};
     let replies = [
-        Response::Sent(signal_flow::VisibleSendReceipt(signal_flow::RequestId(
+        Output::Sent(signal_flow::VisibleSendReceipt(signal_flow::RequestId(
             "direct1".to_string(),
         ))),
-        Response::Failed(VisibleSendFailure::Unadmitted(
+        Output::Failed(VisibleSendFailure::Unadmitted(
             VisibleSendFailureReason::QueueNotPermitted,
         )),
-        Response::Failed(VisibleSendFailure::Unadmitted(
+        Output::Failed(VisibleSendFailure::Unadmitted(
             VisibleSendFailureReason::ReceiptUncertain,
         )),
     ];
     for reply in replies {
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&reply).unwrap();
         assert_eq!(
-            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
             reply
         );
         let text = reply.datomize(vec![]).protosize().compact();
         assert_eq!(
-            Potential::<Response>::from(text)
+            Potential::<Output>::from(text)
                 .actualize(&mut budget())
                 .unwrap(),
             reply
@@ -1032,19 +1032,19 @@ fn direct_send_replies_carry_receipt_or_failure_never_queue_state() {
 #[test]
 fn topic_refused_start_rejection_round_trips() {
     let text = "StartRejected.TopicRefused.PrimaryCommitting";
-    let response = Potential::<Response>::from(text)
+    let response = Potential::<Output>::from(text)
         .actualize(&mut budget())
         .unwrap();
     assert_eq!(
         response,
-        Response::StartRejected(signal_flow::StartRejection::TopicRefused(
+        Output::StartRejected(signal_flow::StartRejection::TopicRefused(
             signal_flow::Topic("PrimaryCommitting".to_string())
         ))
     );
     assert_eq!(response.datomize(vec![]).protosize().compact(), text);
     let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
     assert_eq!(
-        rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+        rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
         response
     );
 }
@@ -1081,23 +1081,23 @@ fn composition_refused_carries_its_reason() {
             CompositionRefusal::Unrecorded,
         ),
     ] {
-        let response = Potential::<Response>::from(text)
+        let response = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap();
         assert_eq!(
             response,
-            Response::StartRejected(StartRejection::CompositionRefused(refusal))
+            Output::StartRejected(StartRejection::CompositionRefused(refusal))
         );
         assert_eq!(response.datomize(vec![]).protosize().compact(), text);
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
         assert_eq!(
-            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
             response
         );
     }
     // The reason is not optional: a bare CompositionRefused no longer reads.
     assert!(
-        Potential::<Response>::from("StartRejected.CompositionRefused")
+        Potential::<Output>::from("StartRejected.CompositionRefused")
             .actualize(&mut budget())
             .is_err()
     );
@@ -1109,33 +1109,33 @@ fn composition_refused_carries_its_reason() {
 fn remind_is_gone_and_a_task_with_minutes_stands_in_its_place() {
     let remind = "Remind.{ 2026-10-29T23:30:00-06:00 «Check the capsule run.» }";
     assert!(
-        Potential::<Query>::from(remind)
+        Potential::<Input>::from(remind)
             .actualize(&mut budget())
             .is_err(),
         "{remind} still reads"
     );
     for text in ["Reminded", "Refused.InstantUnreadable.tomorrow"] {
         assert!(
-            Potential::<Response>::from(text)
+            Potential::<Output>::from(text)
                 .actualize(&mut budget())
                 .is_err(),
             "{text} still reads"
         );
     }
     let task = "Send.{ { Mind core Sol } Soft.Task.{ 30 «Check the capsule run.» } }";
-    let query = Potential::<Query>::from(task)
+    let query = Potential::<Input>::from(task)
         .actualize(&mut budget())
         .unwrap_or_else(|error| panic!("{task}: {error:?}"));
     assert_eq!(query.datomize(Vec::new()).protosize().compact(), task);
 }
 
 /// Every refusal a Task meets at admission is carried whole:
-/// datom text reads into the Response, the Response crosses the wire as
+/// datom text reads into the Output, the Output crosses the wire as
 /// rkyv and reads back equal, and prints as the same text.
 #[test]
 fn task_refusals_round_trip_from_datom_through_rkyv_to_datom() {
     use signal_flow::MinutesRefusal;
-    let refused = |refusal| Response::Refused(refusal);
+    let refused = |refusal| Output::Refused(refusal);
     for (text, expected) in [
         (
             "Refused.MinutesRefused.Zero",
@@ -1152,19 +1152,19 @@ fn task_refusals_round_trip_from_datom_through_rkyv_to_datom() {
         // An abrupt Send's refusal is answered as its failure.
         (
             "Failed.Unadmitted.Refused.MinutesRefused.Zero",
-            Response::Failed(signal_flow::VisibleSendFailure::Unadmitted(
+            Output::Failed(signal_flow::VisibleSendFailure::Unadmitted(
                 signal_flow::VisibleSendFailureReason::Refused(
                     signal_flow::VisibleRefusal::MinutesRefused(MinutesRefusal::Zero),
                 ),
             )),
         ),
     ] {
-        let response = Potential::<Response>::from(text)
+        let response = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap_or_else(|error| panic!("{text}: {error:?}"));
         assert_eq!(response, expected, "{text}");
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
-        let carried = rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap();
+        let carried = rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap();
         assert_eq!(carried, response, "{text}");
         assert_eq!(carried.datomize(Vec::new()).protosize().compact(), text);
     }
@@ -1180,11 +1180,11 @@ fn an_unidentified_refusal_carries_its_seat_evidence_round_trip() {
         "Refused.Unidentified.{ Some.{ herdr-1 w1-2 } None None 1761800000 { 4242 987654 } }",
         "Refused.Unidentified.{ None None None 1761800000 { 4242 987654 } }",
     ] {
-        let value = Potential::<Response>::from(text)
+        let value = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap();
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&value).unwrap();
-        let read = rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap();
+        let read = rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap();
         assert_eq!(read, value);
         assert_eq!(read.datomize(vec![]).protosize().compact(), text);
     }
@@ -1196,17 +1196,17 @@ fn an_unidentified_refusal_carries_its_seat_evidence_round_trip() {
     assert!(matches!(refusal, Refusal::Unidentified(_)));
 }
 
-/// A frame that decodes as no Query is refused with what Flow read of its
+/// A frame that decodes as no Input is refused with what Flow read of its
 /// caller, the flow bound to the caller's seat and the seat's evidence, and
 /// Observe.Undecodable shows every such record. Datom to rkyv to datom
 /// returns the same text.
 #[test]
 fn an_undecodable_frame_is_refused_with_its_caller_and_observed() {
-    let query = Query::Observe(signal_flow::ObserveSelection::Undecodable);
+    let query = Input::Observe(signal_flow::ObserveSelection::Undecodable);
     let query_text = query.datomize(vec![]).protosize().compact();
     assert_eq!(query_text, "Observe.Undecodable");
     assert_eq!(
-        Potential::<Query>::from(query_text)
+        Potential::<Input>::from(query_text)
             .actualize(&mut budget())
             .unwrap(),
         query
@@ -1217,11 +1217,11 @@ fn an_undecodable_frame_is_refused_with_its_caller_and_observed() {
         "UndecodableObserved.[ { Some.7d41e0 { Some.{ herdr-1 w1-2 } None None 1761800000 { 4242 987654 } } } ]",
         "UndecodableObserved.[]",
     ] {
-        let value = Potential::<Response>::from(text)
+        let value = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap();
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&value).unwrap();
-        let read = rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap();
+        let read = rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap();
         assert_eq!(read, value);
         assert_eq!(read.datomize(vec![]).protosize().compact(), text);
     }
@@ -1233,11 +1233,11 @@ fn an_undecodable_frame_is_refused_with_its_caller_and_observed() {
 /// returns the same text.
 #[test]
 fn a_turn_end_subscription_names_address_harness_and_flow_round_trip() {
-    let query = Query::Observe(signal_flow::ObserveSelection::TurnEnds);
+    let query = Input::Observe(signal_flow::ObserveSelection::TurnEnds);
     let query_text = query.datomize(vec![]).protosize().compact();
     assert_eq!(query_text, "Observe.TurnEnds");
     assert_eq!(
-        Potential::<Query>::from(query_text)
+        Potential::<Input>::from(query_text)
             .actualize(&mut budget())
             .unwrap(),
         query
@@ -1247,11 +1247,11 @@ fn a_turn_end_subscription_names_address_harness_and_flow_round_trip() {
         "TurnEndsObserved.[]",
         "TurnEnded.{ { Field message Luna } Codex 74e4d1 1761800200 }",
     ] {
-        let value = Potential::<Response>::from(text)
+        let value = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap();
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&value).unwrap();
-        let read = rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap();
+        let read = rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap();
         assert_eq!(read, value);
         assert_eq!(read.datomize(vec![]).protosize().compact(), text);
     }
@@ -1262,11 +1262,11 @@ fn a_turn_end_subscription_names_address_harness_and_flow_round_trip() {
 /// of each no longer listed. Datom to rkyv to datom returns the same text.
 #[test]
 fn a_metaflow_subscription_opens_on_the_list_then_names_each_change_round_trip() {
-    let query = Query::Observe(signal_flow::ObserveSelection::Metaflows);
+    let query = Input::Observe(signal_flow::ObserveSelection::Metaflows);
     let query_text = query.datomize(vec![]).protosize().compact();
     assert_eq!(query_text, "Observe.Metaflows");
     assert_eq!(
-        Potential::<Query>::from(query_text)
+        Potential::<Input>::from(query_text)
             .actualize(&mut budget())
             .unwrap(),
         query
@@ -1277,11 +1277,11 @@ fn a_metaflow_subscription_opens_on_the_list_then_names_each_change_round_trip()
         "MetaflowChanged.{ { Psyche flow Fable } Asleep [ f1c841 past-1 ] [] }",
         "MetaflowGone.{ Mind topics Astra }",
     ] {
-        let value = Potential::<Response>::from(text)
+        let value = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap();
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&value).unwrap();
-        let read = rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap();
+        let read = rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap();
         assert_eq!(read, value);
         assert_eq!(read.datomize(vec![]).protosize().compact(), text);
     }
@@ -1292,12 +1292,12 @@ fn a_metaflow_subscription_opens_on_the_list_then_names_each_change_round_trip()
 /// specification.
 #[test]
 fn a_restart_and_each_of_its_answers_round_trip_as_text() {
-    let query = Potential::<Query>::from("Restart.c1a0de")
+    let query = Potential::<Input>::from("Restart.c1a0de")
         .actualize(&mut budget())
         .unwrap();
     assert_eq!(
         query,
-        Query::Restart(signal_flow::FlowId("c1a0de".to_string()))
+        Input::Restart(signal_flow::FlowId("c1a0de".to_string()))
     );
     assert_eq!(
         query.datomize(vec![]).protosize().compact(),
@@ -1306,17 +1306,17 @@ fn a_restart_and_each_of_its_answers_round_trip_as_text() {
     for (text, expected) in [
         (
             "Restarted.c1a0de",
-            Response::Restarted(signal_flow::FlowId("c1a0de".to_string())),
+            Output::Restarted(signal_flow::FlowId("c1a0de".to_string())),
         ),
         (
             "RestartRefused.Busy.c1a0de",
-            Response::RestartRefused(signal_flow::RestartRefusal::Busy(signal_flow::FlowId(
+            Output::RestartRefused(signal_flow::RestartRefusal::Busy(signal_flow::FlowId(
                 "c1a0de".to_string(),
             ))),
         ),
         (
             "RestartRefused.ResumeRefused.{ c1a0de BindMismatch }",
-            Response::RestartRefused(signal_flow::RestartRefusal::ResumeRefused(
+            Output::RestartRefused(signal_flow::RestartRefusal::ResumeRefused(
                 signal_flow::ResumeRefused_Data {
                     flow_id: signal_flow::FlowId("c1a0de".to_string()),
                     string: "BindMismatch".into(),
@@ -1325,10 +1325,10 @@ fn a_restart_and_each_of_its_answers_round_trip_as_text() {
         ),
         (
             "StopRejected.SpawnUnproven",
-            Response::StopRejected(signal_flow::StopRejection::SpawnUnproven),
+            Output::StopRejected(signal_flow::StopRejection::SpawnUnproven),
         ),
     ] {
-        let actual = Potential::<Response>::from(text)
+        let actual = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap();
         assert_eq!(actual, expected);
@@ -1352,7 +1352,7 @@ fn every_queue_and_request_operation_round_trips_as_text() {
         "Answer.k7ph",
         "Send.{ { Psyche core Fable } Soft.Living.{ «the drain» «Fix it today.» } }",
     ] {
-        let query = Potential::<Query>::from(text)
+        let query = Potential::<Input>::from(text)
             .actualize(&mut budget())
             .unwrap_or_else(|error| panic!("{text}: {error:?}"));
         assert_eq!(query.datomize(Vec::new()).protosize().compact(), text);
@@ -1360,30 +1360,30 @@ fn every_queue_and_request_operation_round_trips_as_text() {
     for (text, expected) in [
         (
             "Cancelled.k7ph",
-            Response::Cancelled(signal_flow::RequestId("k7ph".to_string())),
+            Output::Cancelled(signal_flow::RequestId("k7ph".to_string())),
         ),
         (
             "CancelRejected.Closed",
-            Response::CancelRejected(signal_flow::RequestRejection::Closed),
+            Output::CancelRejected(signal_flow::RequestRejection::Closed),
         ),
         (
             "SilenceRejected.NotTask",
-            Response::SilenceRejected(signal_flow::RequestRejection::NotTask),
+            Output::SilenceRejected(signal_flow::RequestRejection::NotTask),
         ),
         (
             "Cleared.[ k7ph m2qa ]",
-            Response::Cleared(vec![
+            Output::Cleared(vec![
                 signal_flow::RequestId("k7ph".to_string()),
                 signal_flow::RequestId("m2qa".to_string()),
             ]),
         ),
         (
             "Pushed.[ p5lg ]",
-            Response::Pushed(vec![signal_flow::RequestId("p5lg".to_string())]),
+            Output::Pushed(vec![signal_flow::RequestId("p5lg".to_string())]),
         ),
         (
             "Queues.[ { { Mind core Sol } [ { Sender.{ Psyche core Fable } MiddleAbrupt.Order.{ k7ph «Review the drain fix.» } } { Unbound Soft.Living.{ m2qa «the drain» «Fix it today.» } } ] } ]",
-            Response::Queues(vec![signal_flow::Queue {
+            Output::Queues(vec![signal_flow::Queue {
                 address: signal_flow::Address {
                     aspect: Aspect::Mind,
                     topic: signal_flow::Topic("core".to_string()),
@@ -1420,11 +1420,11 @@ fn every_queue_and_request_operation_round_trips_as_text() {
         ),
         (
             "Reminded.k7ph",
-            Response::Reminded(signal_flow::RequestId("k7ph".to_string())),
+            Output::Reminded(signal_flow::RequestId("k7ph".to_string())),
         ),
         (
             "Answered.{ Sender.{ Mind core Sol } Soft.Result.{ k7ph «Reviewed; green.» } }",
-            Response::Answered(signal_flow::VisibleNativeInput {
+            Output::Answered(signal_flow::VisibleNativeInput {
                 visible_sender: signal_flow::VisibleSender::Sender(signal_flow::Address {
                     aspect: Aspect::Mind,
                     topic: signal_flow::Topic("core".to_string()),
@@ -1442,21 +1442,21 @@ fn every_queue_and_request_operation_round_trips_as_text() {
         ),
         (
             "AnswerRejected.Open",
-            Response::AnswerRejected(signal_flow::AnswerRejection::Open),
+            Output::AnswerRejected(signal_flow::AnswerRejection::Open),
         ),
         (
             "RestartQueued.74e4d1",
-            Response::RestartQueued(signal_flow::FlowId("74e4d1".to_string())),
+            Output::RestartQueued(signal_flow::FlowId("74e4d1".to_string())),
         ),
         (
             "RestartRefused.Asleep.74e4d1",
-            Response::RestartRefused(signal_flow::RestartRefusal::Asleep(signal_flow::FlowId(
+            Output::RestartRefused(signal_flow::RestartRefusal::Asleep(signal_flow::FlowId(
                 "74e4d1".to_string(),
             ))),
         ),
         (
             "Hot.[ { { Mind core Sol } Some.3 } { { Psyche core Fable } None } ]",
-            Response::Hot(vec![
+            Output::Hot(vec![
                 signal_flow::Warmth {
                     address: signal_flow::Address {
                         aspect: Aspect::Mind,
@@ -1476,7 +1476,7 @@ fn every_queue_and_request_operation_round_trips_as_text() {
             ]),
         ),
     ] {
-        let actual = Potential::<Response>::from(text)
+        let actual = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap_or_else(|error| panic!("{text}: {error:?}"));
         assert_eq!(actual, expected);
@@ -1499,10 +1499,10 @@ fn a_send_holding_nested_and_escaped_guillemets_round_trips_as_text() {
             "an unbalanced » inside",
         ),
     ] {
-        let query = Potential::<Query>::from(text)
+        let query = Potential::<Input>::from(text)
             .actualize(&mut budget())
             .unwrap_or_else(|error| panic!("{text}: {error:?}"));
-        let Query::Send(send) = &query else {
+        let Input::Send(send) = &query else {
             panic!("a Send: {query:?}")
         };
         assert_eq!(
@@ -1517,12 +1517,12 @@ fn a_send_holding_nested_and_escaped_guillemets_round_trips_as_text() {
 #[test]
 fn a_composer_rejection_carries_its_text() {
     let text = "StartRejected.ContextRefused.ComposerRejected.«missing module knowledge:absent»";
-    let response = Potential::<Response>::from(text)
+    let response = Potential::<Output>::from(text)
         .actualize(&mut budget())
         .unwrap();
     assert_eq!(
         response,
-        Response::StartRejected(signal_flow::StartRejection::ContextRefused(
+        Output::StartRejected(signal_flow::StartRejection::ContextRefused(
             signal_flow::ContextRefusal::ComposerRejected("missing module knowledge:absent".into())
         ))
     );
@@ -1553,12 +1553,12 @@ fn a_handover_refusal_carries_its_predecessor_and_fault() {
             signal_flow::HandoverFault::RootUnresolved,
         ),
     ] {
-        let response = Potential::<Response>::from(text)
+        let response = Potential::<Output>::from(text)
             .actualize(&mut budget())
             .unwrap();
         assert_eq!(
             response,
-            Response::StartRejected(signal_flow::StartRejection::CompositionRefused(
+            Output::StartRejected(signal_flow::StartRejection::CompositionRefused(
                 signal_flow::CompositionRefusal::HandoverUnreadable(
                     signal_flow::HandoverUnreadable_Data {
                         flow_id: signal_flow::FlowId("abc123".to_string()),
@@ -1612,12 +1612,12 @@ fn pending_reaps_and_handovers_round_trip_as_replies_and_outcomes() {
         "HandoverSuperseded.{{ {{ Psyche core Fable }} 751881 {launched} 4e1d2a }}"
     ));
     for text in &texts {
-        let response = Potential::<Response>::from(text.as_str())
+        let response = Potential::<Output>::from(text.as_str())
             .actualize(&mut budget())
             .unwrap();
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
         assert_eq!(
-            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
             response
         );
         assert_eq!(&response.datomize(vec![]).protosize().compact(), text);
@@ -1637,12 +1637,12 @@ fn pending_reaps_and_handovers_round_trip_as_replies_and_outcomes() {
 #[test]
 fn a_pending_reap_names_its_address_predecessor_successor_and_standing() {
     let text = "ReapPending.{ { Psyche core Fable } fac697 { 908786 session-2 Unavailable Unbound } HandoverRefused.Owner.Live.751881 }";
-    let response = Potential::<Response>::from(text)
+    let response = Potential::<Output>::from(text)
         .actualize(&mut budget())
         .unwrap();
     assert_eq!(
         response,
-        Response::ReapPending(signal_flow::ReapPending {
+        Output::ReapPending(signal_flow::ReapPending {
             address: signal_flow::Address {
                 aspect: Aspect::Psyche,
                 topic: signal_flow::Topic("core".to_string()),
@@ -1673,7 +1673,7 @@ fn a_refused_reap_is_no_replace_rejection() {
         "RefreshRejected.SuccessorRefused.ReapRefused.CloseRefused",
     ] {
         assert!(
-            Potential::<Response>::from(text)
+            Potential::<Output>::from(text)
                 .actualize(&mut budget())
                 .is_err(),
             "{text}"

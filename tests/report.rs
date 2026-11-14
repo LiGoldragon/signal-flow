@@ -2,11 +2,11 @@
 //! it, and a FlowId Flow does not hold is refused as Refused.Unknown.FlowId.
 
 use signal_flow::{
-    Address, Aspect, BackgroundTask, BackgroundTaskKind, Event, Model, NativePrompt, NativeStop,
-    Query, Report_Data, Response, Topic, VisibleRefusal, VisibleUnknown,
+    Address, Aspect, BackgroundTask, BackgroundTaskKind, Event, Input, Model, NativePrompt,
+    NativeStop, Output, Report_Data, Topic, VisibleRefusal, VisibleUnknown,
 };
 
-fn reports() -> Vec<Query> {
+fn reports() -> Vec<Input> {
     [
         Event::Started(Some(signal_flow::NativeSessionId("s2".to_string()))),
         Event::Started(None),
@@ -69,7 +69,7 @@ fn reports() -> Vec<Query> {
     ]
     .into_iter()
     .map(|event| {
-        Query::Report(Report_Data {
+        Input::Report(Report_Data {
             flow_id: signal_flow::FlowId("f1c841".to_string()),
             process_option: None,
             event,
@@ -78,10 +78,10 @@ fn reports() -> Vec<Query> {
     .collect()
 }
 
-fn replies() -> Vec<Response> {
+fn replies() -> Vec<Output> {
     vec![
-        Response::Reported,
-        Response::SendRefused(VisibleRefusal::Unknown(VisibleUnknown::Address(Address {
+        Output::Reported,
+        Output::SendRefused(VisibleRefusal::Unknown(VisibleUnknown::Address(Address {
             aspect: Aspect::Mind,
             topic: Topic("core".to_string()),
             model: Model::Sol,
@@ -94,14 +94,14 @@ fn every_report_and_its_replies_round_trip_through_rkyv() {
     for query in reports() {
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&query).unwrap();
         assert_eq!(
-            rkyv::from_bytes::<Query, rkyv::rancor::Error>(&archive).unwrap(),
+            rkyv::from_bytes::<Input, rkyv::rancor::Error>(&archive).unwrap(),
             query
         );
     }
     for reply in replies() {
         let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&reply).unwrap();
         assert_eq!(
-            rkyv::from_bytes::<Response, rkyv::rancor::Error>(&archive).unwrap(),
+            rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
             reply
         );
     }
@@ -111,7 +111,7 @@ fn every_report_and_its_replies_round_trip_through_rkyv() {
 mod datom {
     use datom_codec::{Actualizing, Budget, Datomizable, Potential};
     use protos::{Compactable, Protosizable, ReaderBudget};
-    use signal_flow::{Query, Response};
+    use signal_flow::{Input, Output};
 
     fn budget() -> Budget {
         Budget {
@@ -140,7 +140,7 @@ mod datom {
             let text = query.datomize(vec![]).protosize().compact();
             assert_eq!(text, expected);
             assert_eq!(
-                Potential::<Query>::from(text)
+                Potential::<Input>::from(text)
                     .actualize(&mut budget())
                     .unwrap(),
                 query
@@ -161,7 +161,7 @@ mod datom {
             "Report.{ f1c841 Ended.Some.s1 }",
         ] {
             assert!(
-                Potential::<Query>::from(refused)
+                Potential::<Input>::from(refused)
                     .actualize(&mut budget())
                     .is_err()
             );
@@ -177,7 +177,7 @@ mod datom {
             let text = reply.datomize(vec![]).protosize().compact();
             assert_eq!(text, expected);
             assert_eq!(
-                Potential::<Response>::from(text)
+                Potential::<Output>::from(text)
                     .actualize(&mut budget())
                     .unwrap(),
                 reply

@@ -20,6 +20,6 @@ pub const WIRE_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// The contract is identified on the wire by the digest of its authored
 /// Ethos source; the querying side greets with it.
-impl signal::Contracted for Query {
+impl signal::Contracted for Input {
     const CONTRACT_SOURCE: &'static str = ETHOS;
 }

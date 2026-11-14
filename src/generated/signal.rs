@@ -1843,7 +1843,7 @@ pub struct Remind_Data {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum Query {
+pub enum Input {
     Start(LaunchProfile),
     Refresh(flow_ethos::Address),
     ResolveRecipient(RecipientResolutionRequest),
@@ -1914,60 +1914,68 @@ pub struct Dropped_Data {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum Response {
+pub enum Output {
     Started(Launched),
-    LaunchPending(LaunchAttempt),
-    StartAmbiguous(PromptDeliveryIntent),
     Refreshed(Refreshed),
     RecipientResolved(FlowNode),
     Stopped(flow_ethos::FlowId),
-    Listed(std::vec::Vec<flow_ethos::Metaflow>),
-    StartRejected(StartRejection),
-    Rehearsed(Command),
-    RehearseRejected(StartRejection),
-    RefreshRejected(RefreshRejection),
-    RecipientResolutionRejected(RecipientResolutionRejection),
-    StopRejected(StopRejection),
     Replaced(Replaced),
-    ReplaceRejected(ReplaceRejection),
     LaunchInspected(LaunchInspection),
-    LaunchStatusRejected(LaunchStatusRejection),
-    CallerResolved(CallerIdentity),
-    CallerResolutionRejected(CallerResolutionRejection),
     AgentObserved(AgentObservation),
-    RetirementObserved(RetirementSnapshot),
-    RetirementChanged(RetirementChange),
-    RetirementObservationFailed(RetirementObservationFailure),
+    CallerResolved(CallerIdentity),
     Reported,
     Locked(flow_ethos::Lock),
     Bound(flow_ethos::FlowId),
     Identified(flow_ethos::Address),
     SendAccepted(VisibleSendAcceptance),
-    SendsObserved(VisibleSendObservation),
-    SendChanged(VisibleDeliverySnapshot),
-    Drained(VisibleDrainOutcome),
-    Woken(flow_ethos::FlowId),
-    Adopted(flow_ethos::FlowId),
+    Acknowledged,
+    RequestArchived(flow_ethos::RequestId),
     Released,
     Current(Current_Data),
+    Listed(std::vec::Vec<flow_ethos::Metaflow>),
+    StartAmbiguous(PromptDeliveryIntent),
+    Sent(VisibleSendReceipt),
+    SendsObserved(VisibleSendObservation),
+    SendChanged(VisibleDeliverySnapshot),
+    StartRejected(StartRejection),
+    Drained(VisibleDrainOutcome),
+    LaunchPending(LaunchAttempt),
+    Rehearsed(Command),
+    RehearseRejected(StartRejection),
+    Adopted(flow_ethos::FlowId),
+    Restarted(flow_ethos::FlowId),
+    Kept(Kept_Data),
+    Dropped(Dropped_Data),
+    Glanced(std::vec::Vec<Heading>),
+    Handover(std::vec::Vec<Section>),
+    Cancelled(flow_ethos::RequestId),
+    Silenced(flow_ethos::RequestId),
+    Cleared(std::vec::Vec<flow_ethos::RequestId>),
+    RefreshRejected(RefreshRejection),
+    Pushed(std::vec::Vec<flow_ethos::RequestId>),
+    Queues(std::vec::Vec<Queue>),
+    Hot(std::vec::Vec<Warmth>),
+    Reminded(flow_ethos::RequestId),
+    Answered(VisibleNativeInput),
+    RecipientResolutionRejected(RecipientResolutionRejection),
+    StopRejected(StopRejection),
+    ReplaceRejected(ReplaceRejection),
+    LaunchStatusRejected(LaunchStatusRejection),
+    CallerResolutionRejected(CallerResolutionRejection),
+    RetirementObserved(RetirementSnapshot),
+    RetirementChanged(RetirementChange),
+    RetirementObservationFailed(RetirementObservationFailure),
+    Woken(flow_ethos::FlowId),
     Refused(Refusal),
     SendRefused(VisibleRefusal),
-    Sent(VisibleSendReceipt),
     Failed(VisibleSendFailure),
-    Restarted(flow_ethos::FlowId),
     RestartRefused(RestartRefusal),
     KeepRefused(HandoverRefusal),
     DropRefused(HandoverRefusal),
     GlanceRefused(HandoverRefusal),
     ReadRefused(HandoverRefusal),
-    Kept(Kept_Data),
-    Dropped(Dropped_Data),
-    Acknowledged,
     DeliverKeyReused,
-    RequestArchived(flow_ethos::RequestId),
     ArchiveRejected(ArchiveRejection),
-    Glanced(std::vec::Vec<Heading>),
-    Handover(std::vec::Vec<Section>),
     RefreshQueued(RefreshQueued),
     FrameRefused(UndecodableFrame),
     UndecodableObserved(std::vec::Vec<UndecodableFrame>),
@@ -1976,19 +1984,324 @@ pub enum Response {
     MetaflowsObserved(std::vec::Vec<flow_ethos::Metaflow>),
     MetaflowChanged(flow_ethos::Metaflow),
     MetaflowGone(flow_ethos::Address),
-    Cancelled(flow_ethos::RequestId),
     CancelRejected(RequestRejection),
-    Silenced(flow_ethos::RequestId),
     SilenceRejected(RequestRejection),
-    Cleared(std::vec::Vec<flow_ethos::RequestId>),
-    Pushed(std::vec::Vec<flow_ethos::RequestId>),
-    Queues(std::vec::Vec<Queue>),
-    Hot(std::vec::Vec<Warmth>),
-    Reminded(flow_ethos::RequestId),
-    Answered(VisibleNativeInput),
     AnswerRejected(AnswerRejection),
     RestartQueued(flow_ethos::FlowId),
     ReapPending(ReapPending),
     HandoverPending(HandoverPending),
     HandoverSuperseded(HandoverSuperseded),
+}
+#[rustfmt::skip]
+#[allow(clippy::result_large_err, clippy::ptr_arg, clippy::borrowed_box)]
+pub trait Answering {
+    fn start(
+        &self,
+        launch_profile: &LaunchProfile,
+    ) -> std::result::Result<Launched, Output>;
+    fn refresh(
+        &self,
+        address: &flow_ethos::Address,
+    ) -> std::result::Result<Refreshed, Output>;
+    fn resolve_recipient(
+        &self,
+        recipient_resolution_request: &RecipientResolutionRequest,
+    ) -> std::result::Result<FlowNode, Output>;
+    fn stop(
+        &self,
+        flow_id: &flow_ethos::FlowId,
+    ) -> std::result::Result<flow_ethos::FlowId, Output>;
+    fn replace(
+        &self,
+        launch_profile: &LaunchProfile,
+    ) -> std::result::Result<Replaced, Output>;
+    fn launch_status(
+        &self,
+        launch_request_id: &LaunchRequestId,
+    ) -> std::result::Result<LaunchInspection, Output>;
+    fn observe(
+        &self,
+        observe_selection: &ObserveSelection,
+    ) -> std::result::Result<AgentObservation, Output>;
+    fn resolve_caller(
+        &self,
+        flow_id_option: &std::option::Option<flow_ethos::FlowId>,
+    ) -> std::result::Result<CallerIdentity, Output>;
+    fn report(&self, report: &Report_Data) -> std::result::Result<(), Output>;
+    fn lock(&self, lock: &Lock_Data) -> std::result::Result<flow_ethos::Lock, Output>;
+    fn bind(&self, bind: &Bind_Data) -> std::result::Result<flow_ethos::FlowId, Output>;
+    fn identify(
+        &self,
+        process: &flow_ethos::Process,
+    ) -> std::result::Result<flow_ethos::Address, Output>;
+    fn deliver(
+        &self,
+        deliver: &Deliver_Data,
+    ) -> std::result::Result<VisibleSendAcceptance, Output>;
+    fn acknowledge(
+        &self,
+        deliver_key_vector: &std::vec::Vec<DeliverKey>,
+    ) -> std::result::Result<(), Output>;
+    fn archive_request(
+        &self,
+        request_id: &flow_ethos::RequestId,
+    ) -> std::result::Result<flow_ethos::RequestId, Output>;
+    fn release(&self, lock: &flow_ethos::Lock) -> std::result::Result<(), Output>;
+    fn current(
+        &self,
+        address: &flow_ethos::Address,
+    ) -> std::result::Result<Current_Data, Output>;
+    fn metaflows(
+        &self,
+    ) -> std::result::Result<std::vec::Vec<flow_ethos::Metaflow>, Output>;
+    fn identify_thread(
+        &self,
+        identify_thread: &IdentifyThread_Data,
+    ) -> std::result::Result<PromptDeliveryIntent, Output>;
+    fn send(
+        &self,
+        send_request: &SendRequest,
+    ) -> std::result::Result<VisibleSendReceipt, Output>;
+    fn observe_sends(
+        &self,
+        delivery_cursor_option: &std::option::Option<DeliveryCursor>,
+    ) -> std::result::Result<VisibleSendObservation, Output>;
+    fn observe_sender(
+        &self,
+        observe_sender: &ObserveSender_Data,
+    ) -> std::result::Result<VisibleDeliverySnapshot, Output>;
+    fn observe_deliveries(
+        &self,
+        delivery_cursor_option: &std::option::Option<DeliveryCursor>,
+    ) -> std::result::Result<StartRejection, Output>;
+    fn deliver_all(
+        &self,
+        address: &flow_ethos::Address,
+    ) -> std::result::Result<VisibleDrainOutcome, Output>;
+    fn launch(
+        &self,
+        launch_request: &LaunchRequest,
+    ) -> std::result::Result<LaunchAttempt, Output>;
+    fn rehearse(
+        &self,
+        launch_request: &LaunchRequest,
+    ) -> std::result::Result<Command, Output>;
+    fn bind_seat(
+        &self,
+        bind_seat: &BindSeat_Data,
+    ) -> std::result::Result<StartRejection, Output>;
+    fn adopt(
+        &self,
+        adopt: &Adopt_Data,
+    ) -> std::result::Result<flow_ethos::FlowId, Output>;
+    fn restart(
+        &self,
+        flow_id: &flow_ethos::FlowId,
+    ) -> std::result::Result<flow_ethos::FlowId, Output>;
+    fn keep(&self, keep: &Keep_Data) -> std::result::Result<Kept_Data, Output>;
+    fn drop(&self, drop: &Drop_Data) -> std::result::Result<Dropped_Data, Output>;
+    fn glance(
+        &self,
+        address: &flow_ethos::Address,
+    ) -> std::result::Result<std::vec::Vec<Heading>, Output>;
+    fn read(
+        &self,
+        address: &flow_ethos::Address,
+    ) -> std::result::Result<std::vec::Vec<Section>, Output>;
+    fn cancel(
+        &self,
+        request_id: &flow_ethos::RequestId,
+    ) -> std::result::Result<flow_ethos::RequestId, Output>;
+    fn silence(
+        &self,
+        request_id: &flow_ethos::RequestId,
+    ) -> std::result::Result<flow_ethos::RequestId, Output>;
+    fn clear(
+        &self,
+        address: &flow_ethos::Address,
+    ) -> std::result::Result<std::vec::Vec<flow_ethos::RequestId>, Output>;
+    fn clear_all(&self) -> std::result::Result<RefreshRejection, Output>;
+    fn push(
+        &self,
+        push: &Push_Data,
+    ) -> std::result::Result<std::vec::Vec<flow_ethos::RequestId>, Output>;
+    fn queues(&self) -> std::result::Result<std::vec::Vec<Queue>, Output>;
+    fn hot(&self) -> std::result::Result<std::vec::Vec<Warmth>, Output>;
+    fn remind(
+        &self,
+        remind: &Remind_Data,
+    ) -> std::result::Result<flow_ethos::RequestId, Output>;
+    fn answer(
+        &self,
+        request_id: &flow_ethos::RequestId,
+    ) -> std::result::Result<VisibleNativeInput, Output>;
+}
+#[rustfmt::skip]
+pub trait Answerable {
+    fn answer<Nexus: Answering>(&self, nexus: &Nexus) -> Output;
+}
+#[rustfmt::skip]
+impl Answerable for Input {
+    fn answer<Nexus: Answering>(&self, nexus: &Nexus) -> Output {
+        match self {
+            Input::Start(carried) => {
+                nexus.start(carried).map_or_else(|refusal| refusal, Output::Started)
+            }
+            Input::Refresh(carried) => {
+                nexus.refresh(carried).map_or_else(|refusal| refusal, Output::Refreshed)
+            }
+            Input::ResolveRecipient(carried) => {
+                nexus
+                    .resolve_recipient(carried)
+                    .map_or_else(|refusal| refusal, Output::RecipientResolved)
+            }
+            Input::Stop(carried) => {
+                nexus.stop(carried).map_or_else(|refusal| refusal, Output::Stopped)
+            }
+            Input::Replace(carried) => {
+                nexus.replace(carried).map_or_else(|refusal| refusal, Output::Replaced)
+            }
+            Input::LaunchStatus(carried) => {
+                nexus
+                    .launch_status(carried)
+                    .map_or_else(|refusal| refusal, Output::LaunchInspected)
+            }
+            Input::Observe(carried) => {
+                nexus
+                    .observe(carried)
+                    .map_or_else(|refusal| refusal, Output::AgentObserved)
+            }
+            Input::ResolveCaller(carried) => {
+                nexus
+                    .resolve_caller(carried)
+                    .map_or_else(|refusal| refusal, Output::CallerResolved)
+            }
+            Input::Report(carried) => {
+                nexus
+                    .report(carried)
+                    .map_or_else(|refusal| refusal, |()| Output::Reported)
+            }
+            Input::Lock(carried) => {
+                nexus.lock(carried).map_or_else(|refusal| refusal, Output::Locked)
+            }
+            Input::Bind(carried) => {
+                nexus.bind(carried).map_or_else(|refusal| refusal, Output::Bound)
+            }
+            Input::Identify(carried) => {
+                nexus
+                    .identify(carried)
+                    .map_or_else(|refusal| refusal, Output::Identified)
+            }
+            Input::Deliver(carried) => {
+                nexus
+                    .deliver(carried)
+                    .map_or_else(|refusal| refusal, Output::SendAccepted)
+            }
+            Input::Acknowledge(carried) => {
+                nexus
+                    .acknowledge(carried)
+                    .map_or_else(|refusal| refusal, |()| Output::Acknowledged)
+            }
+            Input::ArchiveRequest(carried) => {
+                nexus
+                    .archive_request(carried)
+                    .map_or_else(|refusal| refusal, Output::RequestArchived)
+            }
+            Input::Release(carried) => {
+                nexus
+                    .release(carried)
+                    .map_or_else(|refusal| refusal, |()| Output::Released)
+            }
+            Input::Current(carried) => {
+                nexus.current(carried).map_or_else(|refusal| refusal, Output::Current)
+            }
+            Input::Metaflows => {
+                nexus.metaflows().map_or_else(|refusal| refusal, Output::Listed)
+            }
+            Input::IdentifyThread(carried) => {
+                nexus
+                    .identify_thread(carried)
+                    .map_or_else(|refusal| refusal, Output::StartAmbiguous)
+            }
+            Input::Send(carried) => {
+                nexus.send(carried).map_or_else(|refusal| refusal, Output::Sent)
+            }
+            Input::ObserveSends(carried) => {
+                nexus
+                    .observe_sends(carried)
+                    .map_or_else(|refusal| refusal, Output::SendsObserved)
+            }
+            Input::ObserveSender(carried) => {
+                nexus
+                    .observe_sender(carried)
+                    .map_or_else(|refusal| refusal, Output::SendChanged)
+            }
+            Input::ObserveDeliveries(carried) => {
+                nexus
+                    .observe_deliveries(carried)
+                    .map_or_else(|refusal| refusal, Output::StartRejected)
+            }
+            Input::DeliverAll(carried) => {
+                nexus
+                    .deliver_all(carried)
+                    .map_or_else(|refusal| refusal, Output::Drained)
+            }
+            Input::Launch(carried) => {
+                nexus
+                    .launch(carried)
+                    .map_or_else(|refusal| refusal, Output::LaunchPending)
+            }
+            Input::Rehearse(carried) => {
+                nexus.rehearse(carried).map_or_else(|refusal| refusal, Output::Rehearsed)
+            }
+            Input::BindSeat(carried) => {
+                nexus
+                    .bind_seat(carried)
+                    .map_or_else(|refusal| refusal, Output::RehearseRejected)
+            }
+            Input::Adopt(carried) => {
+                nexus.adopt(carried).map_or_else(|refusal| refusal, Output::Adopted)
+            }
+            Input::Restart(carried) => {
+                nexus.restart(carried).map_or_else(|refusal| refusal, Output::Restarted)
+            }
+            Input::Keep(carried) => {
+                nexus.keep(carried).map_or_else(|refusal| refusal, Output::Kept)
+            }
+            Input::Drop(carried) => {
+                nexus.drop(carried).map_or_else(|refusal| refusal, Output::Dropped)
+            }
+            Input::Glance(carried) => {
+                nexus.glance(carried).map_or_else(|refusal| refusal, Output::Glanced)
+            }
+            Input::Read(carried) => {
+                nexus.read(carried).map_or_else(|refusal| refusal, Output::Handover)
+            }
+            Input::Cancel(carried) => {
+                nexus.cancel(carried).map_or_else(|refusal| refusal, Output::Cancelled)
+            }
+            Input::Silence(carried) => {
+                nexus.silence(carried).map_or_else(|refusal| refusal, Output::Silenced)
+            }
+            Input::Clear(carried) => {
+                nexus.clear(carried).map_or_else(|refusal| refusal, Output::Cleared)
+            }
+            Input::ClearAll => {
+                nexus.clear_all().map_or_else(|refusal| refusal, Output::RefreshRejected)
+            }
+            Input::Push(carried) => {
+                nexus.push(carried).map_or_else(|refusal| refusal, Output::Pushed)
+            }
+            Input::Queues => {
+                nexus.queues().map_or_else(|refusal| refusal, Output::Queues)
+            }
+            Input::Hot => nexus.hot().map_or_else(|refusal| refusal, Output::Hot),
+            Input::Remind(carried) => {
+                nexus.remind(carried).map_or_else(|refusal| refusal, Output::Reminded)
+            }
+            Input::Answer(carried) => {
+                nexus.answer(carried).map_or_else(|refusal| refusal, Output::Answered)
+            }
+        }
+    }
 }

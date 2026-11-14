@@ -227,13 +227,13 @@
 ;
 ; Every connection to this socket greets first, through Signal's
 ; Handshake: the peer's first frame is the greeting of the contract it was
-; built on, Query's greeting, and Flow answers HandshakeReceipt before any
-; Query is decoded: Greeted with this contract's digest, or
+; built on, Input's greeting, and Flow answers HandshakeReceipt before any
+; Input is decoded: Greeted with this contract's digest, or
 ; GreetingRefused.ContractMismatch carrying it. A first frame that is not
 ; this contract's greeting, a greeting of an earlier contract, an earlier
-; client's Query or a frame too short to be a greeting, is answered that
+; client's Input or a frame too short to be a greeting, is answered that
 ; typed refusal and recorded, and the connection ends. A frame after the
-; greeting that does not decode as a Query of this contract is answered
+; greeting that does not decode as an Input of this contract is answered
 ; FrameRefused and recorded. Each record is an UndecodableFrame: the
 ; calling process and its seat as Flow read them, from the kernel and from
 ; Herdr (SeatEvidence), and the flow bound to that seat when there is one;
@@ -367,6 +367,13 @@
 ; count of Stop reports seen when the last one was. The receipt is every
 ; part observed in order as a user turn, then the seat's first answer at
 ; the intended model and effort.
+;
+; The n-th output answers the n-th input; the outputs after the last
+; input's answer no input by position. An input with several replies has
+; its success reply at its position and the others after the inputs.
+; Where two inputs answer the same reply, the earlier input has it at its
+; position, and the later one has there a reply of its own or, having
+; none, an output marked as standing at it.
 
 Signal
 [
@@ -414,58 +421,66 @@ Signal
   Remind.{ Address Minutes String }
   Answer.RequestId ]
 [ Started.Launched
-  LaunchPending.LaunchAttempt
-  StartAmbiguous.PromptDeliveryIntent
   Refreshed
   RecipientResolved.FlowNode
   Stopped.FlowId
-  Listed.Vector<Metaflow>
-  StartRejected.StartRejection
-  Rehearsed.Command
-  RehearseRejected.StartRejection
-  RefreshRejected.RefreshRejection
-  RecipientResolutionRejected.RecipientResolutionRejection
-  StopRejected.StopRejection
   Replaced
-  ReplaceRejected.ReplaceRejection
   LaunchInspected.LaunchInspection
-  LaunchStatusRejected.LaunchStatusRejection
+  AgentObserved.AgentObservation         ; Observe.Agent's; each other selection's opening frame is its own output
   CallerResolved.CallerIdentity
-  CallerResolutionRejected.CallerResolutionRejection
-  AgentObserved.AgentObservation
-  RetirementObserved.RetirementSnapshot
-  RetirementChanged.RetirementChange
-  RetirementObservationFailed.RetirementObservationFailure
   Reported
   Locked.:flow_ethos:Lock
   Bound.FlowId
   Identified.Address
   SendAccepted.VisibleSendAcceptance
-  SendsObserved.VisibleSendObservation
-  SendChanged.VisibleDeliverySnapshot
-  Drained.VisibleDrainOutcome
-  Woken.FlowId
-  Adopted.FlowId
+  Acknowledged
+  RequestArchived.RequestId
   Released
   Current.[ Awake.FlowId Asleep Unknown ]
+  Listed.Vector<Metaflow>
+  StartAmbiguous.PromptDeliveryIntent    ; at IdentifyThread, which answers Identified
+  Sent.VisibleSendReceipt                ; Send's; Send also answers SendAccepted, Deliver's
+  SendsObserved.VisibleSendObservation
+  SendChanged.VisibleDeliverySnapshot    ; ObserveSender's; its opening frame is SendsObserved
+  StartRejected.StartRejection           ; at ObserveDeliveries, which answers SendsObserved
+  Drained.VisibleDrainOutcome
+  LaunchPending.LaunchAttempt            ; Launch's; a Launch that starts answers Started
+  Rehearsed.Command
+  RehearseRejected.StartRejection        ; at BindSeat, which answers Bound
+  Adopted.FlowId
+  Restarted.FlowId
+  Kept.{ Address Title Touch }
+  Dropped.{ Address Title Touch }
+  Glanced.Vector<Heading>
+  Handover.Vector<Section>
+  Cancelled.RequestId
+  Silenced.RequestId
+  Cleared.Vector<RequestId>
+  RefreshRejected.RefreshRejection       ; at ClearAll, which answers Cleared
+  Pushed.Vector<RequestId>
+  Queues.Vector<Queue>
+  Hot.Vector<Warmth>
+  Reminded.RequestId
+  Answered.VisibleNativeInput
+  RecipientResolutionRejected.RecipientResolutionRejection
+  StopRejected.StopRejection
+  ReplaceRejected.ReplaceRejection
+  LaunchStatusRejected.LaunchStatusRejection
+  CallerResolutionRejected.CallerResolutionRejection
+  RetirementObserved.RetirementSnapshot
+  RetirementChanged.RetirementChange
+  RetirementObservationFailed.RetirementObservationFailure
+  Woken.FlowId
   Refused.Refusal
   SendRefused.VisibleRefusal
-  Sent.VisibleSendReceipt
   Failed.VisibleSendFailure
-  Restarted.FlowId
   RestartRefused.RestartRefusal
   KeepRefused.HandoverRefusal
   DropRefused.HandoverRefusal
   GlanceRefused.HandoverRefusal
   ReadRefused.HandoverRefusal
-  Kept.{ Address Title Touch }
-  Dropped.{ Address Title Touch }
-  Acknowledged
   DeliverKeyReused
-  RequestArchived.RequestId
   ArchiveRejected.ArchiveRejection
-  Glanced.Vector<Heading>
-  Handover.Vector<Section>
   RefreshQueued
   FrameRefused.UndecodableFrame
   UndecodableObserved.Vector<UndecodableFrame>
@@ -474,16 +489,8 @@ Signal
   MetaflowsObserved.Vector<Metaflow>
   MetaflowChanged.Metaflow
   MetaflowGone.Address
-  Cancelled.RequestId
   CancelRejected.RequestRejection
-  Silenced.RequestId
   SilenceRejected.RequestRejection
-  Cleared.Vector<RequestId>
-  Pushed.Vector<RequestId>
-  Queues.Vector<Queue>
-  Hot.Vector<Warmth>
-  Reminded.RequestId
-  Answered.VisibleNativeInput
   AnswerRejected.AnswerRejection
   RestartQueued.FlowId
   ReapPending
@@ -836,7 +843,7 @@ Signal
   ; pane and no label.
   SeatEvidence.{ Option<SeatPane> Option<PaneLabel> Option<NativeSessionId> ObservedAt Process }
   ; UndecodableFrame is a frame on the ordinary socket that decoded as no
-  ; Query: the flow bound to the caller's seat, if one is, and what Flow read
+  ; Input: the flow bound to the caller's seat, if one is, and what Flow read
   ; of the caller's seat and process.
   UndecodableFrame.{ Option<FlowId> SeatEvidence }
   ; TurnEnd is one turn's end: the Address of the metaflow the flow is
@@ -955,7 +962,7 @@ Signal
   SendObservation.{ StoreIdentity DeliveryCursor Vector<DeliverySnapshot> }
   DrainOutcome.{ Address DrainState.[ Delivered Held.Vector<LogicalDeliveryId> ] }
   ; The Nexus uses this result while it admits, journals and delivers a
-  ; message. It is never an ordinary Signal response.
+  ; message. It is never an ordinary Signal output.
   PrivateSendResponse.[ SendAccepted.SendAcceptance
                         Refused.Refusal
                         Sent.SendReceipt
