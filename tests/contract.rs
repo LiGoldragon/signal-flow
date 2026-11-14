@@ -96,7 +96,7 @@ fn launch_composition_types_round_trip_without_changing_ordinary_variants() {
         system_modules: signal_flow::SystemModules(vec![signal_flow::ModuleIdentity(
             "spirit:core".to_string(),
         )]),
-        user_modules: signal_flow::UserModules(vec![
+        prompt_modules: signal_flow::PromptModules(vec![
             signal_flow::ModuleIdentity("compensation:main-flow".to_string()),
             signal_flow::ModuleIdentity("knowledge:flow".to_string()),
         ]),
@@ -211,7 +211,7 @@ fn launch_attempt_journal_round_trips_with_one_shot_intent() {
             system_modules: signal_flow::SystemModules(vec![signal_flow::ModuleIdentity(
                 "spirit:core".to_string(),
             )]),
-            user_modules: signal_flow::UserModules(vec![signal_flow::ModuleIdentity(
+            prompt_modules: signal_flow::PromptModules(vec![signal_flow::ModuleIdentity(
                 "compensation:main-flow".to_string(),
             )]),
             remembering: signal_flow::Remembering::Predecessors(signal_flow::RememberingDepth(0)),

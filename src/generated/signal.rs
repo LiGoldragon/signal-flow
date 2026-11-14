@@ -59,7 +59,7 @@ pub struct SystemModules(pub std::vec::Vec<ModuleIdentity>);
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct UserModules(pub std::vec::Vec<ModuleIdentity>);
+pub struct PromptModules(pub std::vec::Vec<ModuleIdentity>);
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
@@ -214,7 +214,7 @@ pub struct ArtifactToolsAllowed(pub bool);
 pub struct LaunchProfile {
     pub launch_request_id: LaunchRequestId,
     pub system_modules: SystemModules,
-    pub user_modules: UserModules,
+    pub prompt_modules: PromptModules,
     pub remembering: Remembering,
     pub address: flow_ethos::Address,
     pub model_name: flow_ethos::ModelName,
@@ -720,7 +720,7 @@ pub enum CompositionRefusal {
     InvalidToolSet,
     InvalidHerdrSessionName,
     InvalidSystemModules,
-    InvalidUserModules,
+    InvalidPromptModules,
     InvalidRemembering,
     InexactModel,
     Unconfigured,

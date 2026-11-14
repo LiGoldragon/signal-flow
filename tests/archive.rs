@@ -33,7 +33,7 @@ fn earlier() -> Vec<ReplaceRejection> {
         InvalidToolSet,
         InvalidHerdrSessionName,
         InvalidSystemModules,
-        InvalidUserModules,
+        InvalidPromptModules,
         InvalidRemembering,
         InexactModel,
         Unconfigured,

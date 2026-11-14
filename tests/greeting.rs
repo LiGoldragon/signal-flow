@@ -21,11 +21,11 @@ fn a_peer_built_from_another_source_is_refused_with_this_digest() {
     );
 }
 
-/// A peer built on signal-flow 60.0.0 greets with 60's digest and is
-/// refused with 61's, before any of its queries is read.
+/// A peer built on signal-flow 61.0.0 greets with 61's digest and is
+/// refused with 62's, before any of its queries is read.
 #[test]
-fn a_signal_flow_60_peer_is_refused_with_this_digest() {
-    let older = include_str!("fixtures/signal-flow-60.ethos");
+fn a_signal_flow_61_peer_is_refused_with_this_digest() {
+    let older = include_str!("fixtures/signal-flow-61.ethos");
     assert_ne!(Handshake::of_source(older), Query::greeting());
     assert_eq!(
         Query::receipt(&Handshake::of_source(older)),

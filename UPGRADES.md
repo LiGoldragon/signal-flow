@@ -1,5 +1,20 @@
 # Upgrades
 
+## 62.0.0: a permaflow's first-prompt modules are PromptModules
+
+Built on 61.0.0 (4871bb8), for Flow 0.55.0, on flow-ethos 0.54.3
+(`062ef9e1`) and signal 11.0.0 (`6d4eb74`).
+
+- `UserModules.Vector<ModuleIdentity>` is renamed `PromptModules`: the
+  modules composed into a seat's first prompt, beside `SystemModules`.
+  `LaunchProfile` carries it in the same place, so its field is
+  `prompt_modules`.
+- `CompositionRefusal.InvalidUserModules` is renamed
+  `InvalidPromptModules`, in the same place.
+- The archive layout is unchanged; only the names move. The contract
+  digest changes, so a 61 peer is refused with 62's digest
+  (tests/fixtures/signal-flow-61.ethos). Repin meta-signal-flow and Flow.
+
 ## 61.0.0: a pending reap and a pending handover; every connection greets
 
 Built on 60.0.0 (04a72fd), for Flow 0.54.7, on flow-ethos 0.54.3

@@ -992,7 +992,7 @@ rec {
       };
       "signal-flow" = rec {
         crateName = "signal-flow";
-        version = "61.0.0";
+        version = "62.0.0";
         edition = "2024";
         src = lib.cleanSourceWith { filter = sourceFilter;  src = ./.; };
         libName = "signal_flow";
