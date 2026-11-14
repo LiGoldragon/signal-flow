@@ -1,5 +1,39 @@
 # Upgrades
 
+## 64.0.0: a caller-bound Refresh, and two recovery refusals
+
+Built on 63.0.0 (4982eeb), on the same ethos-zero 27.0.0 (`8c95310`),
+flow-ethos (`062ef9e1`) and signal (`6d4eb74`).
+
+- `RefreshRejection` appends `CallerNotCurrent.{ FlowId Option<FlowId> }`:
+  the caller's own flow, then the flow its Address is Awake as, None when
+  it is Asleep (bead primary-k7jy, Psyche ruling xjoq). A caller bound to a
+  flow of the Address refreshes its own flow and is refused this when the
+  Address is no longer Awake as it; any other caller refreshes the flow the
+  Address is Awake as. Flow records the caller of every Refresh.
+- `CompositionRefusal` appends, after `HandoverUnreadable`, positionally
+  (Psyche ruling y9jq):
+  - `RecoveryUnavailable.{ Address FlowId String }`: the launch's Address,
+    its predecessor, the reader's own text;
+  - `RecoveryPredecessorMismatch.{ Address Address FlowId FlowId FlowId }`:
+    the launch's Address, the recorded Address, then the launch's, the
+    recorded intent's and the recovery's predecessor.
+- The Refresh documentation states a Codex flow's rest: its thread's
+  app-server has shown no turn open, no work item running and no typed
+  letter without its receipt.
+- **The archived rejection widens.** Every earlier variant keeps its tag and
+  its payload where it was, but `RecoveryPredecessorMismatch` makes a
+  `CompositionRefusal` 45 bytes (was 18), a `StartRejection` 46 (was 30), a
+  `ReplaceRejection` 47 (was 31) and so every type holding one at least that
+  wide (tests/archive.rs). A store that archives a bare rejection, or one
+  inside a record the rejection makes wider, migrates it. Flow's
+  launch-outcome record (v10) is 60 bytes wide by `SupersededHandover` and
+  reads the same; its v9 upgrade source, 42 bytes wide by `ReplacedRecord`,
+  is widened and keeps the 63 layout itself.
+- The contract digest changes, so a 63 peer is refused with 64's digest
+  (tests/fixtures/signal-flow-63.ethos). Repin meta-signal-flow and every
+  client, and match the new variants.
+
 ## 63.0.0: Input and Output, paired by position
 
 Built on 62.0.0 (37e99d3), for Flow on ethos-zero 27.0.0 (`8c95310`), on

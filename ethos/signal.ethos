@@ -97,14 +97,21 @@
 ; pane's seat runs is the NativeSessionId in the request. The caller
 ; supplies no FlowId: Flow derives it from the verified native session.
 ;
-; Refresh ends the flow the metaflow at Address is Awake as. Anybody may
-; refresh a metaflow, the flow itself included.
-; A refresh waits for the flow's idle event: a flow that rests now is
-; refreshed at once; a working one answers RefreshQueued at once, the
-; refresh recorded and kept by a Nexus that starts again, and it is
-; refreshed at its next idle event, a Claude flow's Stop or a Codex
-; thread's turn completed, its background work ended, receiving until then
-; what is sent to it. At that event Flow takes the metaflow's lock: from then nothing is
+; Refresh ends a flow of the metaflow at Address, and Flow records who
+; called. Any caller may refresh. A caller bound to a flow of that Address
+; refreshes its own flow: when the Address is no longer Awake as that flow,
+; the refresh is refused CallerNotCurrent, naming the caller's flow and the
+; flow the Address is Awake as, None when it is Asleep. Any other caller, a
+; flow of another Address, a shell or a process in no flow, refreshes the
+; flow the Address is Awake as.
+; A refresh waits for the flow's rest: a flow that rests now is refreshed
+; at once; a working one answers RefreshQueued at once, the refresh
+; recorded and kept by a Nexus that starts again, and it is refreshed at
+; its next rest, receiving until then what is sent to it. A Claude flow
+; rests at its Stop. A Codex flow rests when its thread's app-server has
+; shown no turn open, no work item running and no typed letter without its
+; receipt; a turn or a process that never ends keeps the flow until it is
+; stopped, and nothing interrupts it. At that event Flow takes the metaflow's lock: from then nothing is
 ; delivered to it, and a Send that arrives queues on the metaflow. A
 ; metaflow whose declaration is Maintained, or whose queue holds a request
 ; that asks for a wake, has its successor started in the same event: the
@@ -717,7 +724,12 @@ Signal
   ; be read. Unrecorded: an outcome Flow archived before it kept the reason.
   ; HandoverUnreadable: the launch names a predecessor whose handover could
   ; not be read whole; it carries the predecessor and the fault.
-  CompositionRefusal.[ InvalidLaunchRequestId InvalidModelName InvalidEffort InvalidToolSet InvalidHerdrSessionName InvalidSystemModules InvalidPromptModules InvalidRemembering InexactModel Unconfigured PresentationUnavailable Unrecorded HandoverUnreadable.{ FlowId HandoverFault } ]
+  ; RecoveryUnavailable: the successor recovery Flow recorded for the
+  ; launch's Address could not be read. RecoveryPredecessorMismatch: the
+  ; recorded recovery names another Address or predecessor than the launch.
+  CompositionRefusal.[ InvalidLaunchRequestId InvalidModelName InvalidEffort InvalidToolSet InvalidHerdrSessionName InvalidSystemModules InvalidPromptModules InvalidRemembering InexactModel Unconfigured PresentationUnavailable Unrecorded HandoverUnreadable.{ FlowId HandoverFault }
+                       RecoveryUnavailable.{ Address FlowId String }                         ; the launch's Address, its predecessor, the reader's own text
+                       RecoveryPredecessorMismatch.{ Address Address FlowId FlowId FlowId } ] ; the launch's Address, the recorded Address, then the launch's, the recorded intent's and the recovery's predecessor
   ; HandoverFault names why a predecessor's handover was not read:
   ; InvalidPredecessor, the predecessor does not name a flow; RootUnresolved,
   ; the launch root it is kept under could not be resolved; NotUtf8, the
@@ -729,7 +741,8 @@ Signal
   ; RefreshRejection names why a refresh ended no flow: the metaflow is not
   ; Awake; a refresh, a waking or an unconfirmed launch holds its lock;
   ; Herdr refused to close the ending flow's pane; the flow's end was not
-  ; recorded; or Herdr could not be read to see the pane.
+  ; recorded; Herdr could not be read to see the pane; or the caller's own
+  ; flow is no longer the one its Address is Awake as.
   RefreshRejection.[ NotAwake
                      Locked
                      CloseRefused
@@ -737,7 +750,8 @@ Signal
                      HerdrUnavailable
                      SuccessorRefused.ReplaceRejection ; the Replace that starts the successor owed was refused
                      Undeclared                        ; no declaration or model names a successor
-                     SuccessorUnconfirmed ]            ; the successor's launch is pending or ambiguous past the confirmation wait
+                     SuccessorUnconfirmed              ; the successor's launch is pending or ambiguous past the confirmation wait
+                     CallerNotCurrent.{ FlowId Option<FlowId> } ]   ; the caller's own flow, then the flow its Address is Awake as, None when Asleep
   RecipientResolutionRejection.[ UnknownFlow FlowUnavailable ]
   ; Restarting: a restart step runs for the flow now. SpawnUnproven: the
   ; flow's interrupted restart may have started a harness that Flow cannot

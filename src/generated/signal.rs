@@ -713,6 +713,24 @@ pub struct HandoverUnreadable_Data {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct RecoveryUnavailable_Data {
+    pub address: flow_ethos::Address,
+    pub flow_id: flow_ethos::FlowId,
+    pub string: String,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct RecoveryPredecessorMismatch_Data {
+    pub first_address: flow_ethos::Address,
+    pub second_address: flow_ethos::Address,
+    pub first_flow_id: flow_ethos::FlowId,
+    pub second_flow_id: flow_ethos::FlowId,
+    pub third_flow_id: flow_ethos::FlowId,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum CompositionRefusal {
     InvalidLaunchRequestId,
     InvalidModelName,
@@ -727,6 +745,8 @@ pub enum CompositionRefusal {
     PresentationUnavailable,
     Unrecorded,
     HandoverUnreadable(HandoverUnreadable_Data),
+    RecoveryUnavailable(RecoveryUnavailable_Data),
+    RecoveryPredecessorMismatch(RecoveryPredecessorMismatch_Data),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -769,6 +789,13 @@ pub enum StartRejection {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct CallerNotCurrent_Data {
+    pub flow_id: flow_ethos::FlowId,
+    pub flow_id_option: std::option::Option<flow_ethos::FlowId>,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum RefreshRejection {
     NotAwake,
     Locked,
@@ -778,6 +805,7 @@ pub enum RefreshRejection {
     SuccessorRefused(ReplaceRejection),
     Undeclared,
     SuccessorUnconfirmed,
+    CallerNotCurrent(CallerNotCurrent_Data),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]

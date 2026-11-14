@@ -518,6 +518,8 @@ fn refresh_answers_have_concrete_datoms() {
         "RefreshRejected.SuccessorRefused.LaunchRefused.Undeclared",
         "RefreshRejected.Undeclared",
         "RefreshRejected.SuccessorUnconfirmed",
+        "RefreshRejected.CallerNotCurrent.{ fac697 Some.74e4d1 }",
+        "RefreshRejected.CallerNotCurrent.{ fac697 None }",
     ] {
         let response = Potential::<Output>::from(text)
             .actualize(&mut budget())
@@ -1576,6 +1578,91 @@ fn a_handover_refusal_carries_its_predecessor_and_fault() {
                     }
                 )
             ))
+        );
+        assert_eq!(response.datomize(vec![]).protosize().compact(), text);
+    }
+}
+
+/// A caller whose own flow is no longer the one its Address is Awake as is
+/// refused, naming its flow, then the flow the Address is Awake as, None
+/// when the Address is Asleep.
+#[test]
+fn a_stale_caller_refresh_names_the_caller_and_the_current_flow() {
+    for (text, current) in [
+        (
+            "RefreshRejected.CallerNotCurrent.{ fac697 Some.74e4d1 }",
+            Some(signal_flow::FlowId("74e4d1".to_string())),
+        ),
+        ("RefreshRejected.CallerNotCurrent.{ fac697 None }", None),
+    ] {
+        let response = Potential::<Output>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        assert_eq!(
+            response,
+            Output::RefreshRejected(signal_flow::RefreshRejection::CallerNotCurrent(
+                signal_flow::CallerNotCurrent_Data {
+                    flow_id: signal_flow::FlowId("fac697".to_string()),
+                    flow_id_option: current,
+                }
+            ))
+        );
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
+            response
+        );
+        assert_eq!(response.datomize(vec![]).protosize().compact(), text);
+    }
+}
+
+/// A composition refused for its successor recovery carries, positionally,
+/// the launch's Address, its predecessor and the reader's text; one whose
+/// recorded recovery names another Address or predecessor carries the
+/// launch's Address, the recorded Address, then the launch's, the recorded
+/// intent's and the recovery's predecessor.
+#[test]
+fn a_recovery_refusal_carries_its_addresses_and_predecessors() {
+    let mind = |model| signal_flow::Address {
+        aspect: Aspect::Mind,
+        topic: signal_flow::Topic("flowNexus".to_string()),
+        model,
+    };
+    for (text, refusal) in [
+        (
+            "StartRejected.CompositionRefused.RecoveryUnavailable.{ { Mind flowNexus Sol } 0e068b «recovery text unreadable» }",
+            signal_flow::CompositionRefusal::RecoveryUnavailable(
+                signal_flow::RecoveryUnavailable_Data {
+                    address: mind(signal_flow::Model::Sol),
+                    flow_id: signal_flow::FlowId("0e068b".to_string()),
+                    string: "recovery text unreadable".to_string(),
+                },
+            ),
+        ),
+        (
+            "StartRejected.CompositionRefused.RecoveryPredecessorMismatch.{ { Mind flowNexus Sol } { Mind flowNexus Opus } 0e068b afc2ca 28c285 }",
+            signal_flow::CompositionRefusal::RecoveryPredecessorMismatch(
+                signal_flow::RecoveryPredecessorMismatch_Data {
+                    first_address: mind(signal_flow::Model::Sol),
+                    second_address: mind(signal_flow::Model::Opus),
+                    first_flow_id: signal_flow::FlowId("0e068b".to_string()),
+                    second_flow_id: signal_flow::FlowId("afc2ca".to_string()),
+                    third_flow_id: signal_flow::FlowId("28c285".to_string()),
+                },
+            ),
+        ),
+    ] {
+        let response = Potential::<Output>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        assert_eq!(
+            response,
+            Output::StartRejected(signal_flow::StartRejection::CompositionRefused(refusal))
+        );
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&response).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
+            response
         );
         assert_eq!(response.datomize(vec![]).protosize().compact(), text);
     }
