@@ -1417,6 +1417,13 @@ pub struct SendRequest {
     pub sendable_message: SendableMessage,
 }
 #[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct SendSeveralRequest {
+    pub address: flow_ethos::Address,
+    pub sendable_message_vector: std::vec::Vec<SendableMessage>,
+}
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct DeliveryCursor(pub i64);
@@ -1892,6 +1899,7 @@ pub enum Input {
     Metaflows,
     IdentifyThread(IdentifyThread_Data),
     Send(SendRequest),
+    SendSeveral(SendSeveralRequest),
     ObserveSends(std::option::Option<DeliveryCursor>),
     ObserveSender(ObserveSender_Data),
     ObserveDeliveries(std::option::Option<DeliveryCursor>),
@@ -1963,6 +1971,7 @@ pub enum Output {
     Listed(std::vec::Vec<flow_ethos::Metaflow>),
     ThreadIdentified(flow_ethos::Address),
     Sent(VisibleSendReceipt),
+    SentSeveral(std::vec::Vec<flow_ethos::RequestId>),
     SendsObserved(VisibleSendObservation),
     SendChanged(VisibleDeliverySnapshot),
     DeliveriesObserved(VisibleSendObservation),
@@ -2094,6 +2103,10 @@ pub trait Answering {
         &self,
         send_request: &SendRequest,
     ) -> std::result::Result<VisibleSendReceipt, Output>;
+    fn send_several(
+        &self,
+        send_several_request: &SendSeveralRequest,
+    ) -> std::result::Result<std::vec::Vec<flow_ethos::RequestId>, Output>;
     fn observe_sends(
         &self,
         delivery_cursor_option: &std::option::Option<DeliveryCursor>,
@@ -2259,6 +2272,11 @@ impl Answerable for Input {
             }
             Input::Send(carried) => {
                 nexus.send(carried).map_or_else(|refusal| refusal, Output::Sent)
+            }
+            Input::SendSeveral(carried) => {
+                nexus
+                    .send_several(carried)
+                    .map_or_else(|refusal| refusal, Output::SentSeveral)
             }
             Input::ObserveSends(carried) => {
                 nexus
