@@ -1133,6 +1133,7 @@ pub enum Refusal {
     RequestIdSpaceFull,
     RequestIdDrawsCollided,
     MinutesRefused(MinutesRefusal),
+    SimplifiedAwaitingMemberConflict(SendSeveralMessagePosition),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1423,6 +1424,10 @@ pub struct SendSeveralRequest {
     pub address: flow_ethos::Address,
     pub sendable_message_vector: std::vec::Vec<SendableMessage>,
 }
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct SendSeveralMessagePosition(pub i64);
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
