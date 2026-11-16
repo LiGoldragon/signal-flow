@@ -897,7 +897,8 @@ Signal
             Unresolved
             RequestIdSpaceFull
             RequestIdDrawsCollided
-            MinutesRefused.MinutesRefusal ]
+            MinutesRefused.MinutesRefusal
+            SimplifiedAwaitingMemberConflict.SendSeveralMessagePosition ]
   ; Why a Task's Minutes was refused at admission: zero, below zero, or a
   ; deadline the clock cannot hold.
   MinutesRefusal.[ Zero
@@ -962,6 +963,8 @@ Signal
   VisibleNativeInput.{ VisibleSender DeliveredMessage }
   SendRequest.{ Address SendableMessage }
   SendSeveralRequest.{ Address Vector<SendableMessage> } ; one recipient and its ordered messages
+  ; Zero-based position in the original SendSeveral input vector; zero is valid.
+  SendSeveralMessagePosition.Integer
   DeliveryCursor.Integer
   Namespace.String
   Counter.Integer
