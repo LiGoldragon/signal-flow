@@ -50,3 +50,16 @@ fn the_greeting_and_its_receipt_round_trip_as_frames() {
         HandshakeReceipt::Greeted(Input::contract_digest())
     );
 }
+
+/// A peer built on signal-flow 64.0.0 is refused before any input is read.
+#[test]
+fn a_signal_flow_64_peer_is_refused_with_this_digest() {
+    let older = include_str!("fixtures/signal-flow-64.ethos");
+    assert_ne!(Handshake::of_source(older), Input::greeting());
+    assert_eq!(
+        Input::receipt(&Handshake::of_source(older)),
+        HandshakeReceipt::GreetingRefused(HandshakeRejection::ContractMismatch(
+            Input::contract_digest()
+        ))
+    );
+}

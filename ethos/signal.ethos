@@ -5,6 +5,15 @@
 ; the living at a shell. The calling process is read for one thing: the
 ; sender of a message is filled in from it.
 ;
+; SendSeveral admits an ordered vector of messages for one Address atomically.
+; SentSeveral carries their RequestIds in the same order, acknowledging durable
+; admission. The messages wait behind earlier queued work and are delivered
+; together in one prompt, including for a Simplified recipient. Every member
+; must resolve to the supplied Address; an answer routed elsewhere or kept
+; without delivery refuses the whole call. The strongest member priority
+; governs the single submission. An empty vector returns an empty SentSeveral
+; and produces no prompt. Plain Send retains its own behavior.
+;
 ; Send is how a flow sends a request to a metaflow, through Flow itself.
 ; It carries no sender: the Nexus reads the calling process from its own
 ; socket and names the flow it runs in, by the Herdr pane it or its nearest
@@ -406,6 +415,7 @@ Signal
   Metaflows
   IdentifyThread.{ Process NativeSessionId }
   Send.SendRequest
+  SendSeveral.SendSeveralRequest
   ObserveSends.Option<DeliveryCursor>
   ObserveSender.{ Process Option<NativeSessionId> Option<DeliveryCursor> }
   ObserveDeliveries.Option<DeliveryCursor>
@@ -448,6 +458,7 @@ Signal
   Listed.Vector<Metaflow>
   ThreadIdentified.Address
   Sent.VisibleSendReceipt                ; Send's; Send also answers SendAccepted, Deliver's
+  SentSeveral.Vector<RequestId>          ; SendSeveral's; durable admission in written order
   SendsObserved.VisibleSendObservation
   SendChanged.VisibleDeliverySnapshot    ; ObserveSender's; its opening frame is SendsObserved
   DeliveriesObserved.VisibleSendObservation
@@ -950,6 +961,7 @@ Signal
   VisibleSender.[ Sender.Address Unknown Notification Unbound ]
   VisibleNativeInput.{ VisibleSender DeliveredMessage }
   SendRequest.{ Address SendableMessage }
+  SendSeveralRequest.{ Address Vector<SendableMessage> } ; one recipient and its ordered messages
   DeliveryCursor.Integer
   Namespace.String
   Counter.Integer
