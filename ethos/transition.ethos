@@ -1,0 +1,36 @@
+; A flow's state is a record of events. The Flow Nexus holds a flow's state
+; as the last of its transitions, each the state entered, its cause and its
+; moment; it remembers them in its Memory and tells them to a subscriber
+; (signal.ethos, Subscribe). The vocabulary stands here, beside the Signal,
+; so the ordinary contract, the meta contract and the Memory name one type.
+;
+; A flow is Acting while its turn runs, Resting between turns, Crystallizing
+; while it writes its crystallization, and Asleep once it has no harness.
+; A Moment is Unix seconds. An Event is what a flow's harness reported, or
+; what the Capsule saw of its harness: its start, a turn working or idle
+; with the context it carried, a compaction, its end. A pane seen ended is
+; Ended, an adopted seat Started. A Cause is why a flow entered a state: a
+; reported event, its cooling falling due, a request arriving, its
+; crystallization, or the owner's override.
+
+Library
+[ :signal_flow:[ Tokens ]                 ; imports: the context's size, from the Signal
+  :flow_ethos:[ RequestId ] ]             ;   a request, by the id the Nexus gave it
+[ State.[ Acting Resting Crystallizing Asleep ]   ; types: a flow's state
+  Moment.Integer                          ;   Unix seconds
+  NextAct.String                          ;   what a flow says it does next
+  Onward.[ Continuing.NextAct             ;   what a crystallization says of going on: it continues
+           Resting ]                      ;     or it rests
+  Event.[ Started                         ;   what the harness or the Capsule reported: its start
+          Working.Tokens                  ;     a turn working, with the context it carried
+          Idle.Tokens                     ;     a turn ended, with the context it carried
+          Compacting                      ;     a compaction
+          Ended ]                         ;     its end
+  Cause.[ Reported.Event                  ;   why a flow entered a state: a reported event
+          CoolingDue                      ;     its cooling falling due
+          Arrived.RequestId               ;     a request arriving
+          Crystallized.Onward             ;     its crystallization
+          Overridden ]                    ;     the owner's override
+  Transition.{ State Cause Moment } ]     ;   one transition: the state entered, its cause, its moment
+[]                                        ; traits
+[]                                        ; associations

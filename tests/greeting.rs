@@ -1,18 +1,18 @@
-use signal_flow::{Contracted, ETHOS, Handshake, HandshakeReceipt, HandshakeRejection, Input};
+use signal_flow::{CONTRACT, Contracted, Handshake, HandshakeReceipt, HandshakeRejection, Input};
 
 #[test]
 fn a_peer_built_from_this_source_is_greeted() {
     let digest = Input::contract_digest();
-    assert_eq!(digest, Handshake::of_source(ETHOS).contract_digest);
+    assert_eq!(digest, Handshake::of_source(CONTRACT).contract_digest);
     assert_eq!(
-        Input::receipt(&Handshake::of_source(ETHOS)),
+        Input::receipt(&Handshake::of_source(CONTRACT)),
         HandshakeReceipt::Greeted(digest)
     );
 }
 
 #[test]
 fn a_peer_built_from_another_source_is_refused_with_this_digest() {
-    let older = format!("{ETHOS}\n");
+    let older = format!("{CONTRACT}\n");
     assert_eq!(
         Input::receipt(&Handshake::of_source(&older)),
         HandshakeReceipt::GreetingRefused(HandshakeRejection::ContractMismatch(
@@ -21,11 +21,11 @@ fn a_peer_built_from_another_source_is_refused_with_this_digest() {
     );
 }
 
-/// A peer built on signal-flow 63.0.0 greets with 63's digest and is
-/// refused with 64's, before any of its inputs is read.
+/// A peer built on signal-flow 64.0.0 greets with 64's digest and is
+/// refused with 65's, before any of its inputs is read.
 #[test]
-fn a_signal_flow_63_peer_is_refused_with_this_digest() {
-    let older = include_str!("fixtures/signal-flow-63.ethos");
+fn a_signal_flow_64_peer_is_refused_with_this_digest() {
+    let older = include_str!("fixtures/signal-flow-64.ethos");
     assert_ne!(Handshake::of_source(older), Input::greeting());
     assert_eq!(
         Input::receipt(&Handshake::of_source(older)),

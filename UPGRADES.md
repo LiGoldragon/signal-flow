@@ -1,5 +1,33 @@
 # Upgrades
 
+## 65.0.0: Subscribe, the Flow Nexus's subscription of flow transitions
+
+Built on 64.0.0 (83c04fe), now on ethos-zero 30.0.0 (`b97d952`), whose
+Signal admits a Stream output, and signal 11.2.0 (`4f5cbb9`), which holds
+Frame, Stream and Following; flow-ethos stays at `062ef9e1`.
+
+- `ethos/transition.ethos` is new, generated into `signal_flow::transition`:
+  `State.[ Acting Resting Crystallizing Asleep ]`, `Moment.Integer`,
+  `NextAct.String`, `Onward`, `Event.[ Started Working.Tokens Idle.Tokens
+  Compacting Ended ]`, `Cause.[ Reported.Event CoolingDue Arrived.RequestId
+  Crystallized.Onward Overridden ]` and `Transition.{ State Cause Moment }`.
+  They were the Flow Nexus's Memory types and meta-signal-flow's `State`;
+  each now imports them from here, so one type is named everywhere. The
+  archived layout is the one Memory and the meta contract already wrote.
+- Inputs append `Subscribe`; outputs place `Subscribed.Stream<Flows
+  FlowTransition>` at its position, after `Answered`. Types append
+  `FlowTransition.{ FlowId Address Transition }` and
+  `Flows.Vector<FlowTransition>`. `Output::Subscribed` carries one
+  `signal::Frame<Flows, FlowTransition>`; the generated `Answering` gains
+  `subscribe`, yielding a `signal::Stream`, and `Answerable` answers through
+  the generated `Answer`: `Once(Output)`, or `Subscribed(Stream)`.
+- `Flows` bears `signal::Following`: a transition replaces the entry of its
+  Address, or is taken in at the end; nothing is removed.
+- The contract is the Signal and the transitions together, `CONTRACT`, and
+  its digest is theirs; a 64 peer is refused with 65's digest
+  (tests/fixtures/signal-flow-64.ethos). Repin meta-signal-flow and every
+  ordinary peer; a dispatch on `Answerable` matches `Answer`.
+
 ## 64.0.0: a caller-bound Refresh, and two recovery refusals
 
 Built on 63.0.0 (4982eeb), on the same ethos-zero 27.0.0 (`8c95310`),

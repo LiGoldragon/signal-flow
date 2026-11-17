@@ -1782,6 +1782,18 @@ pub enum Event {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct FlowTransition {
+    pub flow_id: flow_ethos::FlowId,
+    pub address: flow_ethos::Address,
+    pub transition: signal_flow::transition::Transition,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Flows(pub std::vec::Vec<FlowTransition>);
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct Report_Data {
     pub flow_id: flow_ethos::FlowId,
     pub process_option: std::option::Option<flow_ethos::Process>,
@@ -1914,6 +1926,7 @@ pub enum Input {
     Hot,
     Remind(Remind_Data),
     Answer(flow_ethos::RequestId),
+    Subscribe,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1985,6 +1998,7 @@ pub enum Output {
     Hot(std::vec::Vec<Warmth>),
     Reminded(flow_ethos::RequestId),
     Answered(VisibleNativeInput),
+    Subscribed(signal::Frame<Flows, FlowTransition>),
     StartAmbiguous(PromptDeliveryIntent),
     StartRejected(StartRejection),
     RehearseRejected(StartRejection),
@@ -2023,6 +2037,12 @@ pub enum Output {
     ReapPending(ReapPending),
     HandoverPending(HandoverPending),
     HandoverSuperseded(HandoverSuperseded),
+}
+#[rustfmt::skip]
+#[allow(clippy::large_enum_variant)]
+pub enum Answer {
+    Once(Output),
+    Subscribed(signal::Stream<Flows, FlowTransition>),
 }
 #[rustfmt::skip]
 #[allow(clippy::result_large_err, clippy::ptr_arg, clippy::borrowed_box)]
@@ -2169,172 +2189,282 @@ pub trait Answering {
         &self,
         request_id: &flow_ethos::RequestId,
     ) -> std::result::Result<VisibleNativeInput, Output>;
+    fn subscribe(
+        &self,
+    ) -> std::result::Result<signal::Stream<Flows, FlowTransition>, Output>;
 }
 #[rustfmt::skip]
 pub trait Answerable {
-    fn answer<Nexus: Answering>(&self, nexus: &Nexus) -> Output;
+    type Answer;
+    fn answer<Nexus: Answering>(&self, nexus: &Nexus) -> Self::Answer;
 }
 #[rustfmt::skip]
 impl Answerable for Input {
-    fn answer<Nexus: Answering>(&self, nexus: &Nexus) -> Output {
+    type Answer = Answer;
+    fn answer<Nexus: Answering>(&self, nexus: &Nexus) -> Answer {
         match self {
             Input::Start(carried) => {
-                nexus.start(carried).map_or_else(|refusal| refusal, Output::Started)
+                Answer::Once(
+                    nexus.start(carried).map_or_else(|refusal| refusal, Output::Started),
+                )
             }
             Input::Refresh(carried) => {
-                nexus.refresh(carried).map_or_else(|refusal| refusal, Output::Refreshed)
+                Answer::Once(
+                    nexus
+                        .refresh(carried)
+                        .map_or_else(|refusal| refusal, Output::Refreshed),
+                )
             }
             Input::ResolveRecipient(carried) => {
-                nexus
-                    .resolve_recipient(carried)
-                    .map_or_else(|refusal| refusal, Output::RecipientResolved)
+                Answer::Once(
+                    nexus
+                        .resolve_recipient(carried)
+                        .map_or_else(|refusal| refusal, Output::RecipientResolved),
+                )
             }
             Input::Stop(carried) => {
-                nexus.stop(carried).map_or_else(|refusal| refusal, Output::Stopped)
+                Answer::Once(
+                    nexus.stop(carried).map_or_else(|refusal| refusal, Output::Stopped),
+                )
             }
             Input::Replace(carried) => {
-                nexus.replace(carried).map_or_else(|refusal| refusal, Output::Replaced)
+                Answer::Once(
+                    nexus
+                        .replace(carried)
+                        .map_or_else(|refusal| refusal, Output::Replaced),
+                )
             }
             Input::LaunchStatus(carried) => {
-                nexus
-                    .launch_status(carried)
-                    .map_or_else(|refusal| refusal, Output::LaunchInspected)
+                Answer::Once(
+                    nexus
+                        .launch_status(carried)
+                        .map_or_else(|refusal| refusal, Output::LaunchInspected),
+                )
             }
             Input::Observe(carried) => {
-                nexus
-                    .observe(carried)
-                    .map_or_else(|refusal| refusal, Output::AgentObserved)
+                Answer::Once(
+                    nexus
+                        .observe(carried)
+                        .map_or_else(|refusal| refusal, Output::AgentObserved),
+                )
             }
             Input::ResolveCaller(carried) => {
-                nexus
-                    .resolve_caller(carried)
-                    .map_or_else(|refusal| refusal, Output::CallerResolved)
+                Answer::Once(
+                    nexus
+                        .resolve_caller(carried)
+                        .map_or_else(|refusal| refusal, Output::CallerResolved),
+                )
             }
             Input::Report(carried) => {
-                nexus
-                    .report(carried)
-                    .map_or_else(|refusal| refusal, |()| Output::Reported)
+                Answer::Once(
+                    nexus
+                        .report(carried)
+                        .map_or_else(|refusal| refusal, |()| Output::Reported),
+                )
             }
             Input::Lock(carried) => {
-                nexus.lock(carried).map_or_else(|refusal| refusal, Output::Locked)
+                Answer::Once(
+                    nexus.lock(carried).map_or_else(|refusal| refusal, Output::Locked),
+                )
             }
             Input::Bind(carried) => {
-                nexus.bind(carried).map_or_else(|refusal| refusal, Output::Bound)
+                Answer::Once(
+                    nexus.bind(carried).map_or_else(|refusal| refusal, Output::Bound),
+                )
             }
             Input::Identify(carried) => {
-                nexus
-                    .identify(carried)
-                    .map_or_else(|refusal| refusal, Output::Identified)
+                Answer::Once(
+                    nexus
+                        .identify(carried)
+                        .map_or_else(|refusal| refusal, Output::Identified),
+                )
             }
             Input::Deliver(carried) => {
-                nexus
-                    .deliver(carried)
-                    .map_or_else(|refusal| refusal, Output::SendAccepted)
+                Answer::Once(
+                    nexus
+                        .deliver(carried)
+                        .map_or_else(|refusal| refusal, Output::SendAccepted),
+                )
             }
             Input::Acknowledge(carried) => {
-                nexus
-                    .acknowledge(carried)
-                    .map_or_else(|refusal| refusal, |()| Output::Acknowledged)
+                Answer::Once(
+                    nexus
+                        .acknowledge(carried)
+                        .map_or_else(|refusal| refusal, |()| Output::Acknowledged),
+                )
             }
             Input::ArchiveRequest(carried) => {
-                nexus
-                    .archive_request(carried)
-                    .map_or_else(|refusal| refusal, Output::RequestArchived)
+                Answer::Once(
+                    nexus
+                        .archive_request(carried)
+                        .map_or_else(|refusal| refusal, Output::RequestArchived),
+                )
             }
             Input::Release(carried) => {
-                nexus
-                    .release(carried)
-                    .map_or_else(|refusal| refusal, |()| Output::Released)
+                Answer::Once(
+                    nexus
+                        .release(carried)
+                        .map_or_else(|refusal| refusal, |()| Output::Released),
+                )
             }
             Input::Current(carried) => {
-                nexus.current(carried).map_or_else(|refusal| refusal, Output::Current)
+                Answer::Once(
+                    nexus
+                        .current(carried)
+                        .map_or_else(|refusal| refusal, Output::Current),
+                )
             }
             Input::Metaflows => {
-                nexus.metaflows().map_or_else(|refusal| refusal, Output::Listed)
+                Answer::Once(
+                    nexus.metaflows().map_or_else(|refusal| refusal, Output::Listed),
+                )
             }
             Input::IdentifyThread(carried) => {
-                nexus
-                    .identify_thread(carried)
-                    .map_or_else(|refusal| refusal, Output::ThreadIdentified)
+                Answer::Once(
+                    nexus
+                        .identify_thread(carried)
+                        .map_or_else(|refusal| refusal, Output::ThreadIdentified),
+                )
             }
             Input::Send(carried) => {
-                nexus.send(carried).map_or_else(|refusal| refusal, Output::Sent)
+                Answer::Once(
+                    nexus.send(carried).map_or_else(|refusal| refusal, Output::Sent),
+                )
             }
             Input::ObserveSends(carried) => {
-                nexus
-                    .observe_sends(carried)
-                    .map_or_else(|refusal| refusal, Output::SendsObserved)
+                Answer::Once(
+                    nexus
+                        .observe_sends(carried)
+                        .map_or_else(|refusal| refusal, Output::SendsObserved),
+                )
             }
             Input::ObserveSender(carried) => {
-                nexus
-                    .observe_sender(carried)
-                    .map_or_else(|refusal| refusal, Output::SendChanged)
+                Answer::Once(
+                    nexus
+                        .observe_sender(carried)
+                        .map_or_else(|refusal| refusal, Output::SendChanged),
+                )
             }
             Input::ObserveDeliveries(carried) => {
-                nexus
-                    .observe_deliveries(carried)
-                    .map_or_else(|refusal| refusal, Output::DeliveriesObserved)
+                Answer::Once(
+                    nexus
+                        .observe_deliveries(carried)
+                        .map_or_else(|refusal| refusal, Output::DeliveriesObserved),
+                )
             }
             Input::DeliverAll(carried) => {
-                nexus
-                    .deliver_all(carried)
-                    .map_or_else(|refusal| refusal, Output::Drained)
+                Answer::Once(
+                    nexus
+                        .deliver_all(carried)
+                        .map_or_else(|refusal| refusal, Output::Drained),
+                )
             }
             Input::Launch(carried) => {
-                nexus
-                    .launch(carried)
-                    .map_or_else(|refusal| refusal, Output::LaunchPending)
+                Answer::Once(
+                    nexus
+                        .launch(carried)
+                        .map_or_else(|refusal| refusal, Output::LaunchPending),
+                )
             }
             Input::Rehearse(carried) => {
-                nexus.rehearse(carried).map_or_else(|refusal| refusal, Output::Rehearsed)
+                Answer::Once(
+                    nexus
+                        .rehearse(carried)
+                        .map_or_else(|refusal| refusal, Output::Rehearsed),
+                )
             }
             Input::BindSeat(carried) => {
-                nexus
-                    .bind_seat(carried)
-                    .map_or_else(|refusal| refusal, Output::SeatBound)
+                Answer::Once(
+                    nexus
+                        .bind_seat(carried)
+                        .map_or_else(|refusal| refusal, Output::SeatBound),
+                )
             }
             Input::Adopt(carried) => {
-                nexus.adopt(carried).map_or_else(|refusal| refusal, Output::Adopted)
+                Answer::Once(
+                    nexus.adopt(carried).map_or_else(|refusal| refusal, Output::Adopted),
+                )
             }
             Input::Restart(carried) => {
-                nexus.restart(carried).map_or_else(|refusal| refusal, Output::Restarted)
+                Answer::Once(
+                    nexus
+                        .restart(carried)
+                        .map_or_else(|refusal| refusal, Output::Restarted),
+                )
             }
             Input::Keep(carried) => {
-                nexus.keep(carried).map_or_else(|refusal| refusal, Output::Kept)
+                Answer::Once(
+                    nexus.keep(carried).map_or_else(|refusal| refusal, Output::Kept),
+                )
             }
             Input::Drop(carried) => {
-                nexus.drop(carried).map_or_else(|refusal| refusal, Output::Dropped)
+                Answer::Once(
+                    nexus.drop(carried).map_or_else(|refusal| refusal, Output::Dropped),
+                )
             }
             Input::Glance(carried) => {
-                nexus.glance(carried).map_or_else(|refusal| refusal, Output::Glanced)
+                Answer::Once(
+                    nexus.glance(carried).map_or_else(|refusal| refusal, Output::Glanced),
+                )
             }
             Input::Read(carried) => {
-                nexus.read(carried).map_or_else(|refusal| refusal, Output::Handover)
+                Answer::Once(
+                    nexus.read(carried).map_or_else(|refusal| refusal, Output::Handover),
+                )
             }
             Input::Cancel(carried) => {
-                nexus.cancel(carried).map_or_else(|refusal| refusal, Output::Cancelled)
+                Answer::Once(
+                    nexus
+                        .cancel(carried)
+                        .map_or_else(|refusal| refusal, Output::Cancelled),
+                )
             }
             Input::Silence(carried) => {
-                nexus.silence(carried).map_or_else(|refusal| refusal, Output::Silenced)
+                Answer::Once(
+                    nexus
+                        .silence(carried)
+                        .map_or_else(|refusal| refusal, Output::Silenced),
+                )
             }
             Input::Clear(carried) => {
-                nexus.clear(carried).map_or_else(|refusal| refusal, Output::Cleared)
+                Answer::Once(
+                    nexus.clear(carried).map_or_else(|refusal| refusal, Output::Cleared),
+                )
             }
             Input::ClearAll => {
-                nexus.clear_all().map_or_else(|refusal| refusal, Output::AllCleared)
+                Answer::Once(
+                    nexus.clear_all().map_or_else(|refusal| refusal, Output::AllCleared),
+                )
             }
             Input::Push(carried) => {
-                nexus.push(carried).map_or_else(|refusal| refusal, Output::Pushed)
+                Answer::Once(
+                    nexus.push(carried).map_or_else(|refusal| refusal, Output::Pushed),
+                )
             }
             Input::Queues => {
-                nexus.queues().map_or_else(|refusal| refusal, Output::Queues)
+                Answer::Once(
+                    nexus.queues().map_or_else(|refusal| refusal, Output::Queues),
+                )
             }
-            Input::Hot => nexus.hot().map_or_else(|refusal| refusal, Output::Hot),
+            Input::Hot => {
+                Answer::Once(nexus.hot().map_or_else(|refusal| refusal, Output::Hot))
+            }
             Input::Remind(carried) => {
-                nexus.remind(carried).map_or_else(|refusal| refusal, Output::Reminded)
+                Answer::Once(
+                    nexus
+                        .remind(carried)
+                        .map_or_else(|refusal| refusal, Output::Reminded),
+                )
             }
             Input::Answer(carried) => {
-                nexus.answer(carried).map_or_else(|refusal| refusal, Output::Answered)
+                Answer::Once(
+                    nexus
+                        .answer(carried)
+                        .map_or_else(|refusal| refusal, Output::Answered),
+                )
+            }
+            Input::Subscribe => {
+                nexus.subscribe().map_or_else(Answer::Once, Answer::Subscribed)
             }
         }
     }

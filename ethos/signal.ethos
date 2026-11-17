@@ -382,10 +382,20 @@
 ; position, and the later one has a reply of its own at its own.
 ; ObserveSends and ObserveSender open with SendsObserved, ObserveDeliveries
 ; with DeliveriesObserved; each then streams SendChanged.
+;
+; Subscribe is the Flow Nexus's subscription of flow transitions (the notion
+; subscription 0): Subscribed is a stream that opens with Flows, one entry
+; for each permaflow, its last transition, then carries each FlowTransition
+; as the Nexus records it. Flows follows a FlowTransition by replacing the
+; entry of its Address, or taking it in when Flows holds none, so Flows is
+; as large as the permaflows are many and nothing is removed. Each frame is
+; one Subscribed output on the subscribing connection; the stream ends when
+; the subscriber closes its connection or the Nexus stops.
 
 Signal
 [
-  flow_ethos:[ Aspect Address FlowId Request Context Verbatim SentBy QueueEntry NativeInput LogicalDeliveryId Message Process Metaflow Key Model Topic Subaspect OrdinarySocketPath MetaSocketPath ModelName HarnessKind Minutes AnswerableTask RequestId ResultPayload ] ]
+  flow_ethos:[ Aspect Address FlowId Request Context Verbatim SentBy QueueEntry NativeInput LogicalDeliveryId Message Process Metaflow Key Model Topic Subaspect OrdinarySocketPath MetaSocketPath ModelName HarnessKind Minutes AnswerableTask RequestId ResultPayload ]
+  :signal_flow:transition:[ Transition ] ]
 [ Start.LaunchProfile
   Refresh.Address
   ResolveRecipient.RecipientResolutionRequest
@@ -427,7 +437,8 @@ Signal
   Queues
   Hot
   Remind.{ Address Minutes String }
-  Answer.RequestId ]
+  Answer.RequestId
+  Subscribe ]
 [ Started.Launched
   Refreshed
   RecipientResolved.FlowNode
@@ -470,6 +481,7 @@ Signal
   Hot.Vector<Warmth>
   Reminded.RequestId
   Answered.VisibleNativeInput
+  Subscribed.Stream<Flows FlowTransition>   ; Subscribe's: Flows on open, then each transition recorded
   StartAmbiguous.PromptDeliveryIntent
   StartRejected.StartRejection
   RehearseRejected.StartRejection
@@ -1065,4 +1077,10 @@ Signal
           Stopped.NativeStop
           PromptSubmitted.NativePrompt
           Ended.Option<NativeSessionId>
-          Cleared.Option<NativeSessionId> ] ]
+          Cleared.Option<NativeSessionId> ]
+  ; One flow's transition as the Nexus recorded it: the flow, the Address
+  ; it runs at, and the transition.
+  FlowTransition.{ FlowId Address Transition }
+  ; A subscription's state: one entry for each permaflow, its last
+  ; transition.
+  Flows.Vector<FlowTransition> ]

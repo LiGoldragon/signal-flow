@@ -327,16 +327,16 @@ rec {
         };
         resolvedDefaultFeatures = [ "datom" "default" ];
       };
-      "ethos-zero 27.0.0" = rec {
+      "ethos-zero 30.0.0" = rec {
         crateName = "ethos-zero";
-        version = "27.0.0";
+        version = "30.0.0";
         edition = "2024";
         crateBin = [];
         workspace_member = null;
         src = pkgs.fetchgit {
           url = "https://github.com/LiGoldragon/ethos-zero";
-          rev = "8c95310c4c372cfe115cdebc3e85021b98cf2974";
-          sha256 = "1nqshn23ibbnnadi10wj79dn6wcjjkgfav6qkwsa7jg6r9m87v76";
+          rev = "b97d9526909a1ecebf61339f5723eaca53de5dca";
+          sha256 = "0ixkiwrwiyahwnljc9cd2464l2i5a7jknac6hfdig78chjmpcpmc";
         };
         libName = "ethos_zero";
         dependencies = [
@@ -1000,20 +1000,25 @@ rec {
       };
       "signal" = rec {
         crateName = "signal";
-        version = "11.0.0";
+        version = "11.2.0";
         edition = "2024";
         links = "signal";
         workspace_member = null;
         src = pkgs.fetchgit {
           url = "https://github.com/LiGoldragon/signal";
-          rev = "6d4eb74a238ea4a6149bd12c42a8c06aec01b154";
-          sha256 = "0hqy8k58s6sc9wz76k8iq40bv636js5s951zgd01ncrxcy6h776a";
+          rev = "4f5cbb9322ecae7a8821439179e778d495d7804a";
+          sha256 = "14f2bwprz32psr58n9i36padya0r4p54hwm1yq145h1ab6nawvk2";
         };
         dependencies = [
           {
             name = "datom-codec";
             packageId = "datom-codec";
             optional = true;
+          }
+          {
+            name = "futures-core";
+            packageId = "futures-core";
+            usesDefaultFeatures = false;
           }
           {
             name = "protos";
@@ -1044,7 +1049,7 @@ rec {
       };
       "signal-flow" = rec {
         crateName = "signal-flow";
-        version = "64.0.0";
+        version = "65.0.0";
         edition = "2024";
         src = lib.cleanSourceWith { filter = sourceFilter;  src = ./.; };
         libName = "signal_flow";
@@ -1079,7 +1084,7 @@ rec {
         buildDependencies = [
           {
             name = "ethos-zero";
-            packageId = "ethos-zero 27.0.0";
+            packageId = "ethos-zero 30.0.0";
           }
         ];
         features = {
