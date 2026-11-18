@@ -886,7 +886,8 @@ Signal
             Unresolved
             RequestIdSpaceFull
             RequestIdDrawsCollided
-            MinutesRefused.MinutesRefusal ]
+            MinutesRefused.MinutesRefusal
+            PermaflowHeld.Address ]
   ; Why a Task's Minutes was refused at admission: zero, below zero, or a
   ; deadline the clock cannot hold.
   MinutesRefusal.[ Zero
@@ -1007,7 +1008,8 @@ Signal
                    Unresolved
                    RequestIdSpaceFull
                    RequestIdDrawsCollided
-                   MinutesRefused.MinutesRefusal ]
+                   MinutesRefused.MinutesRefusal
+                   PermaflowHeld.Address ]
   VisibleUnknown.[ Address Lock.:flow_ethos:Lock Flow Key ]
   VisibleDeliveryState.[ Queued
                          Attempting

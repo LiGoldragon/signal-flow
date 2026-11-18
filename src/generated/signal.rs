@@ -1133,6 +1133,7 @@ pub enum Refusal {
     RequestIdSpaceFull,
     RequestIdDrawsCollided,
     MinutesRefused(MinutesRefusal),
+    PermaflowHeld(flow_ethos::Address),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1580,6 +1581,7 @@ pub enum VisibleRefusal {
     RequestIdSpaceFull,
     RequestIdDrawsCollided,
     MinutesRefused(MinutesRefusal),
+    PermaflowHeld(flow_ethos::Address),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
