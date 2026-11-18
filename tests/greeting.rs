@@ -22,7 +22,7 @@ fn a_peer_built_from_another_source_is_refused_with_this_digest() {
 }
 
 /// A peer built on signal-flow 67.0.0 greets with 67's digest and is
-/// refused with 68's, before any of its inputs is read.
+/// refused with 0.68's, before any of its inputs is read.
 #[test]
 fn a_signal_flow_67_peer_is_refused_with_this_digest() {
     let older = include_str!("fixtures/signal-flow-67.ethos");

@@ -1,6 +1,12 @@
 # Upgrades
 
-## 68.0.0: CloseRequest closes a request with no answer and tells no one
+## 0.68.0: CloseRequest closes a request with no answer and tells no one
+
+Versions start at 0: the first number is the version of the thing and
+stays 0 until it is rewritten whole, and a breaking change raises the
+second number. This breaking change is therefore 0.68.0, the next after
+67.0.0; no 0.68 was published before it. Every crate takes the rule at its
+own next breaking change.
 
 Built on 67.0.0 (a536862), on the same ethos-zero 27.0.0 (`8c95310`),
 flow-ethos (`062ef9e1`) and signal (`6d4eb74`). 67.0.0 appended
@@ -22,7 +28,7 @@ of its own here.
   `RestartQueued` on two. Both ends of the ordinary socket repin together.
 - The generated `Answering` gains `close_request`, which every nexus
   answering the ordinary Signal implements.
-- The contract digest changes, so a 67 peer is refused with 68's digest
+- The contract digest changes, so a 67 peer is refused with 0.68's digest
   (tests/fixtures/signal-flow-67.ethos). Repin meta-signal-flow and every
   client.
 
