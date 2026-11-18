@@ -47,10 +47,19 @@
 ; caller as it was named when it asked. Its Minutes meets a Task's rule. A
 ; reminder is a request like any other: Cancel ends it before it is sent.
 ;
-; RequestRejection names why a Cancel or Silence changed nothing:
-; UnknownRequest, no request holds the id; NotYet, a delivery of it is
-; still being settled; Closed, it is already answered; NotTask, a Silence
-; of a request that is no Task.
+; CloseRequest closes an open request by its id with no answer, and tells
+; no one: one still queued leaves its queue, it is archived, so no
+; successor of its recipient is given it among the open requests, a
+; reminder of it goes with it, and no Notice is queued for its sender or
+; its recipient. Any caller closes any request; Flow records the process
+; that closed it, as it read it from the caller's connection. A Result or
+; a Done naming it afterwards is refused Unresolved. RequestClosed names
+; the request closed; CloseRequestRejected why nothing was closed.
+;
+; RequestRejection names why a Cancel, a CloseRequest or a Silence changed
+; nothing: UnknownRequest, no request holds the id; NotYet, a delivery of
+; it is still being settled; Closed, it is already answered; NotTask, a
+; Silence of a request that is no Task.
 ;
 ; Launch starts the metaflow at Address from its declaration in Flow's
 ; configuration (the meta Metaflows family): its system and prompt modules,
@@ -427,7 +436,8 @@ Signal
   Queues
   Hot
   Remind.{ Address Minutes String }
-  Answer.RequestId ]
+  Answer.RequestId
+  CloseRequest.RequestId ]
 [ Started.Launched
   Refreshed
   RecipientResolved.FlowNode
@@ -470,6 +480,7 @@ Signal
   Hot.Vector<Warmth>
   Reminded.RequestId
   Answered.VisibleNativeInput
+  RequestClosed.RequestId
   StartAmbiguous.PromptDeliveryIntent
   StartRejected.StartRejection
   RehearseRejected.StartRejection
@@ -504,6 +515,7 @@ Signal
   CancelRejected.RequestRejection
   SilenceRejected.RequestRejection
   AnswerRejected.AnswerRejection
+  CloseRequestRejected.RequestRejection
   RestartQueued.FlowId
   ReapPending
   HandoverPending

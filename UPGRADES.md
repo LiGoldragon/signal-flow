@@ -1,5 +1,31 @@
 # Upgrades
 
+## 68.0.0: CloseRequest closes a request with no answer and tells no one
+
+Built on 67.0.0 (a536862), on the same ethos-zero 27.0.0 (`8c95310`),
+flow-ethos (`062ef9e1`) and signal (`6d4eb74`). 67.0.0 appended
+`PermaflowHeld.Address` to `Refusal` and `VisibleRefusal` and has no entry
+of its own here.
+
+- The ordinary Signal appends one input, `CloseRequest.RequestId`, the
+  43rd, answered at its position `RequestClosed.RequestId`, or
+  `CloseRequestRejected.RequestRejection` (Psyche task vaol): an open
+  request is closed by its id with no answer, archived out of the open
+  requests a successor is given, a reminder of it withdrawn, and no Notice
+  is queued for its sender or its recipient. It is refused as Cancel is:
+  `UnknownRequest`, `NotYet`, `Closed`. Any caller closes any request; Flow
+  records the process that closed it. Cancel, Result and Done keep their
+  meaning.
+- **Output discriminants move.** `RequestClosed` stands after `Answered`
+  and `CloseRequestRejected` after `AnswerRejected`, so every output from
+  `StartAmbiguous` on moves one rkyv discriminant, and every output from
+  `RestartQueued` on two. Both ends of the ordinary socket repin together.
+- The generated `Answering` gains `close_request`, which every nexus
+  answering the ordinary Signal implements.
+- The contract digest changes, so a 67 peer is refused with 68's digest
+  (tests/fixtures/signal-flow-67.ethos). Repin meta-signal-flow and every
+  client.
+
 ## 64.0.0: a caller-bound Refresh, and two recovery refusals
 
 Built on 63.0.0 (4982eeb), on the same ethos-zero 27.0.0 (`8c95310`),

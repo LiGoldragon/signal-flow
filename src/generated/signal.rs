@@ -1916,6 +1916,7 @@ pub enum Input {
     Hot,
     Remind(Remind_Data),
     Answer(flow_ethos::RequestId),
+    CloseRequest(flow_ethos::RequestId),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1987,6 +1988,7 @@ pub enum Output {
     Hot(std::vec::Vec<Warmth>),
     Reminded(flow_ethos::RequestId),
     Answered(VisibleNativeInput),
+    RequestClosed(flow_ethos::RequestId),
     StartAmbiguous(PromptDeliveryIntent),
     StartRejected(StartRejection),
     RehearseRejected(StartRejection),
@@ -2021,6 +2023,7 @@ pub enum Output {
     CancelRejected(RequestRejection),
     SilenceRejected(RequestRejection),
     AnswerRejected(AnswerRejection),
+    CloseRequestRejected(RequestRejection),
     RestartQueued(flow_ethos::FlowId),
     ReapPending(ReapPending),
     HandoverPending(HandoverPending),
@@ -2171,6 +2174,10 @@ pub trait Answering {
         &self,
         request_id: &flow_ethos::RequestId,
     ) -> std::result::Result<VisibleNativeInput, Output>;
+    fn close_request(
+        &self,
+        request_id: &flow_ethos::RequestId,
+    ) -> std::result::Result<flow_ethos::RequestId, Output>;
 }
 #[rustfmt::skip]
 pub trait Answerable {
@@ -2337,6 +2344,11 @@ impl Answerable for Input {
             }
             Input::Answer(carried) => {
                 nexus.answer(carried).map_or_else(|refusal| refusal, Output::Answered)
+            }
+            Input::CloseRequest(carried) => {
+                nexus
+                    .close_request(carried)
+                    .map_or_else(|refusal| refusal, Output::RequestClosed)
             }
         }
     }

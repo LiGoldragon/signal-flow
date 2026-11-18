@@ -1355,6 +1355,7 @@ fn every_queue_and_request_operation_round_trips_as_text() {
         "Hot",
         "Remind.{ { Mind core Sol } 30 «Check the gate.» }",
         "Answer.k7ph",
+        "CloseRequest.k7ph",
         "Send.{ { Psyche core Fable } Soft.Living.{ «the drain» «Fix it today.» } }",
     ] {
         let query = Potential::<Input>::from(text)
@@ -1455,6 +1456,22 @@ fn every_queue_and_request_operation_round_trips_as_text() {
         (
             "AnswerRejected.Open",
             Output::AnswerRejected(signal_flow::AnswerRejection::Open),
+        ),
+        (
+            "RequestClosed.k7ph",
+            Output::RequestClosed(signal_flow::RequestId("k7ph".to_string())),
+        ),
+        (
+            "CloseRequestRejected.UnknownRequest",
+            Output::CloseRequestRejected(signal_flow::RequestRejection::UnknownRequest),
+        ),
+        (
+            "CloseRequestRejected.NotYet",
+            Output::CloseRequestRejected(signal_flow::RequestRejection::NotYet),
+        ),
+        (
+            "CloseRequestRejected.Closed",
+            Output::CloseRequestRejected(signal_flow::RequestRejection::Closed),
         ),
         (
             "RestartQueued.74e4d1",
