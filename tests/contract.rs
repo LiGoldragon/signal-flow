@@ -1862,3 +1862,19 @@ fn an_abandoned_delivery_reads_and_prints_back_as_abandoned() {
         .unwrap();
     assert_eq!(visible, signal_flow::VisibleDeliveryState::Abandoned);
 }
+
+#[test]
+fn a_retired_address_refusal_preserves_both_addresses_on_the_wire() {
+    let addresses = "{ { Psyche research Sonnet } { Mind research Sol } }";
+    for head in ["Refused.Retired", "Failed.Unadmitted.Refused.Retired"] {
+        let text = format!("{head}.{addresses}");
+        let output = Potential::<Output>::from(text.as_str())
+            .actualize(&mut budget())
+            .expect("retired address refusal");
+        let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&output).expect("archive refusal");
+        let restored =
+            rkyv::from_bytes::<Output, rkyv::rancor::Error>(&bytes).expect("read refusal");
+        assert_eq!(output, restored);
+        assert_eq!(restored.datomize(vec![]).protosize().compact(), text);
+    }
+}

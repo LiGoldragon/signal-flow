@@ -1134,6 +1134,14 @@ pub enum Refusal {
     RequestIdDrawsCollided,
     MinutesRefused(MinutesRefusal),
     PermaflowHeld(flow_ethos::Address),
+    Retired(AddressSuccession),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct AddressSuccession {
+    pub first_address: flow_ethos::Address,
+    pub second_address: flow_ethos::Address,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1583,6 +1591,7 @@ pub enum VisibleRefusal {
     RequestIdDrawsCollided,
     MinutesRefused(MinutesRefusal),
     PermaflowHeld(flow_ethos::Address),
+    Retired(AddressSuccession),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]

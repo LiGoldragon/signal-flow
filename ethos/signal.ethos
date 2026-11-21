@@ -918,7 +918,11 @@ Signal
             RequestIdSpaceFull
             RequestIdDrawsCollided
             MinutesRefused.MinutesRefusal
-            PermaflowHeld.Address ]
+            PermaflowHeld.Address
+            Retired.AddressSuccession ]
+  ; The address that has stood down, then the address that succeeds it.
+  ; A new Send to the first is refused before admission.
+  AddressSuccession.{ Address Address }
   ; Why a Task's Minutes was refused at admission: zero, below zero, or a
   ; deadline the clock cannot hold.
   MinutesRefusal.[ Zero
@@ -1042,7 +1046,8 @@ Signal
                    RequestIdSpaceFull
                    RequestIdDrawsCollided
                    MinutesRefused.MinutesRefusal
-                   PermaflowHeld.Address ]
+                   PermaflowHeld.Address
+                   Retired.AddressSuccession ]
   VisibleUnknown.[ Address Lock.:flow_ethos:Lock Flow Key ]
   VisibleDeliveryState.[ Queued
                          Attempting
