@@ -456,7 +456,8 @@ Signal
   Hot
   Remind.{ Address Minutes String }
   Answer.RequestId
-  CloseRequest.RequestId ]
+  CloseRequest.RequestId
+  SendTaskVerbose.VerboseTask ]
 [ Started.Launched
   Refreshed
   RecipientResolved.FlowNode
@@ -500,6 +501,7 @@ Signal
   Reminded.RequestId
   Answered.VisibleNativeInput
   RequestClosed.RequestId
+  TaskVerboseSent.VerboseTaskAdmission
   StartAmbiguous.PromptDeliveryIntent
   StartRejected.StartRejection
   RehearseRejected.StartRejection
@@ -982,6 +984,13 @@ Signal
   VisibleSender.[ Sender.Address Unknown Notification Unbound ]
   VisibleNativeInput.{ VisibleSender DeliveredMessage }
   SendRequest.{ Address SendableMessage }
+  TerminalOutcome.[ Fulfilled Cancelled ]
+  AbruptTask.[ HardAbrupt.AnswerableTask
+               MiddleAbrupt.AnswerableTask
+               Soft.AnswerableTask ]
+  VerboseTask.{ Address AbruptTask Vector<TerminalOutcome> }
+  VerboseTaskAdmission.[ Sent.VisibleSendReceipt
+                         Accepted.VisibleSendAcceptance ]
   DeliveryCursor.Integer
   Namespace.String
   Counter.Integer
@@ -1074,7 +1083,7 @@ Signal
                 DirectSendInFlight
                 DeliveryNotEnded ]
   ArchiveRejection.[ UnknownRequest NotYet.ArchiveHold StoreRefused ]
-  RequestRejection.[ UnknownRequest NotYet.ArchiveHold Closed NotTask StoreRefused ]
+  RequestRejection.[ UnknownRequest NotYet.ArchiveHold Closed NotTask StoreRefused ControlUnavailable ]
   ; The priority a Push delivers a queue at.
   Priority.[ HardAbrupt MiddleAbrupt Soft ]
   ; One queue that holds something, oldest first: each message as it would
