@@ -35,6 +35,21 @@ fn a_signal_flow_67_peer_is_refused_with_this_digest() {
     );
 }
 
+/// A peer built on signal-flow 0.68.0, whose NotYet named no hold, greets
+/// with 0.68's digest and is refused with 0.69's, before any of its inputs
+/// is read.
+#[test]
+fn a_signal_flow_0_68_peer_is_refused_with_this_digest() {
+    let older = include_str!("fixtures/signal-flow-0.68.ethos");
+    assert_ne!(Handshake::of_source(older), Input::greeting());
+    assert_eq!(
+        Input::receipt(&Handshake::of_source(older)),
+        HandshakeReceipt::GreetingRefused(HandshakeRejection::ContractMismatch(
+            Input::contract_digest()
+        ))
+    );
+}
+
 /// The greeting a peer writes is the rkyv archive of its Handshake, and it
 /// reads the receipt back the same way.
 #[test]

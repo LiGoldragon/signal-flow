@@ -984,6 +984,7 @@ fn durable_admission_and_resumable_sender_outcomes_round_trip() {
         "SendsObserved.{ store1 2 [ { req2 2 Sender.{ Mind flow Sol } { Psyche flow Opus } Attempting } ] }",
         "SendChanged.{ req3 3 Sender.{ Mind flow Sol } { Psyche flow Opus } Delivered }",
         "SendChanged.{ req4 4 Sender.{ Mind flow Sol } { Psyche flow Opus } Withdrawn }",
+        "SendChanged.{ req8 8 Sender.{ Mind flow Sol } { Psyche flow Opus } Abandoned }",
         "SendChanged.{ req5 5 Sender.{ Mind flow Sol } { Psyche flow Opus } Retryable.WakeRefused.ContextRefused.RecordMissing }",
         "SendsObserved.{ store1 6 [ { req6 6 Sender.{ Mind flow Sol } { Psyche flow Opus } Retryable.WakeRefused.Undeclared } ] }",
         "DeliveriesObserved.{ store1 7 [ { req7 7 Sender.{ Mind flow Sol } { Psyche flow Opus } Delivered } ] }",
@@ -1466,8 +1467,10 @@ fn every_queue_and_request_operation_round_trips_as_text() {
             Output::CloseRequestRejected(signal_flow::RequestRejection::UnknownRequest),
         ),
         (
-            "CloseRequestRejected.NotYet",
-            Output::CloseRequestRejected(signal_flow::RequestRejection::NotYet),
+            "CloseRequestRejected.NotYet.AttemptUnfinished",
+            Output::CloseRequestRejected(signal_flow::RequestRejection::NotYet(
+                signal_flow::ArchiveHold::AttemptUnfinished,
+            )),
         ),
         (
             "CloseRequestRejected.Closed",
@@ -1793,4 +1796,69 @@ fn a_refused_reap_is_no_replace_rejection() {
             "{text}"
         );
     }
+}
+
+/// NotYet names the one check that holds a request back from its archive,
+/// for a Cancel, a CloseRequest, a Silence and an Archive alike; each hold
+/// reads and prints back as written.
+#[test]
+fn not_yet_names_the_hold_that_keeps_a_request_from_its_archive() {
+    use signal_flow::{ArchiveHold, ArchiveRejection, RequestRejection};
+    for (name, hold) in [
+        ("AdmissionPending", ArchiveHold::AdmissionPending),
+        ("AttemptUnfinished", ArchiveHold::AttemptUnfinished),
+        ("SimplifiedReplyOpen", ArchiveHold::SimplifiedReplyOpen),
+        ("AnswerUndelivered", ArchiveHold::AnswerUndelivered),
+        (
+            "TaskAnnouncementAdmitted",
+            ArchiveHold::TaskAnnouncementAdmitted,
+        ),
+        (
+            "UpgradeAssignmentAdmitted",
+            ArchiveHold::UpgradeAssignmentAdmitted,
+        ),
+        ("DirectSendInFlight", ArchiveHold::DirectSendInFlight),
+        ("DeliveryNotEnded", ArchiveHold::DeliveryNotEnded),
+    ] {
+        for (text, expected) in [
+            (
+                format!("CancelRejected.NotYet.{name}"),
+                Output::CancelRejected(RequestRejection::NotYet(hold.clone())),
+            ),
+            (
+                format!("CloseRequestRejected.NotYet.{name}"),
+                Output::CloseRequestRejected(RequestRejection::NotYet(hold.clone())),
+            ),
+            (
+                format!("ArchiveRejected.NotYet.{name}"),
+                Output::ArchiveRejected(ArchiveRejection::NotYet(hold.clone())),
+            ),
+        ] {
+            let actual = Potential::<Output>::from(text.as_str())
+                .actualize(&mut budget())
+                .unwrap_or_else(|error| panic!("{text}: {error:?}"));
+            assert_eq!(actual, expected);
+            assert_eq!(actual.datomize(vec![]).protosize().compact(), text);
+            let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&actual).unwrap();
+            assert_eq!(
+                rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
+                expected
+            );
+        }
+    }
+}
+
+/// A delivery given up after it was handed to a seat whose receipt was
+/// never seen ends Abandoned, in the private and the visible state alike.
+#[test]
+fn an_abandoned_delivery_reads_and_prints_back_as_abandoned() {
+    let private = Potential::<signal_flow::DeliveryState>::from("Abandoned")
+        .actualize(&mut budget())
+        .unwrap();
+    assert_eq!(private, signal_flow::DeliveryState::Abandoned);
+    assert_eq!(private.datomize(vec![]).protosize().compact(), "Abandoned");
+    let visible = Potential::<signal_flow::VisibleDeliveryState>::from("Abandoned")
+        .actualize(&mut budget())
+        .unwrap();
+    assert_eq!(visible, signal_flow::VisibleDeliveryState::Abandoned);
 }

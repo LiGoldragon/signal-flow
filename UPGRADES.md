@@ -1,5 +1,29 @@
 # Upgrades
 
+## 0.69.0: NotYet names its hold; a delivery may end Abandoned
+
+Built on 0.68.0 (`319e3c3`), on the same ethos-zero 27.0.0 (`8c95310`),
+flow-ethos (`062ef9e1`) and signal (`6d4eb74`). Flow Nexus 0.60.5, bead
+76bv.
+
+- `ArchiveRejection.NotYet` and `RequestRejection.NotYet` carry an
+  `ArchiveHold`, the one check that holds the request back from its
+  archive: `AdmissionPending`, `AttemptUnfinished`, `SimplifiedReplyOpen`,
+  `AnswerUndelivered`, `TaskAnnouncementAdmitted`,
+  `UpgradeAssignmentAdmitted`, `DirectSendInFlight`, `DeliveryNotEnded`.
+  `CloseRequestRejected.NotYet` reads `CloseRequestRejected.NotYet.<hold>`.
+- `DeliveryState` and `VisibleDeliveryState` append `Abandoned`: the
+  request was handed to a seat, its receipt never seen, and was then given
+  up (its seat ended first, or its owner abandoned the attempt); it is
+  never sent again. The request stays open: an answer may still close it.
+  Appended last, every earlier state keeps its tag, so a stored state
+  archives as it did.
+- Cancel and CloseRequest abandon an unfinished attempt of the request they
+  name in the commit that closes it; the contract text says so.
+- The contract digest changes: a 0.68 peer is refused with 0.69's digest
+  (tests/fixtures/signal-flow-0.68.ethos). Repin meta-signal-flow and every
+  client together.
+
 ## 0.68.0: CloseRequest closes a request with no answer and tells no one
 
 Versions start at 0: the first number is the version of the thing and

@@ -33,7 +33,10 @@
 ; operation of their own. Cancel closes an open request by its id: one
 ; still queued leaves its queue, a Task's reminder goes with it, and its
 ; sender, and its recipient when the request reached it, are told by a Soft
-; Notice. Silence stops a Task's reminders and leaves the Task open. Clear
+; Notice. An attempt to hand it to a seat that is still unfinished, its
+; receipt never seen, is abandoned in the commit that closes it, so a
+; request is always closed when its owner names it. Silence stops a Task's
+; reminders and leaves the Task open. Clear
 ; takes everything queued for an Address out of its queue, ClearAll every
 ; queue, each answering the ids that left. Push delivers an Address's whole
 ; queue now, as one message at the Priority named, waking an Asleep
@@ -57,9 +60,25 @@
 ; the request closed; CloseRequestRejected why nothing was closed.
 ;
 ; RequestRejection names why a Cancel, a CloseRequest or a Silence changed
-; nothing: UnknownRequest, no request holds the id; NotYet, a delivery of
-; it is still being settled; Closed, it is already answered; NotTask, a
-; Silence of a request that is no Task.
+; nothing: UnknownRequest, no request holds the id; NotYet, the request is
+; held back from its archive, the ArchiveHold naming the one check that
+; holds it; Closed, it is already answered; NotTask, a Silence of a request
+; that is no Task. ArchiveRejection names why an Archive changed nothing,
+; NotYet with its ArchiveHold as well.
+;
+; ArchiveHold names what holds a request back from its archive:
+; AdmissionPending, its admission is still being answered;
+; AttemptUnfinished, an attempt to hand it to a seat is Prepared,
+; Uncertain or ReceiptRecorded (an Archive alone meets it: Cancel and
+; CloseRequest abandon such an attempt); SimplifiedReplyOpen, a simplified
+; flow's reply to it is not yet complete; AnswerUndelivered, a Result, a
+; Done or a Reminder naming it is admitted and its own delivery has not
+; ended; TaskAnnouncementAdmitted, a request-id upgrade's task announcement
+; holding it is admitted and not yet delivered;
+; UpgradeAssignmentAdmitted, a request-id upgrade's assignment naming it is
+; admitted and not yet delivered; DirectSendInFlight, a direct Send of it
+; is still being answered; DeliveryNotEnded, its delivery is not yet
+; Delivered, Read, Failed, Withdrawn or Abandoned.
 ;
 ; Launch starts the metaflow at Address from its declaration in Flow's
 ; configuration (the meta Metaflows family): its system and prompt modules,
@@ -980,7 +999,9 @@ Signal
                   Read
                   Failed.Refusal          ; refused, never to be sent
                   Withdrawn
-                  Archived ]
+                  Archived
+                  ; handed to a seat, its receipt never seen, then given up: never sent again
+                  Abandoned ]
   SendReceipt.{ LogicalDeliveryId RequestId }
   SendFailure.[ Unadmitted.SendFailureReason
                 Admitted.{ LogicalDeliveryId RequestId SendFailureReason } ]
@@ -1031,7 +1052,8 @@ Signal
                          Read
                          Failed.VisibleRefusal
                          Withdrawn
-                         Archived ]
+                         Archived
+                         Abandoned ]
   VisibleSendReceipt.RequestId
   VisibleSendFailure.[ Unadmitted.VisibleSendFailureReason
                        Admitted.{ RequestId VisibleSendFailureReason } ]
@@ -1043,8 +1065,16 @@ Signal
   VisibleSendAcceptance.{ RequestId DeliveryCursor VisibleDeliveryState }
   VisibleDeliverySnapshot.{ RequestId DeliveryCursor VisibleSender Address VisibleDeliveryState }
   VisibleSendObservation.{ StoreIdentity DeliveryCursor Vector<VisibleDeliverySnapshot> }
-  ArchiveRejection.[ UnknownRequest NotYet StoreRefused ]
-  RequestRejection.[ UnknownRequest NotYet Closed NotTask StoreRefused ]
+  ArchiveHold.[ AdmissionPending
+                AttemptUnfinished
+                SimplifiedReplyOpen
+                AnswerUndelivered
+                TaskAnnouncementAdmitted
+                UpgradeAssignmentAdmitted
+                DirectSendInFlight
+                DeliveryNotEnded ]
+  ArchiveRejection.[ UnknownRequest NotYet.ArchiveHold StoreRefused ]
+  RequestRejection.[ UnknownRequest NotYet.ArchiveHold Closed NotTask StoreRefused ]
   ; The priority a Push delivers a queue at.
   Priority.[ HardAbrupt MiddleAbrupt Soft ]
   ; One queue that holds something, oldest first: each message as it would

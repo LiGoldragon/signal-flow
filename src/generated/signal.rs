@@ -1474,6 +1474,7 @@ pub enum DeliveryState {
     Failed(Refusal),
     Withdrawn,
     Archived,
+    Abandoned,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1605,6 +1606,7 @@ pub enum VisibleDeliveryState {
     Failed(VisibleRefusal),
     Withdrawn,
     Archived,
+    Abandoned,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1663,9 +1665,22 @@ pub struct VisibleSendObservation {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum ArchiveHold {
+    AdmissionPending,
+    AttemptUnfinished,
+    SimplifiedReplyOpen,
+    AnswerUndelivered,
+    TaskAnnouncementAdmitted,
+    UpgradeAssignmentAdmitted,
+    DirectSendInFlight,
+    DeliveryNotEnded,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum ArchiveRejection {
     UnknownRequest,
-    NotYet,
+    NotYet(ArchiveHold),
     StoreRefused,
 }
 #[rustfmt::skip]
@@ -1673,7 +1688,7 @@ pub enum ArchiveRejection {
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum RequestRejection {
     UnknownRequest,
-    NotYet,
+    NotYet(ArchiveHold),
     Closed,
     NotTask,
     StoreRefused,
