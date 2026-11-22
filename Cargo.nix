@@ -379,15 +379,67 @@ rec {
         };
         resolvedDefaultFeatures = [ "datom" "default" ];
       };
+      "ethos-zero 29.0.0" = rec {
+        crateName = "ethos-zero";
+        version = "29.0.0";
+        edition = "2024";
+        crateBin = [];
+        workspace_member = null;
+        src = pkgs.fetchgit {
+          url = "https://github.com/LiGoldragon/ethos-zero";
+          rev = "f23eacf338a90ce4a6dea011554724fa6488fcc9";
+          sha256 = "15wh2r0ljqvjqrh8hc8av4p8210nsdyl9iwhb5zh6k467r59ymm8";
+        };
+        libName = "ethos_zero";
+        dependencies = [
+          {
+            name = "datom-codec";
+            packageId = "datom-codec";
+            features = [ "rkyv" ];
+          }
+          {
+            name = "prettyplease";
+            packageId = "prettyplease";
+          }
+          {
+            name = "proc-macro2";
+            packageId = "proc-macro2";
+          }
+          {
+            name = "protos";
+            packageId = "protos";
+            features = [ "rkyv" ];
+          }
+          {
+            name = "quote";
+            packageId = "quote";
+          }
+          {
+            name = "rkyv";
+            packageId = "rkyv";
+            usesDefaultFeatures = false;
+            features = [ "std" "bytecheck" "little_endian" "pointer_width_32" "unaligned" ];
+          }
+          {
+            name = "syn";
+            packageId = "syn 3.0.5";
+            features = [ "full" ];
+          }
+        ];
+        features = {
+          "default" = [ "datom" ];
+        };
+        resolvedDefaultFeatures = [ "datom" "default" ];
+      };
       "flow-ethos" = rec {
         crateName = "flow-ethos";
-        version = "0.54.3";
+        version = "0.56.2";
         edition = "2024";
         workspace_member = null;
         src = pkgs.fetchgit {
           url = "https://github.com/LiGoldragon/flow";
-          rev = "062ef9e14abbf6552b257e9ce7e1c22f5bc00c27";
-          sha256 = "1rz6vqapv8zxl772ad6810ssi6rcgllncj7ab865pml46j9fcn7i";
+          rev = "d13304b67d55bb11ec07cc4603081826d0eded33";
+          sha256 = "1il2kj4g3gny3iz04cfw5sdr4w4rxhfy7y9bhdh3ki6b9lwbm16v";
         };
         libName = "flow_ethos";
         dependencies = [
@@ -411,7 +463,7 @@ rec {
         buildDependencies = [
           {
             name = "ethos-zero";
-            packageId = "ethos-zero 22.0.0";
+            packageId = "ethos-zero 29.0.0";
           }
         ];
         features = {
@@ -1044,7 +1096,7 @@ rec {
       };
       "signal-flow" = rec {
         crateName = "signal-flow";
-        version = "0.69.0";
+        version = "0.71.0";
         edition = "2024";
         src = lib.cleanSourceWith { filter = sourceFilter;  src = ./.; };
         libName = "signal_flow";

@@ -1134,6 +1134,9 @@ pub enum Refusal {
     RequestIdDrawsCollided,
     MinutesRefused(MinutesRefusal),
     PermaflowHeld(flow_ethos::Address),
+    MissingDefaultNotificationDestination(flow_ethos::NotificationType),
+    UnaddressedNotificationSender,
+    EmptyNotificationDestinations(flow_ethos::NotificationType),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1269,6 +1272,13 @@ pub struct SendableRequest_Done_Data {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct NotifiedWorkWithDestinations_Data {
+    pub string: String,
+    pub notified_vector: std::vec::Vec<flow_ethos::Notified>,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum SendableRequest {
     Order(String),
     Question(String),
@@ -1277,6 +1287,9 @@ pub enum SendableRequest {
     Notice(String),
     Task(flow_ethos::AnswerableTask),
     Done(SendableRequest_Done_Data),
+    Work(String),
+    NotifiedWork(String),
+    NotifiedWorkWithDestinations(NotifiedWorkWithDestinations_Data),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1347,6 +1360,13 @@ pub struct DeliveredRequest_Reminder_Data {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Work_Data {
+    pub request_id: flow_ethos::RequestId,
+    pub string: String,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum DeliveredRequest {
     Order(Order_Data),
     Question(Question_Data),
@@ -1358,6 +1378,8 @@ pub enum DeliveredRequest {
     Reminder(DeliveredRequest_Reminder_Data),
     PriorResult(String),
     PriorDone(String),
+    Work(Work_Data),
+    WorkNotification(flow_ethos::WorkNotification),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1393,6 +1415,8 @@ pub enum VisibleRequest {
     Task(flow_ethos::AnswerableTask),
     Done(VisibleDonePayload),
     Reminder(VisibleRequest_Reminder_Data),
+    Work(String),
+    WorkNotification(flow_ethos::WorkNotification),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1475,6 +1499,7 @@ pub enum DeliveryState {
     Withdrawn,
     Archived,
     Abandoned,
+    InspectionOnly,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1583,6 +1608,9 @@ pub enum VisibleRefusal {
     RequestIdDrawsCollided,
     MinutesRefused(MinutesRefusal),
     PermaflowHeld(flow_ethos::Address),
+    MissingDefaultNotificationDestination(flow_ethos::NotificationType),
+    UnaddressedNotificationSender,
+    EmptyNotificationDestinations(flow_ethos::NotificationType),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1607,6 +1635,7 @@ pub enum VisibleDeliveryState {
     Withdrawn,
     Archived,
     Abandoned,
+    InspectionOnly,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1692,6 +1721,7 @@ pub enum RequestRejection {
     Closed,
     NotTask,
     StoreRefused,
+    ControlUnavailable,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]

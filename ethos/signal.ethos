@@ -413,7 +413,7 @@
 
 Signal
 [
-  flow_ethos:[ Aspect Address FlowId Request Context Verbatim SentBy QueueEntry NativeInput LogicalDeliveryId Message Process Metaflow Key Model Topic Subaspect OrdinarySocketPath MetaSocketPath ModelName HarnessKind Minutes AnswerableTask RequestId ResultPayload ] ]
+  flow_ethos:[ Aspect Address FlowId Request Context Verbatim SentBy QueueEntry NativeInput LogicalDeliveryId Message Process Metaflow Key Model Topic Subaspect OrdinarySocketPath MetaSocketPath ModelName HarnessKind Minutes AnswerableTask RequestId ResultPayload NotificationType WorkNotification Notified ] ]
 [ Start.LaunchProfile
   Refresh.Address
   ResolveRecipient.RecipientResolutionRequest
@@ -918,7 +918,10 @@ Signal
             RequestIdSpaceFull
             RequestIdDrawsCollided
             MinutesRefused.MinutesRefusal
-            PermaflowHeld.Address ]
+            PermaflowHeld.Address
+            MissingDefaultNotificationDestination.NotificationType
+            UnaddressedNotificationSender
+                   EmptyNotificationDestinations.NotificationType ]
   ; Why a Task's Minutes was refused at admission: zero, below zero, or a
   ; deadline the clock cannot hold.
   MinutesRefusal.[ Zero
@@ -952,7 +955,10 @@ Signal
                     Result.{ RequestId String }
                     Notice.String
                     Task.AnswerableTask
-                    Done.{ RequestId String } ]
+                    Done.{ RequestId String }
+                    Work.String
+                    NotifiedWork.String
+                    NotifiedWorkWithDestinations.{ String Vector<Notified> } ]
   SendableMessage.[ HardAbrupt.SendableRequest
                     MiddleAbrupt.SendableRequest
                     Soft.SendableRequest ]
@@ -965,7 +971,9 @@ Signal
                       Done.{ RequestId String }
                       Reminder.{ RequestId String }
                       PriorResult.String
-                      PriorDone.String ]
+                      PriorDone.String
+                      Work.{ RequestId String }
+                      WorkNotification ]
   DeliveredMessage.[ HardAbrupt.DeliveredRequest
                      MiddleAbrupt.DeliveredRequest
                      Soft.DeliveredRequest ]
@@ -977,7 +985,9 @@ Signal
                    Notice.String
                    Task.AnswerableTask
                    Done.VisibleDonePayload
-                   Reminder.{ RequestId String } ]
+                   Reminder.{ RequestId String }
+                   Work.String
+                   WorkNotification ]
   ; Unbound: a sender in no flow.
   VisibleSender.[ Sender.Address Unknown Notification Unbound ]
   VisibleNativeInput.{ VisibleSender DeliveredMessage }
@@ -1001,7 +1011,8 @@ Signal
                   Withdrawn
                   Archived
                   ; handed to a seat, its receipt never seen, then given up: never sent again
-                  Abandoned ]
+                  Abandoned
+                  InspectionOnly ]
   SendReceipt.{ LogicalDeliveryId RequestId }
   SendFailure.[ Unadmitted.SendFailureReason
                 Admitted.{ LogicalDeliveryId RequestId SendFailureReason } ]
@@ -1042,7 +1053,10 @@ Signal
                    RequestIdSpaceFull
                    RequestIdDrawsCollided
                    MinutesRefused.MinutesRefusal
-                   PermaflowHeld.Address ]
+                   PermaflowHeld.Address
+                   MissingDefaultNotificationDestination.NotificationType
+                   UnaddressedNotificationSender
+                   EmptyNotificationDestinations.NotificationType ]
   VisibleUnknown.[ Address Lock.:flow_ethos:Lock Flow Key ]
   VisibleDeliveryState.[ Queued
                          Attempting
@@ -1053,7 +1067,8 @@ Signal
                          Failed.VisibleRefusal
                          Withdrawn
                          Archived
-                         Abandoned ]
+                         Abandoned
+                         InspectionOnly ]
   VisibleSendReceipt.RequestId
   VisibleSendFailure.[ Unadmitted.VisibleSendFailureReason
                        Admitted.{ RequestId VisibleSendFailureReason } ]
@@ -1074,7 +1089,7 @@ Signal
                 DirectSendInFlight
                 DeliveryNotEnded ]
   ArchiveRejection.[ UnknownRequest NotYet.ArchiveHold StoreRefused ]
-  RequestRejection.[ UnknownRequest NotYet.ArchiveHold Closed NotTask StoreRefused ]
+  RequestRejection.[ UnknownRequest NotYet.ArchiveHold Closed NotTask StoreRefused ControlUnavailable ]
   ; The priority a Push delivers a queue at.
   Priority.[ HardAbrupt MiddleAbrupt Soft ]
   ; One queue that holds something, oldest first: each message as it would
