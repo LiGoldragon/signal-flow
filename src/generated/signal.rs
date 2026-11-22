@@ -1134,6 +1134,9 @@ pub enum Refusal {
     RequestIdDrawsCollided,
     MinutesRefused(MinutesRefusal),
     PermaflowHeld(flow_ethos::Address),
+    MissingDefaultNotificationDestination(flow_ethos::NotificationType),
+    UnaddressedNotificationSender,
+    EmptyNotificationDestinations(flow_ethos::NotificationType),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1269,6 +1272,13 @@ pub struct SendableRequest_Done_Data {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct NotifiedWorkWithDestinations_Data {
+    pub string: String,
+    pub notified_vector: std::vec::Vec<flow_ethos::Notified>,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum SendableRequest {
     Order(String),
     Question(String),
@@ -1277,6 +1287,9 @@ pub enum SendableRequest {
     Notice(String),
     Task(flow_ethos::AnswerableTask),
     Done(SendableRequest_Done_Data),
+    Work(String),
+    NotifiedWork(String),
+    NotifiedWorkWithDestinations(NotifiedWorkWithDestinations_Data),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1347,6 +1360,13 @@ pub struct DeliveredRequest_Reminder_Data {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Work_Data {
+    pub request_id: flow_ethos::RequestId,
+    pub string: String,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum DeliveredRequest {
     Order(Order_Data),
     Question(Question_Data),
@@ -1358,6 +1378,8 @@ pub enum DeliveredRequest {
     Reminder(DeliveredRequest_Reminder_Data),
     PriorResult(String),
     PriorDone(String),
+    Work(Work_Data),
+    WorkNotification(flow_ethos::WorkNotification),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1393,6 +1415,8 @@ pub enum VisibleRequest {
     Task(flow_ethos::AnswerableTask),
     Done(VisibleDonePayload),
     Reminder(VisibleRequest_Reminder_Data),
+    Work(String),
+    WorkNotification(flow_ethos::WorkNotification),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1416,36 +1440,6 @@ pub struct VisibleNativeInput {
 pub struct SendRequest {
     pub address: flow_ethos::Address,
     pub sendable_message: SendableMessage,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum TerminalOutcome {
-    Fulfilled,
-    Cancelled,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum AbruptTask {
-    HardAbrupt(flow_ethos::AnswerableTask),
-    MiddleAbrupt(flow_ethos::AnswerableTask),
-    Soft(flow_ethos::AnswerableTask),
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub struct VerboseTask {
-    pub address: flow_ethos::Address,
-    pub abrupt_task: AbruptTask,
-    pub terminal_outcome_vector: std::vec::Vec<TerminalOutcome>,
-}
-#[rustfmt::skip]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
-pub enum VerboseTaskAdmission {
-    Sent(VisibleSendReceipt),
-    Accepted(VisibleSendAcceptance),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -1505,6 +1499,7 @@ pub enum DeliveryState {
     Withdrawn,
     Archived,
     Abandoned,
+    InspectionOnly,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1613,6 +1608,9 @@ pub enum VisibleRefusal {
     RequestIdDrawsCollided,
     MinutesRefused(MinutesRefusal),
     PermaflowHeld(flow_ethos::Address),
+    MissingDefaultNotificationDestination(flow_ethos::NotificationType),
+    UnaddressedNotificationSender,
+    EmptyNotificationDestinations(flow_ethos::NotificationType),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1637,6 +1635,7 @@ pub enum VisibleDeliveryState {
     Withdrawn,
     Archived,
     Abandoned,
+    InspectionOnly,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1963,7 +1962,6 @@ pub enum Input {
     Remind(Remind_Data),
     Answer(flow_ethos::RequestId),
     CloseRequest(flow_ethos::RequestId),
-    SendTaskVerbose(VerboseTask),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -2036,7 +2034,6 @@ pub enum Output {
     Reminded(flow_ethos::RequestId),
     Answered(VisibleNativeInput),
     RequestClosed(flow_ethos::RequestId),
-    TaskVerboseSent(VerboseTaskAdmission),
     StartAmbiguous(PromptDeliveryIntent),
     StartRejected(StartRejection),
     RehearseRejected(StartRejection),
@@ -2226,10 +2223,6 @@ pub trait Answering {
         &self,
         request_id: &flow_ethos::RequestId,
     ) -> std::result::Result<flow_ethos::RequestId, Output>;
-    fn send_task_verbose(
-        &self,
-        verbose_task: &VerboseTask,
-    ) -> std::result::Result<VerboseTaskAdmission, Output>;
 }
 #[rustfmt::skip]
 pub trait Answerable {
@@ -2401,11 +2394,6 @@ impl Answerable for Input {
                 nexus
                     .close_request(carried)
                     .map_or_else(|refusal| refusal, Output::RequestClosed)
-            }
-            Input::SendTaskVerbose(carried) => {
-                nexus
-                    .send_task_verbose(carried)
-                    .map_or_else(|refusal| refusal, Output::TaskVerboseSent)
             }
         }
     }

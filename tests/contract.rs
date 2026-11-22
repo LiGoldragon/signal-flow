@@ -1864,17 +1864,22 @@ fn an_abandoned_delivery_reads_and_prints_back_as_abandoned() {
 }
 
 #[test]
-fn verbose_task_policy_and_unavailable_cancel_control_round_trip() {
-    let text = "SendTaskVerbose.{ { Mind work Sol } Soft.{ 30 «Read the work.» } [ Fulfilled Cancelled ] }";
-    let request = Potential::<Input>::from(text)
-        .actualize(&mut budget())
-        .unwrap();
-    let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&request).unwrap();
-    assert_eq!(
-        rkyv::from_bytes::<Input, rkyv::rancor::Error>(&archive).unwrap(),
-        request
-    );
-    assert_eq!(request.datomize(vec![]).protosize().compact(), text);
+fn notices_work_shapes_and_unavailable_cancel_control_round_trip() {
+    for text in [
+        "Send.{ { Mind work Sol } Soft.Work.Read }",
+        "Send.{ { Mind work Sol } MiddleAbrupt.NotifiedWork.Read }",
+        "Send.{ { Mind work Sol } HardAbrupt.NotifiedWorkWithDestinations.{ Read [ { WorkDone [ { Mind watcher Sol } { Field witness Luna } ] } ] } }",
+    ] {
+        let request = Potential::<Input>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&request).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Input, rkyv::rancor::Error>(&archive).unwrap(),
+            request
+        );
+        assert_eq!(request.datomize(vec![]).protosize().compact(), text);
+    }
 
     let response = Output::CancelRejected(signal_flow::RequestRejection::ControlUnavailable);
     let text = response.datomize(vec![]).protosize().compact();
