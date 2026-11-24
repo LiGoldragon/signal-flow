@@ -1862,3 +1862,82 @@ fn an_abandoned_delivery_reads_and_prints_back_as_abandoned() {
         .unwrap();
     assert_eq!(visible, signal_flow::VisibleDeliveryState::Abandoned);
 }
+
+#[test]
+fn send_several_carries_current_sendable_messages_in_written_order() {
+    let address = "{ Mind core Sol }";
+    let messages = "[ Soft.Living.{ «Fixture context.» «Fixture words.» } MiddleAbrupt.Order.«Fixture order.» ]";
+    let text = format!("SendSeveral.{{ {address} {messages} }}");
+    let input = Potential::<Input>::from(text.as_str())
+        .actualize(&mut budget())
+        .unwrap();
+    let Input::SendSeveral(request) = &input else {
+        panic!("fixture must remain SendSeveral");
+    };
+    assert_eq!(request.address.aspect, Aspect::Mind);
+    let original_messages = request
+        .sendable_message_vector
+        .iter()
+        .map(|message| message.datomize(vec![]).protosize().compact())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        original_messages,
+        [
+            "Soft.Living.{ «Fixture context.» «Fixture words.» }",
+            "MiddleAbrupt.Order.«Fixture order.»"
+        ]
+    );
+
+    let archived = rkyv::to_bytes::<rkyv::rancor::Error>(&input).unwrap();
+    assert_eq!(
+        rkyv::from_bytes::<Input, rkyv::rancor::Error>(&archived).unwrap(),
+        input
+    );
+    assert_eq!(input.datomize(vec![]).protosize().compact(), text);
+}
+
+#[test]
+fn sent_several_preserves_order_and_the_empty_result() {
+    for (text, ids) in [
+        ("SentSeveral.[ k7ph m2qa ]", vec!["k7ph", "m2qa"]),
+        ("SentSeveral.[]", vec![]),
+    ] {
+        let output = Potential::<Output>::from(text)
+            .actualize(&mut budget())
+            .unwrap();
+        assert_eq!(
+            output,
+            Output::SentSeveral(
+                ids.into_iter()
+                    .map(|id| signal_flow::RequestId(id.to_owned()))
+                    .collect()
+            )
+        );
+        let archived = rkyv::to_bytes::<rkyv::rancor::Error>(&output).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archived).unwrap(),
+            output
+        );
+    }
+}
+
+#[test]
+fn simplified_send_several_refusal_has_a_typed_original_position() {
+    use signal_flow::{SendSeveralMessagePosition, VisibleRefusal};
+    let position = SendSeveralMessagePosition(1);
+    let text = "SendRefused.SimplifiedAwaitingMemberConflict.1";
+    let output = Potential::<Output>::from(text)
+        .actualize(&mut budget())
+        .unwrap();
+    assert_eq!(
+        output,
+        Output::SendRefused(VisibleRefusal::SimplifiedAwaitingMemberConflict(position))
+    );
+    assert_eq!(output.datomize(vec![]).protosize().compact(), text);
+    let refusal = Refusal::SimplifiedAwaitingMemberConflict(position);
+    let archived = rkyv::to_bytes::<rkyv::rancor::Error>(&refusal).unwrap();
+    assert_eq!(
+        rkyv::from_bytes::<Refusal, rkyv::rancor::Error>(&archived).unwrap(),
+        refusal
+    );
+}

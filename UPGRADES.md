@@ -1,5 +1,20 @@
 # Upgrades
 
+## 0.72.0: SendSeveral admits an ordered group
+
+The current `SendableMessage` contract is unchanged. `SendSeveral` takes
+one address and an ordered vector of its messages. `SentSeveral` returns
+the admitted request IDs in that order, including an empty vector for an
+empty group. The grouped delivery rules belong to the Flow Nexus.
+
+`Refusal` and `VisibleRefusal` append
+`SimplifiedAwaitingMemberConflict.SendSeveralMessagePosition`, whose
+integer is the zero-based position in the original input.
+
+`SentSeveral` follows `RequestClosed` in the positional success section
+of the Signal. The ordinary outcome tags following it move. Both ends
+repin together; the handshake refuses the former 0.69.0 source digest.
+
 ## 0.69.0: NotYet names its hold; a delivery may end Abandoned
 
 Built on 0.68.0 (`319e3c3`), on the same ethos-zero 27.0.0 (`8c95310`),

@@ -456,7 +456,8 @@ Signal
   Hot
   Remind.{ Address Minutes String }
   Answer.RequestId
-  CloseRequest.RequestId ]
+  CloseRequest.RequestId
+  SendSeveral.SendSeveralRequest ]
 [ Started.Launched
   Refreshed
   RecipientResolved.FlowNode
@@ -500,6 +501,7 @@ Signal
   Reminded.RequestId
   Answered.VisibleNativeInput
   RequestClosed.RequestId
+  SentSeveral.Vector<RequestId>          ; durable admission in written order
   StartAmbiguous.PromptDeliveryIntent
   StartRejected.StartRejection
   RehearseRejected.StartRejection
@@ -918,7 +920,8 @@ Signal
             RequestIdSpaceFull
             RequestIdDrawsCollided
             MinutesRefused.MinutesRefusal
-            PermaflowHeld.Address ]
+            PermaflowHeld.Address
+            SimplifiedAwaitingMemberConflict.SendSeveralMessagePosition ]
   ; Why a Task's Minutes was refused at admission: zero, below zero, or a
   ; deadline the clock cannot hold.
   MinutesRefusal.[ Zero
@@ -982,6 +985,9 @@ Signal
   VisibleSender.[ Sender.Address Unknown Notification Unbound ]
   VisibleNativeInput.{ VisibleSender DeliveredMessage }
   SendRequest.{ Address SendableMessage }
+  SendSeveralRequest.{ Address Vector<SendableMessage> }
+  ; Zero-based position in the original SendSeveral vector.
+  SendSeveralMessagePosition.Integer
   DeliveryCursor.Integer
   Namespace.String
   Counter.Integer
@@ -1042,7 +1048,8 @@ Signal
                    RequestIdSpaceFull
                    RequestIdDrawsCollided
                    MinutesRefused.MinutesRefusal
-                   PermaflowHeld.Address ]
+                   PermaflowHeld.Address
+                   SimplifiedAwaitingMemberConflict.SendSeveralMessagePosition ]
   VisibleUnknown.[ Address Lock.:flow_ethos:Lock Flow Key ]
   VisibleDeliveryState.[ Queued
                          Attempting

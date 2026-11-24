@@ -1134,6 +1134,7 @@ pub enum Refusal {
     RequestIdDrawsCollided,
     MinutesRefused(MinutesRefusal),
     PermaflowHeld(flow_ethos::Address),
+    SimplifiedAwaitingMemberConflict(SendSeveralMessagePosition),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1418,6 +1419,17 @@ pub struct SendRequest {
     pub sendable_message: SendableMessage,
 }
 #[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct SendSeveralRequest {
+    pub address: flow_ethos::Address,
+    pub sendable_message_vector: std::vec::Vec<SendableMessage>,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct SendSeveralMessagePosition(pub i64);
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct DeliveryCursor(pub i64);
@@ -1583,6 +1595,7 @@ pub enum VisibleRefusal {
     RequestIdDrawsCollided,
     MinutesRefused(MinutesRefusal),
     PermaflowHeld(flow_ethos::Address),
+    SimplifiedAwaitingMemberConflict(SendSeveralMessagePosition),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1932,6 +1945,7 @@ pub enum Input {
     Remind(Remind_Data),
     Answer(flow_ethos::RequestId),
     CloseRequest(flow_ethos::RequestId),
+    SendSeveral(SendSeveralRequest),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -2004,6 +2018,7 @@ pub enum Output {
     Reminded(flow_ethos::RequestId),
     Answered(VisibleNativeInput),
     RequestClosed(flow_ethos::RequestId),
+    SentSeveral(std::vec::Vec<flow_ethos::RequestId>),
     StartAmbiguous(PromptDeliveryIntent),
     StartRejected(StartRejection),
     RehearseRejected(StartRejection),
@@ -2193,6 +2208,10 @@ pub trait Answering {
         &self,
         request_id: &flow_ethos::RequestId,
     ) -> std::result::Result<flow_ethos::RequestId, Output>;
+    fn send_several(
+        &self,
+        send_several_request: &SendSeveralRequest,
+    ) -> std::result::Result<std::vec::Vec<flow_ethos::RequestId>, Output>;
 }
 #[rustfmt::skip]
 pub trait Answerable {
@@ -2364,6 +2383,11 @@ impl Answerable for Input {
                 nexus
                     .close_request(carried)
                     .map_or_else(|refusal| refusal, Output::RequestClosed)
+            }
+            Input::SendSeveral(carried) => {
+                nexus
+                    .send_several(carried)
+                    .map_or_else(|refusal| refusal, Output::SentSeveral)
             }
         }
     }
