@@ -408,7 +408,7 @@ Signal
   Bind.{ Address Process }
   Identify.Process
   Deliver.{ :flow_ethos:Lock DeliverKey SendableMessage }
-  Acknowledge.Vector<DeliverKey>
+  Acknowledge.⟦ DeliverKey ⟧
   ArchiveRequest.RequestId
   Release.:flow_ethos:Lock
   Current.Address
@@ -455,7 +455,7 @@ Signal
   RequestArchived.RequestId
   Released
   Current.[ Awake.FlowId Asleep Unknown ]
-  Listed.Vector<Metaflow>
+  Listed.⟦ Metaflow ⟧
   ThreadIdentified.Address
   Sent.VisibleSendReceipt                ; Send's; Send also answers SendAccepted, Deliver's
   SendsObserved.VisibleSendObservation
@@ -469,15 +469,15 @@ Signal
   Restarted.FlowId
   Kept.{ Address Title Touch }
   Dropped.{ Address Title Touch }
-  Glanced.Vector<Heading>
-  Handover.Vector<Section>
+  Glanced.⟦ Heading ⟧
+  Handover.⟦ Section ⟧
   Cancelled.RequestId
   Silenced.RequestId
-  Cleared.Vector<RequestId>
-  AllCleared.Vector<RequestId>
-  Pushed.Vector<RequestId>
-  Queues.Vector<Queue>
-  Hot.Vector<Warmth>
+  Cleared.⟦ RequestId ⟧
+  AllCleared.⟦ RequestId ⟧
+  Pushed.⟦ RequestId ⟧
+  Queues.⟦ Queue ⟧
+  Hot.⟦ Warmth ⟧
   Reminded.RequestId
   Answered.VisibleNativeInput
   RequestClosed.RequestId
@@ -506,10 +506,10 @@ Signal
   ArchiveRejected.ArchiveRejection
   RefreshQueued
   FrameRefused.UndecodableFrame
-  UndecodableObserved.Vector<UndecodableFrame>
-  TurnEndsObserved.Vector<TurnEnd>
+  UndecodableObserved.⟦ UndecodableFrame ⟧
+  TurnEndsObserved.⟦ TurnEnd ⟧
   TurnEnded.TurnEnd
-  MetaflowsObserved.Vector<Metaflow>
+  MetaflowsObserved.⟦ Metaflow ⟧
   MetaflowChanged.Metaflow
   MetaflowGone.Address
   CancelRejected.RequestRejection
@@ -535,11 +535,11 @@ Signal
   ; A module identity is the exact lowercase `type:subject` string. The
   ; colon is anatomical; a hyphenated legacy name is not an identity.
   ModuleIdentity.String
-  SystemModules.Vector<ModuleIdentity>
-  PromptModules.Vector<ModuleIdentity>
+  SystemModules.⟦ ModuleIdentity ⟧
+  PromptModules.⟦ ModuleIdentity ⟧
   Effort.String
   RememberingDepth.Integer
-  Remembering.[ Predecessors.RememberingDepth Custom.Vector<FlowId> ]
+  Remembering.[ Predecessors.RememberingDepth Custom.⟦ FlowId ⟧ ]
   ; Launch and Rehearse take the same declared request. Rehearse renders the
   ; final native invocation and creates none of its resources.
   LaunchRequest.{ Address Remembering InstructionPrompt }
@@ -569,31 +569,31 @@ Signal
   ; WorkflowTool is left out too, since Workflow then inlines its authoring
   ; reference. A Claude leave-out is refused for Codex and vice versa.
   LeaveOut.[ ClaudeAiConnectors ConfiguredMcpServers AgentTool ExplorePlanAgents FileTools WorkflowTool ScheduleWakeupTool ReportFindingsTool ListAgentsTool CronTools WebTools DeferredTools SkillTool BundledSkills ClaudeMd GitInstructions AttributionReminder UserSettings ToolSearch BashTool CodexSkillListing CodexAgentsMd CodexCollaborationMode CodexEnvironmentContext CodexPermissions CodexDeveloperInstructions ]
-  LeaveOuts.Vector<LeaveOut>
+  LeaveOuts.⟦ LeaveOut ⟧
   ; The tool surface a metaflow declares for every launch.
   FlowKind.[ Regular Simplified ]
-  ToolSet.[ Default Explicit.Vector<String> ]
+  ToolSet.[ Default Explicit.⟦ String ⟧ ]
   ArtifactToolsAllowed.Boolean
   ; A Start's leave-outs, when it names them, replace the default its
   ; metaflow's configuration names; None takes that default.
   LaunchProfile.{ LaunchRequestId SystemModules PromptModules Remembering Address ModelName Effort Option<FlowId> HerdrSessionName Option<LeaveOuts> FlowKind ToolSet InstructionPrompt }
   TargetReceiptRequest.{ LaunchRequestId PromptSha256 }
   PromptPart.{ PromptPartText PromptSha256 }
-  FirstPromptPayload.{ FirstPromptBody PromptSha256 Vector<PromptPart> }
+  FirstPromptPayload.{ FirstPromptBody PromptSha256 ⟦ PromptPart ⟧ }
   SystemPrompt.{ SystemPromptText SystemPromptSha256 }
   ; The harness the Nexus derived for the launch's model, and the effective
   ; leave-outs: the Start's, else its metaflow's default.
   ComposedLaunch.{ LaunchProfile HarnessKind SystemPrompt FirstPromptPayload TargetReceiptRequest LeaveOuts }
   HerdrPaneBinding.{ LaunchRequestId HerdrSessionName HerdrAgentName HerdrWorkspaceId HerdrPaneId HerdrTerminalId }
-  NativeLaunchIntent.{ LaunchRequestId PromptSha256 SystemPromptSha256 HarnessKind ModelName Effort Vector<PromptSha256> }
+  NativeLaunchIntent.{ LaunchRequestId PromptSha256 SystemPromptSha256 HarnessKind ModelName Effort ⟦ PromptSha256 ⟧ }
   NativeLaunchBinding.{ LaunchRequestId FlowId NativeSessionId HarnessKind HerdrPaneBinding }
   RegistrationAcknowledgement.{ LaunchRequestId FlowId NativeSessionId HerdrPaneBinding }
   NativeTranscriptCursor.{ NativeSessionId HarnessKind TranscriptDevice TranscriptInode TranscriptByteOffset TranscriptPrefixSha256 }
   NativeTranscriptAbsence.{ NativeSessionId HarnessKind TranscriptRootDevice TranscriptRootInode }
   NativeTranscriptBoundary.[ Existing.NativeTranscriptCursor
                              Absent.NativeTranscriptAbsence ]
-  PromptDeliveryIntent.{ LaunchRequestId PromptSha256 FlowId NativeSessionId HarnessKind ModelName Effort Vector<PromptSha256> PartsSubmitted StopsReported LeaveOuts HerdrPaneBinding NativeTranscriptBoundary }
-  NativeTargetReceipt.{ LaunchRequestId PromptSha256 FlowId NativeSessionId NativeTurnId ReceiptSha256 ModelName Effort Vector<PromptSha256> }
+  PromptDeliveryIntent.{ LaunchRequestId PromptSha256 FlowId NativeSessionId HarnessKind ModelName Effort ⟦ PromptSha256 ⟧ PartsSubmitted StopsReported LeaveOuts HerdrPaneBinding NativeTranscriptBoundary }
+  NativeTargetReceipt.{ LaunchRequestId PromptSha256 FlowId NativeSessionId NativeTurnId ReceiptSha256 ModelName Effort ⟦ PromptSha256 ⟧ }
   PromptDeliveryResult.[ Observed.NativeTargetReceipt
                          Ambiguous.PromptDeliveryIntent ]
   LaunchAttemptPhase.[ Reserved NativeLaunchIntentRecorded NativeBound RegistrationAcknowledged PromptIntentRecorded PromptObserved PromptAmbiguous ]
@@ -846,7 +846,7 @@ Signal
   GitBlob.String
   ArchiveDocumentPath.String
   HandoverArchiveIdentity.{ GitCommit ArchiveDocumentPath GitBlob }
-  RetirementSnapshot.{ Address Vector<HandoverGenerationKey> }
+  RetirementSnapshot.{ Address ⟦ HandoverGenerationKey ⟧ }
   ArchiveCommitted.{ HandoverGenerationKey HandoverArchiveIdentity }
   RetirementChange.[ GenerationClosed.HandoverGenerationKey
                       ArchiveCommitted
@@ -920,7 +920,7 @@ Signal
   BackgroundTaskKind.[ Shell Subagent Monitor Workflow Teammate CloudSession McpTask Other.String ]
   BackgroundTaskStatus.String
   BackgroundTask.{ BackgroundTaskId BackgroundTaskKind BackgroundTaskStatus Description }
-  BackgroundWork.Vector<BackgroundTask>
+  BackgroundWork.⟦ BackgroundTask ⟧
   NativeStop.{ Option<NativeSessionId> Option<TranscriptPath> LastAssistantMessageOption BackgroundWork }
   NativePrompt.{ Option<NativeSessionId> Option<PromptId> PromptSha256 }
   VisibleResultPayload.[ Answered.{ RequestId String }
@@ -991,8 +991,8 @@ Signal
                       NotSent.String ]
   SendAcceptance.{ LogicalDeliveryId RequestId DeliveryCursor DeliveryState }
   DeliverySnapshot.{ DeliveryCursor LogicalDeliveryId RequestId SentBy Address DeliveryState }
-  SendObservation.{ StoreIdentity DeliveryCursor Vector<DeliverySnapshot> }
-  DrainOutcome.{ Address DrainState.[ Delivered Held.Vector<LogicalDeliveryId> ] }
+  SendObservation.{ StoreIdentity DeliveryCursor ⟦ DeliverySnapshot ⟧ }
+  DrainOutcome.{ Address DrainState.[ Delivered Held.⟦ LogicalDeliveryId ⟧ ] }
   ; The Nexus uses this result while it admits, journals and delivers a
   ; message. It is never an ordinary Signal output.
   PrivateSendResponse.[ SendAccepted.SendAcceptance
@@ -1042,14 +1042,14 @@ Signal
                              NotSent.String ]
   VisibleSendAcceptance.{ RequestId DeliveryCursor VisibleDeliveryState }
   VisibleDeliverySnapshot.{ RequestId DeliveryCursor VisibleSender Address VisibleDeliveryState }
-  VisibleSendObservation.{ StoreIdentity DeliveryCursor Vector<VisibleDeliverySnapshot> }
+  VisibleSendObservation.{ StoreIdentity DeliveryCursor ⟦ VisibleDeliverySnapshot ⟧ }
   ArchiveRejection.[ UnknownRequest NotYet StoreRefused ]
   RequestRejection.[ UnknownRequest NotYet Closed NotTask StoreRefused ]
   ; The priority a Push delivers a queue at.
   Priority.[ HardAbrupt MiddleAbrupt Soft ]
   ; One queue that holds something, oldest first: each message as it would
   ; land in the prompt, its sender and its priority with the request.
-  Queue.{ Address Vector<VisibleNativeInput> }
+  Queue.{ Address ⟦ VisibleNativeInput ⟧ }
   ; Why an Answer reads no answer: UnknownRequest, no request holds the id;
   ; Open, it is not answered yet; Routed, its answer went to its sender's
   ; Address; StoreRefused.
