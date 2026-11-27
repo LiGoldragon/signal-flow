@@ -1,5 +1,17 @@
 # Upgrades
 
+## 0.74.0: the ordinary Signal family has its own release line
+
+This is the ordinary Flow Signal package. Its 0.74.0 allocation distinguishes
+this family from the separately versioned meta Flow Signal family; the two
+packages are not interchangeable.
+
+The authored Ethos, generated Rust, fixtures, contract digest and every
+dependency pin are unchanged from ordinary signal-flow 0.70.1. That release
+remains the legacy wire witness: a 0.70.1 peer and a 0.74.0 peer carry the same
+Input and Output archives and greet with the same contract digest. Only this
+Rust package's release version changes.
+
 ## 0.70.1: Signal 11.2 compatibility
 
 Built on 0.70.0 (`5c858a18`), with the same ethos-zero 27.0.0
