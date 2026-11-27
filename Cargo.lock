@@ -303,11 +303,12 @@ checksum = "cf54715a573b99ac80df0bc206da022bcd442c974952c7b9720069370852e21f"
 
 [[package]]
 name = "signal"
-version = "11.0.0"
-source = "git+https://github.com/LiGoldragon/signal?rev=6d4eb74#6d4eb74a238ea4a6149bd12c42a8c06aec01b154"
+version = "11.2.0"
+source = "git+https://github.com/LiGoldragon/signal?rev=4f5cbb9322ecae7a8821439179e778d495d7804a#4f5cbb9322ecae7a8821439179e778d495d7804a"
 dependencies = [
  "datom-codec",
  "ethos-zero 22.0.0",
+ "futures-core",
  "protos",
  "rkyv",
  "thiserror",

@@ -1,5 +1,17 @@
 # Upgrades
 
+## 0.70.1: Signal 11.2 compatibility
+
+Built on 0.70.0 (`5c858a18`), with the same ethos-zero 27.0.0
+(`8c95310`) and flow-ethos (`062ef9e1`), and Signal 11.2.0
+(`4f5cbb9322ecae7a8821439179e778d495d7804a`).
+
+- This is a dependency compatibility release. Its authored Ethos and emitted
+  contract are unchanged: every `RequestId`, input and output tag, archive,
+  and greeting digest stays as in 0.70.0.
+- Ordinary peers therefore retain the same wire contract. Only the Rust
+  package version and its Signal implementation dependency advance.
+
 ## 0.70.0: a bounded send snapshot; exact explicit tool catalogues
 
 Built on 0.69.0 (`da01bb0`), on the same ethos-zero 27.0.0 (`8c95310`),

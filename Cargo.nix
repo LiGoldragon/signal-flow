@@ -1000,20 +1000,25 @@ rec {
       };
       "signal" = rec {
         crateName = "signal";
-        version = "11.0.0";
+        version = "11.2.0";
         edition = "2024";
         links = "signal";
         workspace_member = null;
         src = pkgs.fetchgit {
           url = "https://github.com/LiGoldragon/signal";
-          rev = "6d4eb74a238ea4a6149bd12c42a8c06aec01b154";
-          sha256 = "0hqy8k58s6sc9wz76k8iq40bv636js5s951zgd01ncrxcy6h776a";
+          rev = "4f5cbb9322ecae7a8821439179e778d495d7804a";
+          sha256 = "14f2bwprz32psr58n9i36padya0r4p54hwm1yq145h1ab6nawvk2";
         };
         dependencies = [
           {
             name = "datom-codec";
             packageId = "datom-codec";
             optional = true;
+          }
+          {
+            name = "futures-core";
+            packageId = "futures-core";
+            usesDefaultFeatures = false;
           }
           {
             name = "protos";
