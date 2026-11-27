@@ -50,6 +50,20 @@ fn a_signal_flow_0_68_peer_is_refused_with_this_digest() {
     );
 }
 
+/// A peer built on signal-flow 0.69.0 is refused before it can send an old
+/// output discriminant that 0.70 shifted by pairing SnapshotSends.
+#[test]
+fn a_signal_flow_0_69_peer_is_refused_before_shifted_outputs_are_read() {
+    let older = include_str!("fixtures/signal-flow-0.69.ethos");
+    assert_ne!(Handshake::of_source(older), Input::greeting());
+    assert_eq!(
+        Input::receipt(&Handshake::of_source(older)),
+        HandshakeReceipt::GreetingRefused(HandshakeRejection::ContractMismatch(
+            Input::contract_digest()
+        ))
+    );
+}
+
 /// The greeting a peer writes is the rkyv archive of its Handshake, and it
 /// reads the receipt back the same way.
 #[test]

@@ -409,7 +409,10 @@
 ; Where two inputs answer the same reply, the earlier input has it at its
 ; position, and the later one has a reply of its own at its own.
 ; ObserveSends and ObserveSender open with SendsObserved, ObserveDeliveries
-; with DeliveriesObserved; each then streams SendChanged.
+; with DeliveriesObserved; each then streams SendChanged. SnapshotSends reads
+; the same durable snapshot as ObserveSends's opening frame and closes after
+; its one SendsSnapshotted answer; it is the bounded form for a caller that
+; does not subscribe.
 
 Signal
 [
@@ -456,7 +459,8 @@ Signal
   Hot
   Remind.{ Address Minutes String }
   Answer.RequestId
-  CloseRequest.RequestId ]
+  CloseRequest.RequestId
+  SnapshotSends.Option<DeliveryCursor> ]
 [ Started.Launched
   Refreshed
   RecipientResolved.FlowNode
@@ -500,6 +504,7 @@ Signal
   Reminded.RequestId
   Answered.VisibleNativeInput
   RequestClosed.RequestId
+  SendsSnapshotted.VisibleSendObservation
   StartAmbiguous.PromptDeliveryIntent
   StartRejected.StartRejection
   RehearseRejected.StartRejection
@@ -592,6 +597,25 @@ Signal
   ; The tool surface a metaflow declares for every launch.
   FlowKind.[ Regular Simplified ]
   ToolSet.[ Default Explicit.Vector<String> ]
+  ; An explicit Claude tool catalogue is admitted only from an enforcing,
+  ; locally authoritative harness source. Its receipt keeps the declaration,
+  ; the unavoidable fixed tools named by that harness's definition, and the
+  ; exact model-visible catalogue observed before launch. An unenforceable
+  ; observation holds None when the authority could not be read; a successful
+  ; receipt always holds the observed list itself. Plugins and MCP tools are
+  ; never fixed tools. Unenforceable is fail-closed: unreadable, missing or
+  ; extra observed tools all refuse before a provider is called, and names
+  ; the harness whose enforcement could not be proved.
+  DeclaredTools.Vector<String>
+  FixedTools.Vector<String>
+  ObservedTools.Vector<String>
+  ToolCatalogObservation.{ DeclaredTools FixedTools Option<ObservedTools> }
+  ToolCatalogReceipt.{ DeclaredTools FixedTools ObservedTools }
+  ; A successful authorization is durably keyed to the launch it admitted;
+  ; an Unenforceable refusal instead carries its possibly unreadable
+  ; observation and can never be recorded as a successful receipt.
+  ToolCatalogAuthorization.{ LaunchRequestId HarnessKind ToolCatalogReceipt }
+  ToolCatalogRefusal.[ Unenforceable.{ HarnessKind ToolCatalogObservation } ]
   ArtifactToolsAllowed.Boolean
   ; A Start's leave-outs, when it names them, replace the default its
   ; metaflow's configuration names; None takes that default.
@@ -768,7 +792,7 @@ Signal
   ; with the reader's own text.
   HandoverFault.[ InvalidPredecessor RootUnresolved NotUtf8 Unreadable.String ]
   HarnessFlagsRefusal.[ UnclosedSingleQuote UnclosedDoubleQuote TrailingEscape ]
-  StartRejection.[ CompositionRefused.CompositionRefusal MalformedHarnessFlags.HarnessFlagsRefusal LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal Undeclared TopicRefused.Topic ]
+  StartRejection.[ CompositionRefused.CompositionRefusal MalformedHarnessFlags.HarnessFlagsRefusal LaunchRequestConflict LaunchPersistenceRefused NativeLaunchRefused.NativeLaunchRefusal BindingRefused.BindingRefusal RegistrationRefused.RegistrationRefusal IntentPersistenceRefused OriginUnavailable AddressAwake ContextRefused.ContextRefusal LeaveOutRefused.LeaveOutRefusal HarnessSpawnRefused.HarnessSpawnRefusal ModelRefused.ModelRefusal Undeclared TopicRefused.Topic ToolCatalogRefused.ToolCatalogRefusal ParkedLaunchDropped ]
   ; RefreshRejection names why a refresh ended no flow: the metaflow is not
   ; Awake; a refresh, a waking or an unconfirmed launch holds its lock;
   ; Herdr refused to close the ending flow's pane; the flow's end was not
@@ -796,7 +820,8 @@ Signal
                    ResumeRefused.{ FlowId String }
                    Interrupted.FlowId
                    Unsupported.FlowId
-                   Asleep.FlowId ]
+                   Asleep.FlowId
+                   ToolCatalogRefused.{ FlowId ToolCatalogRefusal } ]
   Replaced.{ FlowId Launched }
   ReplaceRejection.[ PredecessorAbsent
                      UnknownPredecessor

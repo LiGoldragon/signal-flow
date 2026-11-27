@@ -1,5 +1,40 @@
 # Upgrades
 
+## 0.70.0: a bounded send snapshot; exact explicit tool catalogues
+
+Built on 0.69.0 (`da01bb0`), on the same ethos-zero 27.0.0 (`8c95310`),
+flow-ethos (`062ef9e1`) and signal (`6d4eb74`). Flow Nexus v0 reliability.
+
+- The ordinary Signal appends `SnapshotSends.Option<DeliveryCursor>` as its
+  44th input. It reads the same durable snapshot as the opening frame of
+  `ObserveSends`, answers once with
+  `SendsSnapshotted.VisibleSendObservation`, then closes. `None` starts at
+  the current snapshot; `Some.<cursor>` reads changes after that cursor.
+  `ObserveSends` keeps its streaming behavior.
+- `SendsSnapshotted` is the 44th paired output, immediately after
+  `RequestClosed`. **Every output from `StartAmbiguous` on moves one rkyv
+  discriminant.** Both ends of the ordinary socket repin together.
+- An explicit Claude `ToolSet` is admitted only when a locally authoritative
+  harness source both enforces and reads back the exact model-visible catalog.
+  `ToolCatalogObservation` keeps `DeclaredTools`, unavoidable `FixedTools`,
+  and `Option<ObservedTools>` (`None` means the authority was unreadable).
+  A successful `ToolCatalogReceipt` requires the observed list itself, and
+  `ToolCatalogAuthorization` durably associates that receipt with its launch
+  and harness. Plugins and MCP tools are never fixed tools.
+- `StartRejection` appends
+  `ToolCatalogRefused.Unenforceable.{ HarnessKind ToolCatalogObservation }`.
+  `RestartRefusal` appends the same typed refusal with the flow id. An
+  unreadable catalog, or any missing or extra observed tool, fails closed
+  before a provider is called. Every earlier refusal keeps its tag.
+- `StartRejection` also appends `ParkedLaunchDropped`: the owner explicitly
+  dropped a launch parked by a hold, so its durable terminal outcome never
+  claims a native attempt or a transient refusal and a later release cannot
+  run it.
+- The contract digest changes, so a 0.69 peer is refused with 0.70's digest
+  before a shifted output can be decoded
+  (`tests/fixtures/signal-flow-0.69.ethos`). Repin meta-signal-flow and every
+  client together.
+
 ## 0.69.0: NotYet names its hold; a delivery may end Abandoned
 
 Built on 0.68.0 (`319e3c3`), on the same ethos-zero 27.0.0 (`8c95310`),

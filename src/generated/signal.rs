@@ -205,6 +205,55 @@ pub enum ToolSet {
     Explicit(std::vec::Vec<String>),
 }
 #[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct DeclaredTools(pub std::vec::Vec<String>);
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct FixedTools(pub std::vec::Vec<String>);
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct ObservedTools(pub std::vec::Vec<String>);
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct ToolCatalogObservation {
+    pub declared_tools: DeclaredTools,
+    pub fixed_tools: FixedTools,
+    pub observed_tools_option: std::option::Option<ObservedTools>,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct ToolCatalogReceipt {
+    pub declared_tools: DeclaredTools,
+    pub fixed_tools: FixedTools,
+    pub observed_tools: ObservedTools,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct ToolCatalogAuthorization {
+    pub launch_request_id: LaunchRequestId,
+    pub harness_kind: flow_ethos::HarnessKind,
+    pub tool_catalog_receipt: ToolCatalogReceipt,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct Unenforceable_Data {
+    pub harness_kind: flow_ethos::HarnessKind,
+    pub tool_catalog_observation: ToolCatalogObservation,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum ToolCatalogRefusal {
+    Unenforceable(Unenforceable_Data),
+}
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub struct ArtifactToolsAllowed(pub bool);
@@ -785,6 +834,8 @@ pub enum StartRejection {
     ModelRefused(ModelRefusal),
     Undeclared,
     TopicRefused(flow_ethos::Topic),
+    ToolCatalogRefused(ToolCatalogRefusal),
+    ParkedLaunchDropped,
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -836,6 +887,13 @@ pub struct ResumeRefused_Data {
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub struct ToolCatalogRefused_Data {
+    pub flow_id: flow_ethos::FlowId,
+    pub tool_catalog_refusal: ToolCatalogRefusal,
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum RestartRefusal {
     UnknownFlow(flow_ethos::FlowId),
     NoHeldSession(flow_ethos::FlowId),
@@ -846,6 +904,7 @@ pub enum RestartRefusal {
     Interrupted(flow_ethos::FlowId),
     Unsupported(flow_ethos::FlowId),
     Asleep(flow_ethos::FlowId),
+    ToolCatalogRefused(ToolCatalogRefused_Data),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1932,6 +1991,7 @@ pub enum Input {
     Remind(Remind_Data),
     Answer(flow_ethos::RequestId),
     CloseRequest(flow_ethos::RequestId),
+    SnapshotSends(std::option::Option<DeliveryCursor>),
 }
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -2004,6 +2064,7 @@ pub enum Output {
     Reminded(flow_ethos::RequestId),
     Answered(VisibleNativeInput),
     RequestClosed(flow_ethos::RequestId),
+    SendsSnapshotted(VisibleSendObservation),
     StartAmbiguous(PromptDeliveryIntent),
     StartRejected(StartRejection),
     RehearseRejected(StartRejection),
@@ -2193,6 +2254,10 @@ pub trait Answering {
         &self,
         request_id: &flow_ethos::RequestId,
     ) -> std::result::Result<flow_ethos::RequestId, Output>;
+    fn snapshot_sends(
+        &self,
+        delivery_cursor_option: &std::option::Option<DeliveryCursor>,
+    ) -> std::result::Result<VisibleSendObservation, Output>;
 }
 #[rustfmt::skip]
 pub trait Answerable {
@@ -2364,6 +2429,11 @@ impl Answerable for Input {
                 nexus
                     .close_request(carried)
                     .map_or_else(|refusal| refusal, Output::RequestClosed)
+            }
+            Input::SnapshotSends(carried) => {
+                nexus
+                    .snapshot_sends(carried)
+                    .map_or_else(|refusal| refusal, Output::SendsSnapshotted)
             }
         }
     }

@@ -1862,3 +1862,109 @@ fn an_abandoned_delivery_reads_and_prints_back_as_abandoned() {
         .unwrap();
     assert_eq!(visible, signal_flow::VisibleDeliveryState::Abandoned);
 }
+
+/// SnapshotSends is the bounded cursor read: its payload keeps the same
+/// optional durable cursor as ObserveSends without opening a subscription.
+#[test]
+fn snapshot_sends_carries_none_or_one_delivery_cursor() {
+    for (text, expected) in [
+        ("SnapshotSends.None", Input::SnapshotSends(None)),
+        (
+            "SnapshotSends.Some.42",
+            Input::SnapshotSends(Some(signal_flow::DeliveryCursor(42))),
+        ),
+    ] {
+        let actual = Potential::<Input>::from(text)
+            .actualize(&mut budget())
+            .unwrap_or_else(|error| panic!("{text}: {error:?}"));
+        assert_eq!(actual, expected);
+        assert_eq!(actual.datomize(vec![]).protosize().compact(), text);
+    }
+}
+
+/// Unenforceable names the harness and keeps the complete attempted receipt.
+/// None is an unreadable authority, never a fabricated empty observation.
+#[test]
+fn an_unenforceable_tool_catalog_keeps_its_harness_and_receipt() {
+    use signal_flow::{
+        DeclaredTools, FixedTools, ObservedTools, StartRejection, ToolCatalogObservation,
+        ToolCatalogRefusal, Unenforceable_Data,
+    };
+    for (text, observed) in [
+        (
+            "StartRejected.ToolCatalogRefused.Unenforceable.{ Claude { [ Bash Read ] [ EndConversation ] Some.[ Bash Read EndConversation ] } }",
+            Some(ObservedTools(vec![
+                "Bash".into(),
+                "Read".into(),
+                "EndConversation".into(),
+            ])),
+        ),
+        (
+            "StartRejected.ToolCatalogRefused.Unenforceable.{ Claude { [ Bash Read ] [ EndConversation ] None } }",
+            None,
+        ),
+    ] {
+        let expected = Output::StartRejected(StartRejection::ToolCatalogRefused(
+            ToolCatalogRefusal::Unenforceable(Unenforceable_Data {
+                harness_kind: signal_flow::HarnessKind::Claude,
+                tool_catalog_observation: ToolCatalogObservation {
+                    declared_tools: DeclaredTools(vec!["Bash".into(), "Read".into()]),
+                    fixed_tools: FixedTools(vec!["EndConversation".into()]),
+                    observed_tools_option: observed,
+                },
+            }),
+        ));
+        let actual = Potential::<Output>::from(text)
+            .actualize(&mut budget())
+            .unwrap_or_else(|error| panic!("{text}: {error:?}"));
+        assert_eq!(actual, expected);
+        assert_eq!(actual.datomize(vec![]).protosize().compact(), text);
+        let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&actual).unwrap();
+        assert_eq!(
+            rkyv::from_bytes::<Output, rkyv::rancor::Error>(&archive).unwrap(),
+            expected
+        );
+    }
+}
+
+/// The same receipt has a durable successful form keyed to the launch and
+/// harness; recording success does not require turning it into a refusal.
+#[test]
+fn a_tool_catalog_authorization_archives_its_exact_success_receipt() {
+    use signal_flow::{
+        DeclaredTools, FixedTools, ObservedTools, ToolCatalogAuthorization, ToolCatalogReceipt,
+    };
+    let authorization = ToolCatalogAuthorization {
+        launch_request_id: signal_flow::LaunchRequestId("catalog-launch".into()),
+        harness_kind: signal_flow::HarnessKind::Claude,
+        tool_catalog_receipt: ToolCatalogReceipt {
+            declared_tools: DeclaredTools(vec!["Bash".into(), "Read".into()]),
+            fixed_tools: FixedTools(vec!["EndConversation".into()]),
+            observed_tools: ObservedTools(vec![
+                "Bash".into(),
+                "Read".into(),
+                "EndConversation".into(),
+            ]),
+        },
+    };
+    let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&authorization).unwrap();
+    assert_eq!(
+        rkyv::from_bytes::<ToolCatalogAuthorization, rkyv::rancor::Error>(&archive).unwrap(),
+        authorization
+    );
+}
+
+/// Dropping a parked launch is its own durable terminal truth, not a native
+/// or transient refusal that a release may retry.
+#[test]
+fn a_dropped_parked_launch_has_its_own_start_rejection() {
+    let text = "StartRejected.ParkedLaunchDropped";
+    let actual = Potential::<Output>::from(text)
+        .actualize(&mut budget())
+        .unwrap();
+    assert_eq!(
+        actual,
+        Output::StartRejected(signal_flow::StartRejection::ParkedLaunchDropped)
+    );
+    assert_eq!(actual.datomize(vec![]).protosize().compact(), text);
+}
